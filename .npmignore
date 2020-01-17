@@ -1,0 +1,7 @@
+images
+.*
+_*
+test
+docs
+*.md
+examples

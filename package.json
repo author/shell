@@ -1,0 +1,49 @@
+{
+  "name": "@author.io/cli",
+  "version": "1.0.0",
+  "description": "A micro-framework for creating CLI-like experiences. This supports Node.js and browsers.",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run sanity && npm run syntax",
+    "sanity": "tap --no-esm --no-coverage-report -R spec ./test/sanity.js",
+    "syntax": "node ./test/syntax-checker.js"
+  },
+  "keywords": [
+    "cli",
+    "args",
+    "arg"
+  ],
+  "author": "Corey Butler",
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "eslint": "^6.7.2",
+    "eslint-plugin-compat": "^3.3.0",
+    "snazzy": "8.0.0",
+    "standard": "14.3.1",
+    "tap": "14.10.5",
+    "tap-diff": "0.1.1",
+    "tap-spec": "^5.0.0",
+    "tape": "4.12.0"
+  },
+  "engines": {
+    "node": ">=13.5.0"
+  },
+  "standard": {
+    "parser": "babel-eslint",
+    "ignore": [
+      "_*",
+      "_**/*",
+      ".**/*",
+      "node_modules",
+      "karma.conf.js",
+      "karma.conf.cjs",
+      "build.js"
+    ],
+    "globals": [
+      "window",
+      "global"
+    ]
+  },
+  "dependencies": {}
+}

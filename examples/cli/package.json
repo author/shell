@@ -1,0 +1,19 @@
+{
+  "name": "dir",
+  "version": "1.0.0",
+  "description": "A simple file system utility.",
+  "main": "index.js",
+  "bin": {
+    "dir": "index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "type": "module",
+  "private": true,
+  "author": "Corey Butler",
+  "license": "MIT",
+  "engines": {
+    "node": "^12.0.0"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "nodeOutput": "../.dist/node",
+  "browserOutput": "../.dist/browser",
+  "testOutput": "../test",
+  "npmPrefix": "@author.io",
+  "external": ["os", "fs", "http", "https", "events"]
+}

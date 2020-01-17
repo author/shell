@@ -1,0 +1,42 @@
+{
+  "name": "shell-builder",
+  "version": "1.0.0",
+  "description": "Build the Shell library for different JavaScript runtimes.",
+  "scripts": {
+    "test:node": "rollup -c rollup.test.node.config.js",
+    "test:browser": "rollup -c rollup.test.browser.config.js",
+    "node": "rollup -c rollup.node.config.js && node node-package.js",
+    "browser": "rollup -c rollup.browser.config.js && node browser-package.js"
+  },
+  "author": {
+    "name": "Ecor Ventures",
+    "url": "https://ecorventures.com"
+  },
+  "license": "BSD-3-Clause",
+  "type": "module",
+  "devDependencies": {},
+  "dependencies": {
+    "@author.io/arg": "^1.0.3",
+    "@author.io/metadoc": "0.1.2",
+    "@author.io/metadoc-api": "1.1.0",
+    "@author.io/metadoc-md": "0.0.5",
+    "@babel/core": "^7.7.7",
+    "@babel/plugin-external-helpers": "^7.7.4",
+    "@babel/plugin-proposal-class-properties": "^7.7.4",
+    "@babel/plugin-proposal-private-methods": "^7.7.4",
+    "@babel/plugin-transform-flow-strip-types": "^7.7.4",
+    "@babel/preset-env": "^7.7.7",
+    "babel-eslint": "^10.0.3",
+    "browserify-istanbul": "3.0.1",
+    "browserslist": "^4.8.2",
+    "localenvironment": "1.0.2",
+    "rollup": "^1.27.13",
+    "rollup-plugin-babel": "^4.3.3",
+    "rollup-plugin-terser": "^5.1.3",
+    "source-map-support": "^0.5.16"
+  },
+  "engines": {
+    "node": ">=12.13.1"
+  },
+  "private": true
+}
