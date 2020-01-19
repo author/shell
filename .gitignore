@@ -1,5 +1,6 @@
 *.log
 .*
+!.github
 !.gitignore
 !.npmignore
 node_modules

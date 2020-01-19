@@ -1,0 +1,133 @@
+{
+  "name": "ngn-tester",
+  "version": "1.0.0",
+  "description": "Test NGN in different JavaScript runtimes.",
+  "scripts": {
+    "start": "npm test",
+    "test": "echo look at package.json scripts",
+    "build:test:browser": "cd ../build && npm run test:browser && cd ../test && node prepareKarmaBrowserSuite.js",
+    "build:test:node": "cd ../build && npm run test:node && cd ../test",
+    "syntax": "./syntax-checker.js --source ../*.js --config ./package.json --parser babel-eslint --verbose | snazzy",
+    "browser:compatibility": "echo 'Building...' && npm run build:browser && echo 'Testing modern browser compatibility...' && BROWSERSLIST_ENV=current BROWSERSLIST_CONFIG=./.browserslistrc eslint -c ./.eslintrc ../.dist/browser/browser-ngn/*.min.js --no-ignore && echo Done.",
+    "browser:compatibility:json": "echo 'Building...' && npm run build:browser && echo 'Testing modern browser compatibility...' && BROWSERSLIST_ENV=current BROWSERSLIST_CONFIG=./.browserslistrc eslint -f json -c ./.eslintrc ../.dist/browser/browser-ngn/*.min.js --no-ignore > compatibility.json && echo Done.",
+    "browser:compatibility:es6": "echo 'Building...' && npm run build:browser && echo 'Testing ES6 browser compatibility...' && BROWSERSLIST_ENV=es6 BROWSERSLIST_CONFIG=./.browserslistrc eslint -c ./.eslintrc ../.dist/browser/browser-ngn-es6/*.min.js --no-ignore && echo Done.",
+    "browser:compatibility:es6:json": "echo 'Building...' && npm run build:browser && echo 'Testing ES6 browser compatibility...' && BROWSERSLIST_ENV=es6 BROWSERSLIST_CONFIG=./.browserslistrc eslint -f json -c ./.eslintrc ../.dist/browser/browser-ngn-es6/*.min.js --no-ignore > compatibility-es6.json && echo Done.",
+    "node:sanity": "npm run build:test:node && tap --no-esm --no-coverage-report -r source-map-support/register -R spec ./*-sanity/**/*-*.js",
+    "node": "npm run build:test:node && tap --no-esm --no-coverage-report -r source-map-support/register -R spec ./*-*/**/*-*.js",
+    "browser:sanity": "npm run build:test:browser -- --test ./*-sanity/**/*-*.js && pwd && karma start ./karma.conf.cjs"
+  },
+  "author": {
+    "name": "Ecor Ventures",
+    "url": "https://ecorventures.com"
+  },
+  "license": "BSD-3-Clause",
+  "homepage": "https://ngn.js.org",
+  "type": "module",
+  "dependencies": {
+    "@author.io/arg": "^1.0.2",
+    "@babel/core": "^7.7.5",
+    "@babel/preset-env": "^7.7.7",
+    "@open-wc/karma-esm": "^2.11.14",
+    "@rollup/plugin-multi-entry": "^3.0.0",
+    "babelify": "^10.0.0",
+    "body-parser": "^1.19.0",
+    "browserify": "^16.5.0",
+    "eslint": "^6.7.2",
+    "eslint-plugin-compat": "^3.3.0",
+    "express": "^4.17.1",
+    "karma": "^4.4.1",
+    "karma-babel-preprocessor": "^8.0.1",
+    "karma-browserify": "^6.1.0",
+    "karma-chrome-launcher": "^3.1.0",
+    "karma-edgium-launcher": "^4.0.0-0",
+    "karma-firefox-launcher": "^1.2.0",
+    "karma-ie-launcher": "^1.0.0",
+    "karma-safari-launcher": "^1.0.0",
+    "karma-sauce-launcher": "^2.0.2",
+    "karma-source-map-support": "^1.4.0",
+    "karma-sourcemap-loader": "^0.3.7",
+    "karma-spec-reporter": "0.0.32",
+    "karma-tap": "^4.1.4",
+    "karma-tap-pretty-reporter": "^4.1.0",
+    "shortbus": "^1.2.8",
+    "snazzy": "8.0.0",
+    "source-map": "^0.7.3",
+    "source-map-support": "^0.5.16",
+    "standard": "14.3.1",
+    "table": "5.4.6",
+    "tap": "14.10.5",
+    "tap-diff": "0.1.1",
+    "tap-spec": "^5.0.0",
+    "tape": "4.12.0"
+  },
+  "engines": {
+    "node": ">=13.5.0"
+  },
+  "private": true,
+  "standard": {
+    "parser": "babel-eslint",
+    "ignore": [
+      "_*",
+      "_**/*",
+      ".**/*",
+      "node_modules",
+      "karma.conf.js",
+      "karma.conf.cjs",
+      "build.js"
+    ],
+    "globals": [
+      "window",
+      "global",
+      "MutationObserver",
+      "EventEmitter",
+      "NgnCustomException",
+      "NGNMissingRecordError",
+      "MissingNgnDependencyError",
+      "InvalidConfigurationError",
+      "ReservedWordError",
+      "NGNDuplicateRecordError",
+      "DOMParser",
+      "XMLHttpRequest",
+      "FormData",
+      "btoa",
+      "localStorage",
+      "Network",
+      "Request",
+      "Response",
+      "Headers",
+      "fetch",
+      "Element",
+      "HTMLElement",
+      "NodeFilter",
+      "hostname",
+      "networkInterfaces",
+      "normalizeUrl",
+      "HttpMethods",
+      "request"
+    ]
+  },
+  "nyc": {
+    "exclude": [
+      "test/common"
+    ],
+    "include": [
+      "test/lib"
+    ]
+  },
+  "endpoints": {
+    "options": "http://mockbin.org/bin/3c48cfa8-fc16-4bb6-87c2-9e3fe817444f",
+    "head": "http://mockbin.org/bin/3c48cfa8-fc16-4bb6-87c2-9e3fe817444f",
+    "get": "http://mockbin.org/bin/3c48cfa8-fc16-4bb6-87c2-9e3fe817444f",
+    "redirect": "http://mockbin.org/bin/d676eae8-1626-4515-9835-e279636d52fa",
+    "post": "http://mockbin.org/bin/3c48cfa8-fc16-4bb6-87c2-9e3fe817444f",
+    "put": "http://mockbin.org/bin/3c48cfa8-fc16-4bb6-87c2-9e3fe817444f",
+    "del": "http://mockbin.org/bin/3c48cfa8-fc16-4bb6-87c2-9e3fe817444f",
+    "json": "https://jsonplaceholder.typicode.com/todos/1",
+    "jsonp": "http://www.mocky.io/v2/5e112bd235000058001e6a1c",
+    "x.jsonp": "https://stats.fenixwebserver.com/http/test",
+    "trace": "http://mockbin.org/bin/bfdc4273-ff50-4141-bef6-28810a6291dd"
+  },
+  "devDependencies": {
+    "watchify": "^3.11.1"
+  }
+}

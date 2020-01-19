@@ -1,23 +1,23 @@
 import path from 'path'
 import fs from 'fs'
 import config from './config.js'
-import NgnPlugin from './rollup-plugin-ngn.js'
+import BuildPlugin from './rollup-plugin-build.js'
 import babel from 'rollup-plugin-babel'
 
 // Install source map support
 import 'source-map-support/register.js'
 
 // Identify source file
-const input = path.resolve('../src/main.js')
+const input = path.resolve('../index.js')
 
-// Add NGN rollup support
-const ngn = new NgnPlugin()
+// Add build rollup support
+const build = new BuildPlugin()
 
 // Configure metadata for the build process.
 const rootdir = path.join(config.testOutput, '.node') // Main output directory
-let outdir = rootdir // Active output directory
-let configuration = [] // Rollup Configurations
-let output = `${outdir}/index.js`
+const outdir = rootdir // Active output directory
+const configuration = [] // Rollup Configurations
+const output = `${outdir}/index.js`
 
 // Pre-process: Check if the build actually needs to be updated.
 if (fs.existsSync(output)) {
@@ -25,7 +25,7 @@ if (fs.existsSync(output)) {
   const lastbuildtime = fs.statSync(output).mtime.getTime()
 
   // b. Check all source files for last modification dates
-  const updatedfiles = ngn.walk(path.dirname(input)).filter(filepath => {
+  const updatedfiles = build.walk(path.dirname(input)).filter(filepath => {
     return fs.statSync(path.resolve(filepath)).mtime.getTime() > lastbuildtime
   })
 
@@ -44,13 +44,13 @@ fs.rmdirSync(rootdir, { recursive: true })
 
 // Identify plugins
 const plugins = [
-  ngn.only('node'),
-  ngn.applyVersion(ngn.version),
+  build.only('node'),
+  build.applyVersion(build.version),
   babel({
     presets: [['@babel/preset-env', { targets: { node: true } }]],
     plugins: [
-      ['@babel/plugin-proposal-class-properties', { 'loose': false }],
-      ['@babel/plugin-proposal-private-methods', { 'loose': false }]
+      ['@babel/plugin-proposal-class-properties', { loose: false }],
+      ['@babel/plugin-proposal-private-methods', { loose: false }]
     ]
   })
 ]
@@ -63,7 +63,7 @@ configuration.push({
     file: output,
     format: 'esm',
     sourcemap: true,
-    name: 'NGN'
+    name: 'build'
   },
   external: config.external
 })

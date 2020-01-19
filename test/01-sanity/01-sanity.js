@@ -1,7 +1,6 @@
 // import 'source-map-support/register.js'
 import test from 'tape'
-import Command from '../command.js'
-import Shell from '../shell.js'
+import { Command, Shell } from '../.node/index.js'
 
 test('Sanity Check', t => {
   const mirror = new Command({
