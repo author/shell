@@ -1,6 +1,6 @@
 {
   "name": "@author.io/shell",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A micro-framework for creating CLI-like experiences. This supports Node.js and browsers.",
   "main": "index.js",
   "scripts": {
@@ -17,7 +17,9 @@
   "license": "MIT",
   "type": "module",
   "files": [
-    "./*.js"
+    "./index.js",
+    "./command.js",
+    "./shell.js"
   ],
   "devDependencies": {
     "eslint": "^6.7.2",
