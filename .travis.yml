@@ -6,6 +6,7 @@ node_js:
 
 install:
   - npm run setup
+  - npm install
 
 script:
   - ls -l
