@@ -1,8 +1,6 @@
 language: node_js
 node_js:
-- '12.0.0'
-- '13.0.0'
-- 'latest'
+- '13.5.0'
 
 install:
   - npm run setup
