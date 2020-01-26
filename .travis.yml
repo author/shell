@@ -8,4 +8,5 @@ install:
   - npm run setup
 
 script:
-  - npm run test:node
+  - cd ./test
+  - npm run node
