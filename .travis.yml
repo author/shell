@@ -5,6 +5,7 @@ node_js:
 - 'latest'
 
 install:
+  - cd ./build && npm install rollup
   - cd ./test && npm install && cd ../
 
 script:
