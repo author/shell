@@ -9,5 +9,4 @@ install:
 
 script:
   - ls -l
-  - cd ./test
-  - npm run node
+  - cd ./test && ls -l && npm run node
