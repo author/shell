@@ -14,7 +14,7 @@ const build = new Build()
 const input = path.resolve(`../${build.pkg.main}`)
 
 // Configure metadata for the build process.
-const rootdir = path.join(config.testOutput, '.node') // Main output directory
+const rootdir = path.resolve(path.join(config.testOutput, '.node')) // Main output directory
 let outdir = rootdir // Active output directory
 let configuration = [] // Rollup Configurations
 let output = `${outdir}/index.js`
