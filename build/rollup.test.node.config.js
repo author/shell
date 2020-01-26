@@ -25,8 +25,10 @@ if (build.isUnnecessaryBuild(input, output)) {
 }
 
 // 1. Clean prior builds
-console.log('Cleaning directory:', rootdir)
-fs.rmdirSync(rootdir, { recursive: true })
+if (fs.existsSync(rootdir)) {
+  console.log('Cleaning directory:', rootdir)
+  fs.rmdirSync(rootdir, { recursive: true })
+}
 
 // Identify plugins
 const plugins = [
