@@ -6,7 +6,7 @@ node_js:
 
 install:
   - cd ./build 
-  - npm install rollup
+  - npm install
   - cd ../test
   - npm install
   - cd ../
