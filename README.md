@@ -1,8 +1,6 @@
-PLEASE NOTE: We're working on the [build process](https://github.com/author/template-cross-runtime) for this. The current version on npm is failing due to a bad build. Should be updated this week.
-
 # @author.io/shell
 
-![Build Status](https://travis-ci.org/author/shell.svg?branch=master) ![Version](https://img.shields.io/github/v/tag/author/shell?label=Latest&style=for-the-badge)
+![Version](https://img.shields.io/github/v/tag/author/shell?label=Latest&style=for-the-badge) | ![Build Status](https://travis-ci.org/author/shell.svg?branch=master) using the  [cross-runtime template](https://github.com/author/template-cross-runtime).
 
 This is a super-lightweight framework for building text-based programs, like [CLI](https://en.wikipedia.org/wiki/Command-line_interface) applications.
 
@@ -33,15 +31,19 @@ Sometimes single purpose tools grow into multipurpose tools over time. Tools whi
 
 **npm**
 
-`npm install @author.io/shell`
+`npm install @author.io/node-shell`
 
 Please note, you'll need a verison of Node that support ESM Modules. In Node 12, this feature is behind the `--experimental-modules` flag. It is available in Node 13+ without a flag, but your `package.json` file must have the `"type": "module"` attribute.
+
+If you need to use the older CommonJS format (i.e. `require`), run `npm install @author.io/node-shell-legacy` instead.
 
 **CDN**
 
 ```javascript
-import { Shell, Command } from 'https://jsdelivr.com/npm/@author.io/shell/index.js'
+import { Shell, Command } from 'https://cdn.pika.dev/@author.io/browser-shell/v1'
 ```
+
+Also available from [jsdelivr](https://www.jsdelivr.com/?query=%40author.io%2Fshell) and [unpkg](https://unpkg.com/@author.io/browser-shell).
 
 ### Basic Examples
 
