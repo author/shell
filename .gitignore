@@ -6,6 +6,7 @@
 !.dockerignore
 !.browserlistrc
 !.eslintrc
+!.*.yml
 node_modules
 test/output/**/*
 /**/*.old
