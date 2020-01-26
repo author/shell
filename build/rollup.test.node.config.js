@@ -25,6 +25,7 @@ if (build.isUnnecessaryBuild(input, output)) {
 }
 
 // 1. Clean prior builds
+console.log('Cleaning directory:', rootdir)
 fs.rmdirSync(rootdir, { recursive: true })
 
 // Identify plugins
