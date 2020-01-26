@@ -4,7 +4,7 @@ node_js:
 - '13.0.0'
 - 'latest'
 
-before_script:
+install:
   - cd ./test && npm install && cd ../
 
 script:
