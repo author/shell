@@ -1,5 +1,5 @@
-import { Parser } from './node_modules/@author.io/arg/index.js'
-import Shell from './shell.js'
+import { Parser } from '../node_modules/@author.io/arg/index.js'
+// import Shell from './shell.js'
 
 const STRIP_EQUAL_SIGNS = /(\=+)(?=([^'"\\]*(\\.|['"]([^'"\\]*\\.)*[^'"\\]*['"]))*[^'"]*$)/g
 const SUBCOMMAND_PATTERN = /^([^"'][\S\b]+)[\s+]?([^-].*)$/i
@@ -115,9 +115,7 @@ export default class Command {
   }
 
   set shell (shell) {
-    if (shell instanceof Shell) {
-      this.#shell = shell
-    }
+    this.#shell = shell
   }
 
   get shell () {

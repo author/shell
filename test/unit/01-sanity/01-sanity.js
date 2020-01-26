@@ -1,6 +1,6 @@
-// import 'source-map-support/register.js'
+import 'source-map-support/register.js'
 import test from 'tape'
-import { Command, Shell } from '../.node/index.js'
+import { Command, Shell } from '../../.node/index.js'
 
 test('Sanity Check', t => {
   const mirror = new Command({
@@ -31,7 +31,7 @@ test('Sanity Check', t => {
             required: true
           }
         },
-        handler (data, cb) {
+        handler(data, cb) {
           console.log(data)
           console.log(`Mirroring input: ${data.input}`)
 

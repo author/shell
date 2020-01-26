@@ -1,12 +1,23 @@
 {
   "name": "@author.io/shell",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A micro-framework for creating CLI-like experiences. This supports Node.js and browsers.",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "test": "npm run sanity && npm run syntax",
-    "sanity": "tap --no-esm --no-coverage-report -R spec ./test/sanity.js",
-    "syntax": "node ./test/syntax-checker.js"
+    "test": "cd ./test && npm test",
+    "build": "cd ./build && npm run all",
+    "build:node": "cd ./build && npm run node",
+    "build:browser": "cd ./build && npm run browser",
+    "test:node": "cd ./test && npm run node",
+    "test:browser": "cd ./test && npm run browser",
+    "reset": "echo Resetting test environments && cd ./test && npm run clean && cd ../build && npm run clean",
+    "manually": "cd ./test && npm run browser:manual:open",
+    "again": "cd ./test && npm run browser:manual",
+    "setup": "echo \"Installing build and test dependencies...\" && cd ./build && npm i --no-package-lock && cd ../test && npm i --no-package-lock && echo Template Setup Complete.",
+    "resetup": "node -e \"let fs=require('fs'),path=require('path');fs.rmdirSync(path.resolve('./build/node_modules'), { recursive: true });fs.rmdirSync(path.resolve('./test/node_modules'), { recursive: true });\" && npm run setup",
+    "report:compat": "cd ./test && npm run compat",
+    "report:syntax": "cd ./test && npm run syntax",
+    "report:preview": "npm pack --dry-run && echo \"==============================\" && echo \"This report shows what will be published to the module registry. Pay attention to the tarball contents and assure no sensitive files will be published.\""
   },
   "keywords": [
     "cli",
@@ -19,16 +30,6 @@
   "files": [
     "*.js"
   ],
-  "devDependencies": {
-    "eslint": "^6.7.2",
-    "eslint-plugin-compat": "^3.3.0",
-    "snazzy": "8.0.0",
-    "standard": "14.3.1",
-    "tap": "14.10.5",
-    "tap-diff": "0.1.1",
-    "tap-spec": "^5.0.0",
-    "tape": "4.12.0"
-  },
   "engines": {
     "node": ">=13.5.0"
   },

@@ -1,0 +1,358 @@
+<html>
+  <head>
+    <title>{{NAMESPACE}} Manual Testing</title>
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.19.0/min/vs/loader.js"></script>
+    <style>
+      body {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-self: stretch;
+        align-items: stretch;
+        padding: 0;
+        margin: 0;
+        background-color: #1e1e1e;
+        color: rgba(255,255,255,.5);
+        /* background-color: #efefef;
+        color: rgba(0,0,0,.5); */
+      }
+
+      main {
+        display: flex;
+        height: 97vh;
+        flex-direction: column;
+      }
+
+      footer {
+        display: flex;
+        height: 3vh;
+        display: flex;
+      }
+
+      .toolbar {
+        display: flex;
+        flex: 1;
+        flex-direction: row;
+        align-items: center;
+        padding: 0 1vw;
+        background-color: rgba(0,0,0, .15);
+        font-family: Helvetica, Arial;
+      }
+
+      .toolbar label {
+        display: flex;
+        font-weight: 100;
+      }
+
+      .toolbar nav {
+        display: flex;
+        flex: 1;
+        justify-content: flex-end;
+      }
+
+      .toolbar nav button {
+        margin-left: .5vw;
+        cursor: pointer;
+      }
+
+      .toolbar .nav button.running {
+        cursor: wait;
+        background-color: rgba(255,255,255, .1);
+      }
+
+      .toolbar nav button.run {
+        position: relative;
+        background-color: green;
+        color: ghostwhite;
+        font-family: Arial;
+        font-weight: 100;
+        font-size: 16px;
+        border: 0;
+        padding: .35em 1.89em;
+        border-radius: 3px;
+        opacity: .8;
+        outline: none;
+      }
+
+      .toolbar button.run:hover:before {
+        content: 'shift+enter';
+        color: rgba(255,255,255,.2);
+        top: -3.5vh;
+        background-color: rgba(0,0,0,.2);
+        padding: .39em .89em;
+        margin-right: .5vw;
+        border: 0;
+        border-radius: 3px;
+        position: absolute;
+        right: -.19em;
+        font-weight: 100;
+        font-family: Helvetica, Arial;
+        outline: none;
+      }
+
+      .toolbar button.unittests {
+        opacity: .85;
+      }
+
+      .toolbar button.unittests:hover:before {
+        content: 'alt+enter';
+      }
+
+      #editor {
+        height: 100%;
+        border-top: 1px solid rgba(0,0,0, .25);
+        border-bottom: 1px solid rgba(0,0,0, .25);
+        padding-top: 6px;
+        overflow: hidden;
+      }
+
+      #included select {
+        font-family: Menlo, Monaco, "Courier New", monospace;
+        border: 0;
+        background-color: transparent;
+        color: #999;
+        font-size: 16px;
+        padding: 0;
+        margin: 0 0 0 -8px;
+        outline: none;
+      }
+
+      #included > div, #included > div:before {
+        font-size: 16px;
+        line-height: 18px;
+      }
+
+      #included > div, #included > select {
+        display: flex;
+        align-self: stretch;
+        counter-increment: linecount;
+        padding-left: 74px;
+        /* font-family: Menlo, Monaco, "Courier New", monospace; */
+        /* color: rgba(0,0,0,.75); */
+        opacity: .5;
+      }
+
+      #included > div:before, #included > select:before {
+        content: counter(linecount);
+        font-family: Menlo, Monaco, "Courier New", monospace;
+        width: 48px;
+        position: absolute;
+        left: 0;
+        text-align: right;
+      }
+
+      #included > div:first-of-type {
+        padding-top: 6px;
+      }
+
+      #included > div:last-of-type {
+        padding-bottom: 6px;
+      }
+
+      .hidden {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div id="included">
+        <div class="line">
+          <select id="source_import">
+            {{OPTIONS}}
+          </select>
+        </div>
+      </div>
+      <div id="editor"></div>
+    </main>
+    <footer>
+      <nav class="toolbar">
+        <label>Output in DevTools Console</label>
+        <nav>
+          <button class="hidden reset">&#9658; Reset</button>
+          <button class="hidden run unittests">&#9658; Run Test Suite</button>
+          <button class="run code">&#9658; Run</button>
+        </nav>
+      </nav>
+    </footer>
+    <script type="text/javascript">
+      require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.19.0/min/vs' } });
+
+      // Before loading vs/editor/editor.main, define a global MonacoEnvironment that overwrites
+      // the default worker url location (used when creating WebWorkers). The problem here is that
+      // HTML5 does not allow cross-domain web workers, so we need to proxy the instantiation of
+      // a web worker through a same-domain script
+      window.MonacoEnvironment = {
+        getWorkerUrl: function (workerId, label) {
+          return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
+            self.MonacoEnvironment = {
+              baseUrl: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.19.0/min/'
+            };
+            importScripts('https://cdn.jsdelivr.net/npm/monaco-editor@0.19.0/min/vs/base/worker/workerMain.js');`
+          )}`;
+        }
+      };
+
+      require(["vs/editor/editor.main"], function () {
+        const offset = document.querySelectorAll('#included > div').length
+        const ide = monaco.editor.create(document.getElementById("editor"), {
+          value: `// Edit this code (saved in localStorage automatically)\n// console.log(example)\nconsole.log(example.env)\nconsole.log(example.add(1,2,3,4,5))\nconsole.log(example.avg(1,2,3,4,5))`,
+          language: "javascript",
+          fontFamily: '"Fira Code", Menlo, Monaco, "Courier New", monospace',
+          fontSize: '16px',
+          lineNumbers: line => {
+            line += offset
+            return line
+          },
+          theme: 'vs-dark'
+        })
+
+        ide.getModel().updateOptions({ tabSize: 2 })
+        // ide.setTheme('dark')
+
+        ide.addAction({
+          // An unique identifier of the contributed action.
+          id: 'execute-script',
+
+          // A label of the action that will be presented to the user.
+          label: 'Execute Code',
+
+          // An optional array of keybindings for the action.
+          keybindings: [
+            monaco.KeyMod.Shift | monaco.KeyCode.Enter,
+          ],
+
+          // Method that will be executed when the action is triggered.
+          // @param editor The editor instance is passed in as a convinience
+          run: () => window.run()
+        })
+
+        ide.addAction({
+          // An unique identifier of the contributed action.
+          id: 'execute-suite',
+
+          // A label of the action that will be presented to the user.
+          label: 'Execute Test Suite',
+
+          // An optional array of keybindings for the action.
+          keybindings: [
+            monaco.KeyMod.Alt | monaco.KeyCode.Enter,
+          ],
+
+          // Method that will be executed when the action is triggered.
+          // @param editor The editor instance is passed in as a convinience
+          run: () => window.runUnitTests()
+        })
+
+        ide.onDidChangeModelContent(event => localStorage.setItem('test_code', ide.getValue()))
+
+        const section = document.querySelector('#console section') 
+        const output = document.querySelector('#console .output')
+        let executionCount = 0
+        
+        window.loadScript = (script, fn) => {
+          // console.log(`Loading ${script}`)
+          let el = document.createElement('script')
+          el.onload = () => fn()
+          el.setAttribute('data-userscript', true)
+          el.setAttribute('src', script)
+          el.setAttribute('type', 'text/javascript')
+          document.head.appendChild(el)
+        }
+
+        window.clearScripts = () => Array.from(document.querySelectorAll('script[data-userscript]')).forEach(el => el.parentNode.removeChild(el))
+
+        window.run = function () {
+          executionCount++
+          window.localize = false
+
+          Function(`import(document.getElementById('source_import').value).then(__{{NAMESPACE}}__ => {
+            let {{NAMESPACE}} = __{{NAMESPACE}}__.default
+            if ({{NAMESPACE}} === undefined) {
+              window.localize = true
+            } else {
+              ${ide.getValue()}
+            }
+          }).catch(e => {
+            const msg = new String(e.stack.toString())
+            console.warn('Original Error:\\n' + msg)
+            throw e
+          })`)()
+
+          setTimeout(() => {
+            let src = document.getElementById('source_import').value
+            
+            if (window.localize) {
+              if (window.__change_script__) {
+                window.clearScripts()
+                window.loadScript(src, Function(ide.getValue()))
+              } else {
+                let exists = Array.from(document.querySelectorAll('script[data-userscript')).filter(el => el.getAttribute('src') === src) > 0
+
+                if (!exists) {
+                  window.loadScript(src, Function(ide.getValue()))
+                } else {
+                  Function(ide.getValue())()
+                }
+              }
+            }
+          }, 150)
+        }
+
+        let code = localStorage.getItem('test_code')
+        let imp = localStorage.getItem('test_import')
+
+        if (code !== null) {
+          ide.setValue(code)
+        }
+
+        if (imp !== null) {
+          let el = document.querySelector(`#source_import option[value='${imp}']`)
+
+          if (el) {
+            el.setAttribute('selected', true)
+          }
+        }
+
+        document.querySelector('button.run.code').addEventListener('click', window.run)
+        document.querySelector('#source_import').addEventListener('change', e => {
+          let item = localStorage.getItem('test_import')
+          let selectedItem = document.getElementById('source_import').value
+
+          window.__change_script__ = false
+       
+          if (selectedItem !== item) {
+            window.__change_script__ = true
+            localStorage.setItem('test_import', selectedItem)
+          }
+        })
+      })
+    
+      let ___unitTestCode___
+      fetch('./browser-test.js')
+        .then(r => r.text())
+        .then(code => {
+          ___unitTestCode___ = code
+          // Enable the unit test button
+          testBtn.classList.remove('hidden')
+          testBtn.addEventListener('click', window.runUnitTests)
+        })
+        .catch(e => console.error(e))
+
+        window.__change_script__ = false
+
+        let testBtn = document.querySelector('button.unittests')
+        window.runUnitTests = () => {
+          clearScripts()
+          testBtn.classList.add('running')
+          loadScript('./bundle.js', () => {
+            Function(___unitTestCode___)()
+            testBtn.classList.remove('running')
+          })
+        }
+    </script>
+</body>
+</html>

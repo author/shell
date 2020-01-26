@@ -6,4 +6,5 @@ const all = {
   Shell
 }
 
-export { all as default, Command, Shell }
+export default Object.assign({}, { Command, Shell })
+export { Command, Shell }

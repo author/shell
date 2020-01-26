@@ -3,7 +3,14 @@
 !.github
 !.gitignore
 !.npmignore
+!.dockerignore
+!.browserlistrc
+!.eslintrc
 node_modules
 test/output/**/*
 /**/*.old
-examples/**/.*
+test/package-lock.json
+build/package-lock.json
+*.cast
+*.tar.gz
+_BACKUP

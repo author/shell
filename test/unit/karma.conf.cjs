@@ -1,9 +1,8 @@
 // Karma configuration
-// Generated on Sat Jan 04 2020 10:43:10 GMT-0600 (Central Standard Time)
 const fs = require('fs')
 const config = JSON.parse(fs.readFileSync('../build/config.json'))
 const pkg = JSON.parse(fs.readFileSync('../package.json'))
-const babelify = require('babelify')
+// const babelify = require('babelify')
 
 module.exports = function (config) {
   config.set({
@@ -27,24 +26,23 @@ module.exports = function (config) {
 
     // list of files / patterns to load in the browser
     files: [
-      { pattern: '.browser/*.js', included: true, served: true, type: 'module' },
-      { pattern: '.browser/*.js.map', included: false, served: true, type: 'js' },
-      { pattern: '.testsuite/test-prep.js', included: true, served: true, type: 'module' },
-      '.testsuite/browser-test.js'
+      { pattern: '../.browser/*.js', included: true, served: true, type: 'module' },
+      { pattern: '../.browser/*.js.map', included: false, served: true, type: 'js' },
+      '../.testsuite/browser-test.js'
       // { pattern: '.testsuite/*.js', included: true, nocache: true }
     ],
 
     // list of files to exclude
     exclude: [
-      '.browser/*-global.*',
-      '.browser/*-es*.*'
+      '../.browser/*-global.*',
+      '../.browser/*-es*.*'
     ],
 
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      '.browser/*.min.js': ['sourcemap'],
-      '.testsuite/browser-test.js': ['browserify']
+      '../.browser/*.min.js': ['sourcemap'],
+      '../.testsuite/browser-test.js': ['browserify']
     },
 
     // test results reporter to use
@@ -74,7 +72,7 @@ module.exports = function (config) {
 
     // level of logging
     // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
-    logLevel: config.LOG_WARN,
+    logLevel: config.LOG_ERROR,
 
     // enable / disable watching file and executing tests whenever any file changes
     // autoWatch: true,

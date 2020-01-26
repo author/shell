@@ -1,22 +1,24 @@
 {
-  "name": "shell-builder",
+  "name": "build",
   "version": "1.0.0",
-  "description": "Build the Shell library for different JavaScript runtimes.",
+  "description": "Build Utility",
+  "main": "index.js",
   "scripts": {
+    "test": "echo \"See the test directory for library testing utilities.\"",
     "test:node": "rollup -c rollup.test.node.config.js",
     "test:browser": "rollup -c rollup.test.browser.config.js",
-    "node": "rollup -c rollup.node.config.js && node node-package.js",
-    "browser": "rollup -c rollup.browser.config.js && node browser-package.js"
+    "all": "npm run clean && npm run browser && npm run node",
+    "node": "rollup -c rollup.node.config.js && node ./lib/node-package.js",
+    "browser": "rollup -c rollup.browser.config.js && node ./lib/browser-package.js",
+    "clean": "cd ../ && node ./build/lib/reset.js"
   },
-  "author": {
-    "name": "Ecor Ventures",
-    "url": "https://ecorventures.com"
-  },
-  "license": "BSD-3-Clause",
+  "author": "",
+  "private": true,
   "type": "module",
-  "devDependencies": {},
+  "engines": {
+    "node": ">=12.0.0"
+  },
   "dependencies": {
-    "@author.io/arg": "^1.0.3",
     "@author.io/metadoc": "0.1.2",
     "@author.io/metadoc-api": "1.1.0",
     "@author.io/metadoc-md": "0.0.5",
@@ -26,19 +28,14 @@
     "@babel/plugin-proposal-private-methods": "^7.7.4",
     "@babel/plugin-transform-flow-strip-types": "^7.7.4",
     "@babel/preset-env": "^7.7.7",
-    "babel-eslint": "^10.0.3",
-    "browserify-istanbul": "3.0.1",
+    "@rollup/plugin-multi-entry": "^3.0.0",
     "browserslist": "^4.8.2",
-    "localenvironment": "1.0.2",
     "rollup": "^1.27.13",
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-replace": "^2.2.0",
     "rollup-plugin-strip-code": "^0.2.7",
     "rollup-plugin-terser": "^5.1.3",
+    "shortbus": "1.2.8",
     "source-map-support": "^0.5.16"
-  },
-  "engines": {
-    "node": ">=12.13.1"
-  },
-  "private": true
+  }
 }

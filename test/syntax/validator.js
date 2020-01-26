@@ -7,10 +7,10 @@ import standard from 'standard'
 // Configure argument parser
 Args.configure({
   source: {
-    default: path.join(process.cwd(), './**/*.js')
+    default: path.join(process.cwd(), '../unit/**/*.js')
   },
   config: {
-    default: path.join(process.cwd(), './package.json')
+    default: path.join(process.cwd(), '../package.json')
   },
   parser: {
     default: ''
@@ -29,7 +29,7 @@ let scanFile = false
 if (scanpath.indexOf('*') === -1) {
   const stat = fs.statSync(scanpath)
   if (stat.isDirectory()) {
-    scanpath = path.join(scanpath, '**/*.js')
+    scanpath = path.join(scanpath, '../unit/**/*.js')
   } else if (!stat.isFile) {
     throw new Error(`Cannot find or process "${scanpath}"`)
   } else {

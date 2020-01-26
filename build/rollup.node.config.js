@@ -1,7 +1,7 @@
 import path from 'path'
 import fs from 'fs'
-import config from './config.js'
-import NgnPlugin from './rollup-plugin-ngn.js'
+import config from './lib/config.js'
+import Build from './lib/build.js'
 import { terser } from 'rollup-plugin-terser'
 import babel from 'rollup-plugin-babel'
 
@@ -9,11 +9,11 @@ import babel from 'rollup-plugin-babel'
 import { install } from 'source-map-support'
 install()
 
-// Identify source file
-const input = path.resolve('../src/main.js')
+// Add custom functionality
+const build = new Build()
 
-// Add NGN rollup support
-const ngn = new NgnPlugin()
+// Identify source file
+const input = path.resolve(`../${build.pkg.main||'../src/index.js'}`)
 
 // Configure metadata for the build process.
 const rootdir = config.nodeOutput // Main output directory
@@ -23,40 +23,34 @@ let configuration = [] // Rollup Configurations
 // 1. Clean prior builds
 fs.rmdirSync(rootdir, { recursive: true })
 
+let terserCfg = config.terser
+terserCfg.module = true
+terserCfg.mangle = { properties: true }
+// terser.compress.ecma = 6
+
 // Identify plugins
 const plugins = [
-  ngn.only('node'),
-  ngn.applyVersion(ngn.version),
+  build.only('node'),
+  build.applyVersion(build.version),
   babel({
     presets: [['@babel/preset-env', { targets: { node: true } }]],
     plugins: [
-      ['@babel/plugin-proposal-class-properties', { 'loose': false }],
-      ['@babel/plugin-proposal-private-methods', { 'loose': false }]
+      ['@babel/plugin-proposal-class-properties', { loose: false }],
+      ['@babel/plugin-proposal-private-methods', { loose: false }]
     ],
     externalHelpersWhitelist: ['classPrivateFieldSet', 'classPrivateFieldGet', 'classPrivateMethods']
   }),
-  terser({
-    module: true,
-    mangle: {
-      properties: true
-    },
-    compress: {
-      drop_console: true,
-      passes: 8,
-      warnings: true,
-      ecma: 6
-    }
-  })
+  terser(terserCfg)
 ]
 
 // 2. Build Node Production Package: Standard (Minified/Munged)
-outdir += '/node-ngn'
+outdir += `/node-${build.name}`
 configuration.push({
   input,
   plugins,
   output: {
-    // banner: config.banner,
-    file: `${outdir}/${ngn.name}-${ngn.version}.min.js`,
+    banner: config.banner,
+    file: `${outdir}/${build.name}-${build.version}.min.js`,
     format: 'esm',
     sourcemap: true
   },
@@ -68,8 +62,8 @@ configuration.push({
   input,
   plugins,
   output: {
-    // banner: config.banner,
-    file: `${outdir}-legacy/${ngn.name}-${ngn.version}.min.js`,
+    banner: config.banner,
+    file: `${outdir}-legacy/${build.name}-${build.version}.min.js`,
     format: 'cjs',
     sourcemap: true
   },
