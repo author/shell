@@ -1,3 +1,5 @@
+PLEASE NOTE: We're working on the [build process](https://github.com/author/template-cross-runtime) for this. The current version on npm is failing due to a bad build. Should be updated this week.
+
 # @author.io/shell
 
 This is a super-lightweight framework for building text-based programs, like [CLI](https://en.wikipedia.org/wiki/Command-line_interface) applications.
