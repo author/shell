@@ -1,6 +1,5 @@
-# @author.io/shell
+# @author.io/shell ![Version](https://img.shields.io/github/v/tag/author/shell?label=Latest&style=for-the-badge)
 
-![Version](https://img.shields.io/github/v/tag/author/shell?label=Latest&style=for-the-badge)
 ![Build Status](https://travis-ci.org/author/shell.svg?branch=master) using the  [cross-runtime template](https://github.com/author/template-cross-runtime).
 
 This is a super-lightweight framework for building text-based programs, like [CLI](https://en.wikipedia.org/wiki/Command-line_interface) applications.
