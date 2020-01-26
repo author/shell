@@ -6,3 +6,6 @@ node_js:
 
 before_script:
   - cd ./test && npm install && cd ../
+
+script:
+  - npm run test:node
