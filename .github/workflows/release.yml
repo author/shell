@@ -34,4 +34,4 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish
         run: |
-          for d in .dist/*/*/ ; do cd ${d%%/} && npm publish; done;
+          for d in ${PWD}/.dist/*/*/ ; do cd ${d%%} && npm publish --access=public; done;

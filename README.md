@@ -2,6 +2,8 @@ PLEASE NOTE: We're working on the [build process](https://github.com/author/temp
 
 # @author.io/shell
 
+![Build Status](https://travis-ci.org/author/shell.svg?branch=master) ![Version](https://img.shields.io/github/v/tag/author/shell?label=Latest&style=for-the-badge)
+
 This is a super-lightweight framework for building text-based programs, like [CLI](https://en.wikipedia.org/wiki/Command-line_interface) applications.
 
 ## Uses
