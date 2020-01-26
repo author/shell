@@ -5,11 +5,7 @@ node_js:
 - 'latest'
 
 install:
-  - cd ./build 
-  - npm install
-  - cd ../test
-  - npm install
-  - cd ../
+  - npm run setup
 
 script:
   - npm run test:node
