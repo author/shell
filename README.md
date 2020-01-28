@@ -29,13 +29,15 @@ Sometimes single purpose tools grow into multipurpose tools over time. Tools whi
 
 ## Installation & Usage
 
-**npm**
+### For Node
 
 `npm install @author.io/node-shell`
 
 Please note, you'll need a verison of Node that support ESM Modules. In Node 12, this feature is behind the `--experimental-modules` flag. It is available in Node 13+ without a flag, but your `package.json` file must have the `"type": "module"` attribute.
 
 If you need to use the older CommonJS format (i.e. `require`), run `npm install @author.io/node-shell-legacy` instead.
+
+### For Browsers
 
 **CDN**
 
@@ -45,7 +47,19 @@ import { Shell, Command } from 'https://cdn.pika.dev/@author.io/browser-shell/v1
 
 Also available from [jsdelivr](https://www.jsdelivr.com/?query=%40author.io%2Fshell) and [unpkg](https://unpkg.com/@author.io/browser-shell).
 
-### Basic Examples
+**npm options**
+
+If you wish to bundle this library in your build process, use the version most appropriate to your target runtimes:
+
+- `npm install @author/shell` (source)
+- `npm install @author/browser-shell` (Minified ES Module)
+- `npm install @author/browser-shell-es6` (IIFE Minified Module - globally accessible)
+
+### Debugging
+
+Each distribution has a corresponding `-debug` version that should be installed _alongside_
+
+## Basic Examples
 
 There is a complete working example of a CLI app (with a mini tutorial) in the examples directory.
 
