@@ -16,7 +16,7 @@ jobs:
       - name: Tag
         id: autotagger
         uses: butlerlogic/action-autotag@master
-        with:
+        env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
     
         # The remaining steps all depend on whether or not
