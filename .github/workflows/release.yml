@@ -63,7 +63,7 @@ jobs:
         with:
           files: './.dist/**/*.tar.gz'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          release-tag: steps.autotagger.outputs.tagname
+          release-tag: ${{ steps.autotagger.outputs.tagname }}
 
         # Use this action to publish a single module to npm.
       - name: Publish
@@ -79,6 +79,6 @@ jobs:
         if: failure() && steps.create_release.outputs.id != ''
         uses: author/action-rollback@stable
         with:
-          id: ${{ steps.create_release.id }}
+          tag: ${{ steps.autotagger.outputs.tagname }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
