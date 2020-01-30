@@ -47,6 +47,7 @@ jobs:
           prerelease: env.IS_PRERELEASE != ''
 
       - uses: actions/setup-node@v1
+        if: steps.autotagger.outputs.tagname != ''
         with:
           node-version: '13'
 
