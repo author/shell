@@ -15,8 +15,8 @@ jobs:
         # If the version has changed, create a new git tag for it.
       - name: Tag
         id: autotagger
-        uses: butlerlogic/action-autotag@stable
-        env:
+        uses: butlerlogic/action-autotag@master
+        with:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
     
         # The remaining steps all depend on whether or not
