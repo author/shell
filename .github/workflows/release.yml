@@ -16,7 +16,7 @@ jobs:
       - name: Tag
         id: autotagger
         uses: butlerlogic/action-autotag@stable
-        with:
+        env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
     
         # The remaining steps all depend on whether or not
@@ -40,21 +40,21 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: steps.autotagger.outputs.tagname
-          release_name: steps.autotagger.outputs.tagname
-          body: steps.autotagger.outputs.tagmessage
+          tag_name: ${{ steps.autotagger.outputs.tagname }}
+          release_name: ${{ steps.autotagger.outputs.tagname }}
+          body: ${{ steps.autotagger.outputs.tagmessage }}
           draft: false
           prerelease: env.IS_PRERELEASE != ''
 
       - uses: actions/setup-node@v1
-        if: steps.autotagger.outputs.tagname != ''
+        if: steps.create_release.outputs.id != ''
         with:
           node-version: '13'
 
         # Build tarballs of the module code.
       - name: Build Release Artifacts
         id: build
-        if: steps.autotagger.outputs.tagname != ''
+        if: steps.create_release.outputs.id != ''
         run: |
           cd ./build && npm install && cd ../
           npm run build --if-present
@@ -64,7 +64,7 @@ jobs:
         # Upload tarballs to the release.
       - name: Upload Release Artifacts
         uses: AButler/upload-release-assets@v2.0
-        if: steps.autotagger.outputs.tagname != ''
+        if: steps.create_release.outputs.id != ''
         with:
           files: './.dist/**/*.tar.gz'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
