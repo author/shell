@@ -46,6 +46,10 @@ jobs:
           draft: false
           prerelease: env.IS_PRERELEASE != ''
 
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '13'
+
         # Build tarballs of the module code.
       - name: Build Release Artifacts
         id: build
