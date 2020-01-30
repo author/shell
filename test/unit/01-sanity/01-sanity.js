@@ -2,7 +2,16 @@ import 'source-map-support/register.js'
 import test from 'tape'
 import { Command, Shell } from '../../.node/index.js'
 
-test('Sanity Check', t => {
+test('Sanity Check - Shell', t => {
+  const shell = new Shell({
+    name: 'test'
+  })
+
+  t.ok(shell instanceof Shell, 'Basic shell instantiates correctly.')
+  t.end()
+})
+
+test('Sanity Check - Command', t => {
   const mirror = new Command({
     name: 'mirror',
     description: 'Search metadoc for all the things.',
@@ -43,6 +52,6 @@ test('Sanity Check', t => {
     ]
   })
 
-  t.ok(CLI instanceof Shell, 'Shell initialized successfully.')
+  t.ok(CLI instanceof Shell, 'Shell initialized with commands successfully.')
   t.end()
 })
