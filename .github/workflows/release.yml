@@ -71,5 +71,14 @@ jobs:
         if: steps.autotagger.outputs.tagname != ''
         uses: author/action-publish@stable
         with:
-          scan: './.dist'
-          token: ${{ secrets.REGISTRY_TOKEN }}
+          scan: .dist
+        env: 
+          REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
+
+      - name: Rollback Release
+        if: failure() && steps.create_release.outputs.id != ''
+        uses: author/action-rollback@stable
+        with:
+          id: ${{ steps.create_release.id }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
