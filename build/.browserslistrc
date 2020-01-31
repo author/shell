@@ -1,0 +1,15 @@
+[es6]
+not dead
+Edge 17
+iOS 12
+Samsung 9
+Chrome 61
+Safari 12
+Firefox 49
+
+[current]
+last 2 major versions
+not ie < 12
+not ie_mob < 12
+not < 0.3%
+not dead
