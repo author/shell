@@ -75,7 +75,7 @@ jobs:
       - name: Publish
         id: publish
         if: steps.autotagger.outputs.tagname != ''
-        uses: author/action-publish@stable
+        uses: author/action-publish@master
         with:
           scan: ".dist/node, .dist/browsers"
         env: 
