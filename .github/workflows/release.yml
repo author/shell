@@ -57,8 +57,6 @@ jobs:
         if: steps.create_release.outputs.id != ''
         run: |
           npm install
-          ls -l
-          ls -l node_modules/@author.io/*
           cd ./build && npm install && cd ../
           npm run build --if-present
           for d in .dist/*/*/ ; do tar -cvzf ${d%%/}-x.x.x.tar.gz ${d%%}*; done;
@@ -79,7 +77,7 @@ jobs:
         if: steps.autotagger.outputs.tagname != ''
         uses: author/action-publish@stable
         with:
-          scan: .dist
+          scan: ".dist/node, .dist/browsers"
         env: 
           REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
 
