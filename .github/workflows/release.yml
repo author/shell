@@ -61,8 +61,7 @@ jobs:
           npm run build --if-present
           for d in .dist/*/*/ ; do tar -cvzf ${d%%/}-x.x.x.tar.gz ${d%%}*; done;
           if [[ ${{ github.ref }} == *"-"* ]]; then echo ::set-output isprerelease=true;else echo ::set-output isprerelease=false;fi
-          echo $PWD
-          ls -l /home/runner/work/shell
+
         # Upload tarballs to the release.
       - name: Upload Release Artifacts
         uses: AButler/upload-release-assets@v2.0
