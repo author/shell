@@ -17,7 +17,7 @@ jobs:
         id: autotagger
         uses: butlerlogic/action-autotag@master
         env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
         # The remaining steps all depend on whether or not
         # a new tag was created. There is no need to release/publish 
