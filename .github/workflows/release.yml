@@ -73,7 +73,7 @@ jobs:
 
         # Use this action to publish a single module to npm.
       - name: Publish
-        id: publish
+        id: publish_npm
         if: steps.autotagger.outputs.tagname != ''
         uses: author/action-publish@master
         with:
