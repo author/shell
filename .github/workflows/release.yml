@@ -58,7 +58,7 @@ jobs:
         run: |
           npm install
           ls -l
-          ls -l node_modules/@author/
+          ls -l node_modules/@author.io/*
           cd ./build && npm install && cd ../
           npm run build --if-present
           for d in .dist/*/*/ ; do tar -cvzf ${d%%/}-x.x.x.tar.gz ${d%%}*; done;
