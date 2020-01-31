@@ -25,9 +25,6 @@ export default class Shell {
 
   constructor (cfg = { maxhistory: 100 }) {
     this.#name = cfg.name || 'unknown'
-    /* node-only */
-    if
-    /* end-node-only */
     this.#description = cfg.description || null
     this.#version = cfg.version || '1.0.0'
     this.#maxHistoryItems = cfg.maxhistory || 100
