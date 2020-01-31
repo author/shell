@@ -59,7 +59,7 @@ jobs:
           npm install
           cd ./build && npm install && cd ../
           npm run build --if-present
-          for d in .dist/*/*/ ; do tar -cvzf ${d%%/}-x.x.x.tar.gz ${d%%}*; done;
+          for d in .dist/*/*/ ; do tar -cvzf ${d%%/}-${{ steps.autotagger.outputs.version }}.tar.gz ${d%%}*; done;
           if [[ ${{ github.ref }} == *"-"* ]]; then echo ::set-output isprerelease=true;else echo ::set-output isprerelease=false;fi
 
         # Upload tarballs to the release.
@@ -71,13 +71,22 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           release-tag: ${{ steps.autotagger.outputs.tagname }}
 
+        # Build npm packages
+      - name: Build Module Artifacts
+        id: build
+        if: steps.create_release.outputs.id != ''
+        run: |
+          npm install
+          cd ./build && npm install && cd ../
+          npm run build --if-present
+
         # Use this action to publish a single module to npm.
       - name: Publish
         id: publish_npm
         if: steps.autotagger.outputs.tagname != ''
         uses: author/action-publish@master
         with:
-          scan: "./.dist"
+          scan: .dist
         env: 
           REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
 
