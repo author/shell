@@ -56,6 +56,8 @@ jobs:
         id: build
         if: steps.create_release.outputs.id != ''
         run: |
+          ls -l
+          ls -l node_modules/@author/
           cd ./build && npm install && cd ../
           npm run build --if-present
           for d in .dist/*/*/ ; do tar -cvzf ${d%%/}-x.x.x.tar.gz ${d%%}*; done;
