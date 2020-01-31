@@ -53,7 +53,7 @@ jobs:
 
         # Build tarballs of the module code.
       - name: Build Release Artifacts
-        id: build
+        id: build_release
         if: steps.create_release.outputs.id != ''
         run: |
           npm install
@@ -73,7 +73,7 @@ jobs:
 
         # Build npm packages
       - name: Build Module Artifacts
-        id: build
+        id: build_npm
         if: steps.create_release.outputs.id != ''
         run: |
           npm install
