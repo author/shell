@@ -8,7 +8,7 @@
     "compress": {
       "keep_fnames": true,
       "keep_classnames": true,
-      "drop_console": true,
+      "drop_console": false,
       "passes": 10,
       "warnings": true
     }

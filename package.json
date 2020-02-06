@@ -1,6 +1,6 @@
 {
   "name": "@author.io/shell",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "A micro-framework for creating CLI-like experiences. This supports Node.js and browsers.",
   "main": "src/index.js",
   "scripts": {
@@ -50,6 +50,6 @@
     ]
   },
   "dependencies": {
-    "@author.io/arg": "^1.1.0"
+    "@author.io/arg": "^1.1.1"
   }
 }
