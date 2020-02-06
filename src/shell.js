@@ -302,6 +302,6 @@ export default class Shell {
       return Command.stderr('Command not found.')
     }
 
-    return await Command.reply(processor.run(args, callback))
+    return await Command.reply(await processor.run(args, callback))
   }
 }

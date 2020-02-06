@@ -65,19 +65,19 @@ export default class Command {
       this.#flagConfig = cfg.flags
     }
 
-    if (cfg.hasOwnProperty('autohelp')) {
+    if (typeof cfg.autohelp === 'boolean') {
       this.#autohelp = cfg.autohelp
     }
 
-    if (cfg.hasOwnProperty('defaultMethod')) {
+    if (typeof cfg.defaultMethod === 'function') {
       this.defaultMethod = cfg.defaultMethod
     }
 
-    if (cfg.commands) {
+    if (Array.isArray(cfg.commands)) {
       cfg.commands.forEach(cmd => this.add(cmd))
     }
 
-    if (cfg.subcommands) {
+    if (Array.isArray(cfg.subcommands)) {
       cfg.subcommands.forEach(cmd => this.add(cmd))
     }
   }
@@ -391,8 +391,8 @@ export default class Command {
     if (recognized.help) {
       data.help.message = this.help
     }
-
-    delete recognized.help
+console.log(recognized)
+    // delete recognized.help
 
     let fn = this.#fn || this.#defaultMethod
 
@@ -434,16 +434,22 @@ export default class Command {
       }
 
       const processor = this.#processors.get(subcommand)
-     
-      if (this.#autohelp && recognized.help && processor) {
-        return console.log(processor.help)
+
+      if (this.#autohelp) {
+        if (recognized.help) {
+          if (processor) {
+            return console.log(processor.help)
+          } else {
+            return console.log(this.help)
+          }
+        }
       }
 
       if (!processor) {
-        throw new Error(`${this.$name} "${cmd}" command not found.`)
+        throw new Error(`${this.#name} "${cmd}" command not found.`)
       }
 
-      return Command.reply(processor.run(args, callback))
+      return Command.reply(await processor.run(args, callback))
     }
 
     // No subcommand was recognized
