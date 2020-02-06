@@ -2,7 +2,7 @@
 
 import fs from 'fs'
 import path from 'path'
-import { Command, Shell } from '../../index.js'
+import { Command, Shell } from '../../src/index.js'
 
 const pkg = JSON.parse(fs.readFileSync('./package.json'))
 

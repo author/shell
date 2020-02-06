@@ -40,7 +40,7 @@ export default class Shell {
       this.defaultMethod = cfg.defaultMethod
     }
 
-    if (cfg.commands) {
+    if (Array.isArray(cfg.commands)) {
       cfg.commands.forEach(cmd => this.add(cmd))
     }
   }
