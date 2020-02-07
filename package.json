@@ -50,6 +50,6 @@
     ]
   },
   "dependencies": {
-    "@author.io/arg": "^1.1.1"
+    "@author.io/arg": "^1.2.0"
   }
 }
