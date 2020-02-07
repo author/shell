@@ -391,8 +391,8 @@ export default class Command {
     if (recognized.help) {
       data.help.message = this.help
     }
-console.log(recognized)
-    // delete recognized.help
+
+    delete recognized.help
 
     let fn = this.#fn || this.#defaultMethod
 
@@ -436,7 +436,7 @@ console.log(recognized)
       const processor = this.#processors.get(subcommand)
 
       if (this.#autohelp) {
-        if (recognized.help) {
+        if (data.help.requested) {
           if (processor) {
             return console.log(processor.help)
           } else {
