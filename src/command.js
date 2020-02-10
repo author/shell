@@ -80,6 +80,30 @@ export default class Command {
     if (Array.isArray(cfg.subcommands)) {
       cfg.subcommands.forEach(cmd => this.add(cmd))
     }
+
+    const attributes = new Set([
+      'commands',
+      'subcommands',
+      'defaultMethod',
+      'autohelp',
+      'flags',
+      'alias',
+      'aliases',
+      'tabWidth',
+      'tableWidth',
+      'description',
+      'help',
+      'usage',
+      'pattern',
+      'name',
+      'handler'
+    ])
+
+    const unrecognized = Object.keys(cfg).filter(attribute => !attributes.has(attribute))
+
+    if (unrecognized.length > 0) {
+      throw new Error(`Unrecognized shell configuration attribute(s): ${unrecognized.join(', ')}`)
+    }
   }
 
   set tableWidth(value) {
@@ -406,8 +430,8 @@ export default class Command {
       if (!subcommand) {
         for (const [name, id] of this.#subcommands) {
           const subcmd = this.#processors.get(id)
-          
-          if (subcmd.aliases.indexOf(cmd)) {
+         
+          if (subcmd.aliases.indexOf(cmd)) {            
             subcommand = subcmd
             break
           }
