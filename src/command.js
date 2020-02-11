@@ -420,6 +420,23 @@ export default class Command {
 
     let fn = this.#fn || this.#defaultMethod
 
+    Object.defineProperty(data, 'flag', {
+      enumerable: true,
+      configurable: false,
+      writable: false,
+      value: name => {
+        if (data.flags.recognized.hasOwnProperty(name)) {
+          return data.flags.recognized[name]
+        }
+
+        if (data.flags.unrecognized.indexOf(name) >= 0) {
+          return name
+        }
+
+        return undefined
+      }
+    })
+
     // A possible subcommand was input
     if (parsed) {
       let cmd = parsed[1]

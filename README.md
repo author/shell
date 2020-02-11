@@ -103,7 +103,8 @@ const ListCommand = new Command({
     //     ]
     //   },
     //   valid: false,
-    //   violations: []
+    //   violations: [],
+    //   flag (name) { return String }
     // }
     console.log(data)
 
@@ -164,3 +165,66 @@ console.log(shell.help)
 console.log(shell.usage)
 console.log(shell.description)
 ```
+
+## Custom Handlers
+
+Each command has a handler function, which is responsible for doing something. This command receives a reference to the parsed flags.
+
+```json
+{
+  command: 'commandname',
+  input: 'whatever user typed after "commandname"',
+  flags: {
+    recognized: {}, 
+    unrecognized: [
+      'whatever',
+      'user',
+      'typed'
+    ]
+  },
+  flag (name) { return String },
+  valid: false,
+  violations: []
+}
+```
+
+- **command** is the command name.
+- **input** is the string typed in after the command (flags)
+- **flags** contains the parsed flags from the [@author.io/arg](https://github.com/author/arg) library.
+- **`flag()`** is a special method for retrieving the value of any flag (recognized or unrecognized). See below.
+- **valid** indicates whether the input conforms to the parsing rules.
+- **violations** is an array of strings, where each string represents a violation of the parsing rules.
+
+_The `flag()` method_ is a shortcut to help developers create more maintainable and understandable code. Consider the following example that does **not** use the flag method:
+
+```javascript
+const cmd = new Command({
+  name: 'demo',
+  flags: {
+    a: { type: String },
+    b: { type: String }
+  },
+  handler: metadata => {
+    console.log(`A is "${metadata.flags.recognized.a}"`)
+    console.log(`B is "${metadata.flags.recognized.b}"`)
+  }
+})
+```
+
+Compare the example above to this cleaner version:
+
+```javascript
+const cmd = new Command({
+  name: 'demo',
+  flags: {
+    a: { type: String },
+    b: { type: String }
+  },
+  handler: metadata => {
+    console.log(`A is "${metadata.flag('a')}"`)
+    console.log(`B is "${metadata.flag('b')}"`)
+  }
+})
+```
+
+While the differences aren't extreme, it abstracts the need to know whether a flag is recognized or not (or even exists).
