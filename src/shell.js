@@ -233,26 +233,28 @@ export default class Shell {
     return this.#history[this.#cursor]
   }
 
-  add (command) {
-    if (typeof command === 'object' && !(command instanceof Command)) {
-      command = new Command(command)
-    }
+  add () {
+    for (let command of arguments) {
+      if (typeof command === 'object' && !(command instanceof Command)) {
+        command = new Command(command)
+      }
 
-    if (!(command instanceof Command)) {
-      throw new Error('Invalid argument. Only "Command" instances may be added to the processor.')
-    }
+      if (!(command instanceof Command)) {
+        throw new Error('Invalid argument. Only "Command" instances may be added to the processor.')
+      }
 
-    if (!command.hasCustomDefaultMethod) {
-      command.defaultMethod = this.#defaultMethod
-    }
-    
-    command.autohelp = this.#autohelp
-    command.shell = this
+      if (!command.hasCustomDefaultMethod) {
+        command.defaultMethod = this.#defaultMethod
+      }
+      
+      command.autohelp = this.#autohelp
+      command.shell = this
 
-    this.#processors.set(command.OID, command)
-    this.#commands.set(command.name, command.OID)
-    
-    command.aliases.forEach(alias => this.#commands.set(alias, command.OID))
+      this.#processors.set(command.OID, command)
+      this.#commands.set(command.name, command.OID)
+      
+      command.aliases.forEach(alias => this.#commands.set(alias, command.OID))
+    }
   }
 
   remove () {

@@ -239,9 +239,11 @@ export default class Command {
         let prefixLength = message.length + 2 + (this.#tabWidth*tabs)
         let dsc = new String(flag.description)
         const match = new RegExp(`(.{0,${this.#tableWidth-prefixLength}}[\\s\n])`, 'g')
-        
-        desc = flag.description.match(match)
-        desc.push(dsc.replace(desc.join(''), ''))
+
+        if (flag.description) {
+          desc = flag.description.match(match)
+          desc.push(dsc.replace(desc.join(''), ''))
+        }
 
         while (desc.length > 1 && desc[desc.length - 1].length + desc[desc.length - 2].length < (this.#tableWidth-prefixLength)) {
           desc[desc.length - 2] += desc.pop()
@@ -420,21 +422,36 @@ export default class Command {
 
     let fn = this.#fn || this.#defaultMethod
 
-    Object.defineProperty(data, 'flag', {
-      enumerable: true,
-      configurable: false,
-      writable: false,
-      value: name => {
-        if (data.flags.recognized.hasOwnProperty(name)) {
-          return data.flags.recognized[name]
-        }
+    Object.defineProperties(data, {
+      flag: {
+        enumerable: true,
+        configurable: false,
+        writable: false,
+        value: name => {
+          if (data.flags.recognized.hasOwnProperty(name)) {
+            return data.flags.recognized[name]
+          }
 
-        if (data.flags.unrecognized.indexOf(name) >= 0) {
-          return name
-        }
+          if (data.flags.unrecognized.indexOf(name) >= 0) {
+            return name
+          }
 
-        return undefined
+          return undefined
+        }
+      },
+      command: {
+        enumerable: true,
+        get: () => this
+      },
+      shell: {
+        enumerable: true,
+        get: () => this.shell
       }
+    })
+
+    Object.defineProperty(data.help, 'default', {
+      enumerable: true,
+      get: () => this.help
     })
 
     // A possible subcommand was input
