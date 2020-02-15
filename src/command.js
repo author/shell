@@ -1,5 +1,5 @@
 import { Parser } from '../node_modules/@author.io/arg/index.js'
-// import Shell from './shell.js'
+import Middleware from './middleware.js'
 
 const STRIP_EQUAL_SIGNS = /(\=+)(?=([^'"\\]*(\\.|['"]([^'"\\]*\\.)*[^'"\\]*['"]))*[^'"]*$)/g
 const SUBCOMMAND_PATTERN = /^([^"'][\S\b]+)[\s+]?([^-].*)$/i
@@ -20,6 +20,7 @@ export default class Command {
   #autohelp = true
   #parent = null
   #shell = null
+  #middleware = new Middleware()
   #tabWidth
   #tableWidth
   #hasCustomDefaultMethod = false
@@ -329,6 +330,10 @@ export default class Command {
     return this.#oid
   }
 
+  getCommand (name) {
+    return this.#subcommands.get(name)
+  }
+
   addFlag (name, cfg) {
     if (typeof name !== 'string') {
       throw new Error('Invalid flag name (should be a string).')
@@ -382,9 +387,40 @@ export default class Command {
     }
   }
 
-  async run (input, callback) {
-    const parsed = SUBCOMMAND_PATTERN.exec(input)
+  use () {
+    for (const arg of arguments) {
+      if (typeof arg !== 'function') {
+        throw new Error(`All "use()" arguments must be valid functions.\n${ arg.toString().substring(0, 50) } ${ arg.toString().length > 50 ? '...' : '' }`)
+      }
 
+      this.#middleware.use(arg)
+    }
+
+    this.#processors.forEach(subCmd => subCmd.use(...arguments))
+  }
+
+  deepParse (input) {
+    let meta = this.parse(input)
+
+    if (this.#subcommands.size === 0) {
+      return meta
+    }
+
+    if (meta.input.trim().length === 0) {
+      return meta
+    }
+
+    let args = meta.input.split(/\s+/)
+    let subcmd = this.#subcommands.get(args.shift())
+
+    if (!subcmd) {
+      return meta
+    }
+
+    return this.#processors.get(subcmd).deepParse(args.join(' '))
+  }
+
+  parse (input) {
     // Parse the command input for flags
     const data = { command: this.#name, input: input.trim() }
 
@@ -418,10 +454,6 @@ export default class Command {
       data.help.message = this.help
     }
 
-    delete recognized.help
-
-    let fn = this.#fn || this.#defaultMethod
-
     Object.defineProperties(data, {
       flag: {
         enumerable: true,
@@ -453,6 +485,16 @@ export default class Command {
       enumerable: true,
       get: () => this.help
     })
+
+    return data
+  }
+
+  async run (input, callback) {
+    let fn = this.#fn || this.#defaultMethod
+    let data = typeof input === 'string' ? this.parse(input) : input
+    const parsed = SUBCOMMAND_PATTERN.exec(input)
+
+    arguments[0] = this.deepParse(input)
 
     // A possible subcommand was input
     if (parsed) {
@@ -507,10 +549,22 @@ export default class Command {
         throw new Error(`${this.#name} "${cmd}" command not found.`)
       }
 
+      if (this.#middleware.size > 0) {
+        return this.#middleware.run(
+          ...arguments, 
+          async () => await Command.reply(await processor.run(args, callback)))
+      }
+
       return Command.reply(await processor.run(args, callback))
     }
 
     // No subcommand was recognized
+    if (this.#middleware.size > 0) {
+      return this.#middleware.run(
+        ...arguments, 
+        async () => await Command.reply(fn(data, callback)))
+    }
+
     return Command.reply(fn(data, callback))
   }
 

@@ -1,10 +1,13 @@
 import Command from './command.js'
+import Middleware from './middleware.js'
 
 const COMMAND_PATTERN = /^(\w+)\s+([\s\S]+)?/i
 
 export default class Shell {
   #processors = new Map()
   #commands = new Map()
+  #middleware = new Middleware()
+  #middlewareGroups = new Map()
   #history = []
   #maxHistoryItems
   #name
@@ -17,6 +20,15 @@ export default class Shell {
   #tabWidth
   #tableWidth
   #hasCustomDefaultMethod = false
+  #runtime = globalThis.hasOwnProperty('window')
+    ? 'browser' 
+    : (
+        globalThis.hasOwnProperty('process')
+        && globalThis.process.release 
+        && globalThis.process.release.name
+          ? globalThis.process.release.name
+          : 'unknown'
+      )
   #defaultMethod = data => {
     if (data.help && data.help.requested) {
       console.log(data.help.message)
@@ -257,6 +269,54 @@ export default class Shell {
     }
   }
 
+  getCommand (name=null) {
+    if (!name) {
+      return null
+    }
+
+    let names = name.split(/\s+/i)
+    let cmd = this.#commands.get(names.shift())
+    if (cmd) {
+      cmd = this.#processors.get(cmd)
+      for (const nm of names) {
+        cmd = cmd.getCommand(nm)
+      }
+    }
+
+    return cmd instanceof Command ? cmd : null
+  }
+
+  use () {
+    for (const arg of arguments) {
+      if (typeof arg !== 'function') {
+        throw new Error(`All "use()" arguments must be valid functions.\n${arg.toString().substring(0,50)}${arg.toString().length > 50 ? '...' : ''}`)
+      }
+
+      this.#middleware.use(arg)
+    }
+  }
+
+  useWith (commands) {
+    if (arguments.length < 2) {
+      throw new Error('useFor([\'command\', \'command\'], fn) requires two or more arguments.')
+    }
+
+    commands = typeof commands === 'string' ? commands.split(/\s+/) : commands
+    
+    if (!Array.isArray(commands) || commands.filter(c => typeof c !== 'string').length > 0) {
+      throw new Error(`The first argument of useWith must be a string or array of strings. Received ${typeof commands}`)
+    }
+
+    const fns = Array.from(arguments).slice(1)
+    commands.forEach(cmd => {
+      cmd = this.getCommand(cmd)
+      
+      if (cmd) {
+        cmd.use(...fns)
+      }
+    })
+  }
+
   remove () {
     for (const cmd of arguments) {
       if (typeof cmd === 'symbol') {
@@ -304,6 +364,14 @@ export default class Shell {
       return Command.stderr('Command not found.')
     }
 
-    return await Command.reply(await processor.run(args, callback))
+    if (this.#middleware.size === 0) {
+      return await Command.reply(await processor.run(args, callback))
+    }
+
+    arguments[0] = processor.deepParse(args)
+
+    return this.#middleware.run(
+      ...arguments, 
+      async () => await Command.reply(await processor.run(args)))
   }
 }
