@@ -445,6 +445,13 @@ export default class Command {
     data.flags = { recognized, unrecognized: parser.unrecognizedFlags }
     data.valid = parser.valid
     data.violations = parser.violations
+
+    data.parsed = {}
+    if (Object.keys(parser.data.flagSource).length > 0) {
+      for (const [key, src] of Object.entries(parser.data.flagSource)) {
+        data.parsed[src.name] = src.inputName
+      }
+    }
   
     data.help = {
       requested: recognized.help
@@ -460,15 +467,11 @@ export default class Command {
         configurable: false,
         writable: false,
         value: name => {
-          if (data.flags.recognized.hasOwnProperty(name)) {
-            return data.flags.recognized[name]
+          try {
+            return parser.data.flagSource[name].value
+          } catch (e) {
+            return undefined
           }
-
-          if (data.flags.unrecognized.indexOf(name) >= 0) {
-            return name
-          }
-
-          return undefined
         }
       },
       command: {
