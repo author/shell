@@ -57,7 +57,7 @@ If you wish to bundle this library in your build process, use the version most a
 
 ### Debugging
 
-Each distribution has a corresponding `-debug` version that should be installed _alongside_
+Each distribution has a corresponding `-debug` version that should be installed _alongside_ the main module (the debugging is an add-on module). For example, `npm install @author.io/node-shell-debug --save-dev` would install the debugging code for Node.
 
 ## Basic Examples
 
