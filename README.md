@@ -17,23 +17,29 @@ There are two types of text-based apps:
 1. **Multipurpose** (a shell for _multiple_ commands)
     Other tools do more than configure a script. Consider npm, which has several subcommands (like `install`, `uninstall`, `info`, etc). Subcommands often behave like their own single purpose tool, with their own unique flags, and even subcommands of their own. Docker is a good example of this, which has an entire series of management subcommands.
 
-#### Is this library overkill?
+#### Is this "framework" overkill?
 
-This framework is designed to support multipurpose CLI tools. At it's core, it provides a clean, easily-understood, repeatable organizational pattern for building maintainable multipurpose CLI applications.
+**tl;dr** Use this library to create multipurpose tools. Use [@author.io/arg](https://github.com/author/arg) to create single purpose tools.
 
-This framework provides a very minimal layer of overhead, which is a necessity for multipurpose tools. This overhead is unnecessary in single purpose tools. For single purpose commands, use the [@author.io/arg](https://github.com/author/arg) for flag parsing. `@author.io/arg` is embedded in this framework, making `@author.io/shell` _capable_ of creating single purpose tools, but unnecessary.
+This framework is designed to support multipurpose CLI tools. At the core, it provides a clean, easily-understood, repeatable pattern for building maintainable multipurpose CLI applications.
+
+Multipurpose tools require a layer of organizational overhead to help isolate different commands and features. This overhead is unnecessary in single purpose tools. Single purpose tools just need argument parsing, which the [@author.io/arg](https://github.com/author/arg) does very well. 
+
+`@author.io/arg` is embedded in this framework, making `@author.io/shell` _capable_ of creating single purpose tools, but it's a bit redundant.
 
 **Think about how your tooling evolves...**
 
-Sometimes single purpose tools grow into multipurpose tools over time. Tools which start out using the `@author.io/arg` library can easily be transitioned into multipurpose apps using `@author.io/shell`. After all, they use the same code, just nicely separated by purpose.
+Sometimes single purpose tools grow into multipurpose tools over time. Tools which start out using the `@author.io/arg` library be transitioned into multipurpose tools using `@author.io/shell`, with reasonable ease. After all, they use the same code, just nicely separated by purpose.
 
 ## Installation & Usage
 
-### For Node
+### For Node (ES Modules)
 
 `npm install @author.io/node-shell`
 
 Please note, you'll need a verison of Node that support ESM Modules. In Node 12, this feature is behind the `--experimental-modules` flag. It is available in Node 13+ without a flag, but your `package.json` file must have the `"type": "module"` attribute.
+
+### For Node (CommonJS/require)
 
 If you need to use the older CommonJS format (i.e. `require`), run `npm install @author.io/node-shell-legacy` instead.
 
@@ -49,7 +55,7 @@ Also available from [jsdelivr](https://www.jsdelivr.com/?query=%40author.io%2Fsh
 
 **npm options**
 
-If you wish to bundle this library in your build process, use the version most appropriate to your target runtimes:
+If you wish to bundle this library in your build process, use the version most appropriate for your target runtimes:
 
 - `npm install @author/shell` (source)
 - `npm install @author/browser-shell` (Minified ES Module)
@@ -221,10 +227,62 @@ const cmd = new Command({
     b: { type: String }
   },
   handler: metadata => {
-    console.log(`A is "${metadata.flag('a')}"`)
-    console.log(`B is "${metadata.flag('b')}"`)
+    console.log(`A is "${metadata.flag('a')}"`) // <-- Here
+    console.log(`B is "${metadata.flag('b')}"`) // <-- and here
   }
 })
 ```
 
 While the differences aren't extreme, it abstracts the need to know whether a flag is recognized or not (or even exists).
+
+## Middleware
+
+When a command is called, it's handler function is executed. Sometimes it is desirable to pre-process one or more commands. The shell middleware feature supports "global" middleware and "assigned" middleware.
+
+### Global Middleware
+
+This middleware is applied to all handlers, unilaterally. It is useful for catching syntax errors in commands, preprocessing data, and anything else you may want to do before the actual handler is executed.
+
+For example, the following middleware checks the input to determine if all of the appropriate flags have been set. If not, the violations are displayed and the handler is never run. If everything is correct, the `next()` method will continue processing.
+
+```javascript
+shell.use(function (metadata, next) {
+  if (!metadata.valid) {
+    metadata.violations.forEach(violation => console.log(violation))
+  } else {
+    next()
+  }
+})
+```
+
+No matter which command the user inputs, the global middleware methods are executed.
+
+### Assigned Middleware
+
+This middleware is assigned to one or more commands. For example:
+
+```javascript
+shell.useWith('demo', function (metadata, next) {
+  if (metadata.flag('a') === null) {
+    console.log('No "a" flag specified. This may slow down processing.')
+  }
+
+  next()
+})
+```
+
+The code above would only run when the user inputs the `demo` command (or subcommand).
+
+It is possible to assign middleware to more than one command at a time, and it is possible to target subcommands. For example:
+
+```javascript
+shell.useWith(['demo', 'command subcommand'], function (metadata, next) {
+  if (metadata.flag('a') === null) {
+    console.log('I hope you know what you are doing!')
+  }
+
+  next()
+})
+```
+
+Notice the array as the first argument of the `useWith` method. This middleware would be assigned to `demo` command, all `demo` subcommands, the `subcommand` of `command`, and all subcommands of `subcommand`. If this sounds confusing, just know that middleware is applied to commands, including nested commands.
