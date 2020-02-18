@@ -9,7 +9,7 @@ This is a super-lightweight framework for building text-based programs, like [CL
 There are two types of text-based apps:
 
 1. **Single Purpose** (_a_ command)
-    These are tools which may have multiple configuration options, but ultimately only do one thing. Examples include [node-tap](https://node-tap.org/), [mocha](https://mochajs.org/), [standard](https://standardjs.com/), prettier, etc.<br/><br/>
+    These are tools which may have multiple configuration options, but ultimately only do one thing. Examples include [node-tap](https://node-tap.org/), [mocha](https://mochajs.org/), [standard](https://standardjs.com/), prettier, etc.
 
     For example, node-tap can be run on a file, using syntax like `tap [options] [<files>]`. Ultimately, this utility serves one purpose. It just runs a configured tap process.
     <br/>
