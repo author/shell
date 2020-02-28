@@ -438,6 +438,7 @@ export default class Command {
     let source = input.replace(STRIP_EQUAL_SIGNS, '').trim() + ' '
     const flags = Array.from(FLAG_PATTERN[Symbol.matchAll](source), x => x[0])
     const parser = new Parser(flags, flagConfig)
+
     let recognized = parser.data
 
     parser.unrecognizedFlags.forEach(arg => delete recognized[arg])
