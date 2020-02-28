@@ -298,23 +298,18 @@ export default class Shell {
 
   useWith (commands) {
     if (arguments.length < 2) {
-      throw new Error('useFor([\'command\', \'command\'], fn) requires two or more arguments.')
+      throw new Error('useWith([\'command\', \'command\'], fn) requires two or more arguments.')
     }
 
     commands = typeof commands === 'string' ? commands.split(/\s+/) : commands
-    
+
     if (!Array.isArray(commands) || commands.filter(c => typeof c !== 'string').length > 0) {
       throw new Error(`The first argument of useWith must be a string or array of strings. Received ${typeof commands}`)
     }
 
     const fns = Array.from(arguments).slice(1)
-    commands.forEach(cmd => {
-      cmd = this.getCommand(cmd)
-      
-      if (cmd) {
-        cmd.use(...fns)
-      }
-    })
+
+    commands.forEach(cmd => this.#middlewareGroups.set(cmd, (this.#middlewareGroups.get(cmd) || []).concat(fns)))
   }
 
   remove () {
@@ -363,6 +358,18 @@ export default class Shell {
     if (!processor) {
       return Command.stderr('Command not found.')
     }
+
+    // Apply command-specific middleware (configured via useWith)
+    processor.commandroot.replace(new RegExp('^' + this.#name, 'i'), '')
+      .trim()
+      .split(/\s+/)
+      .reduce((cmdpath, name) => {
+        cmdpath.push(name)
+        const fns = this.#middlewareGroups.get(cmdpath.join(' '))
+        if (fns) {
+          processor.use(...fns)
+        }
+      }, [])
 
     if (this.#middleware.size === 0) {
       return await Command.reply(await processor.run(args, callback))

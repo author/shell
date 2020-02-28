@@ -525,11 +525,9 @@ export default class Command {
             if (this.#autohelp && data.help.requested) {
               console.log(this.help)
               resolve()
-            } else if (callback) {
-              fn(data, callback)
-              resolve()
             } else {
-              resolve(fn(data))
+              this.#middleware.use(fn)
+              resolve(() => this.#middleware.run(data, () => callback && callback()))
             }
           } catch (e) {
             reject(e)

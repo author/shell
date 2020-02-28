@@ -93,7 +93,7 @@ const ListCommand = new Command({
       single: true
     }
   },
-  handler (args, callback) {
+  handler (metadata, callback) {
     // ... this is where your command actually runs ...
     
     // Data comes from @author.io/arg lib. It looks like:
@@ -112,7 +112,10 @@ const ListCommand = new Command({
     //   violations: [],
     //   flag (name) { return String }
     // }
-    console.log(data)
+    console.log(metadata)
+
+    // A single flag's value can be retrieved with this helper method.
+    console.log(metadata.flag('l))
 
     // Execution callbacks are optional. If a callback is passed from the 
     // execution context to this handler, it will run after the command 
@@ -176,10 +179,10 @@ console.log(shell.description)
 
 Each command has a handler function, which is responsible for doing something. This command receives a reference to the parsed flags.
 
-```json
+```javascript
 {
-  command: 'commandname',
-  input: 'whatever user typed after "commandname"',
+  command: <Command>,
+  input: 'Raw string of flags/arguments passed to the command',
   flags: {
     recognized: {}, 
     unrecognized: [
@@ -188,7 +191,7 @@ Each command has a handler function, which is responsible for doing something. T
       'typed'
     ]
   },
-  flag (name) { return String },
+  flag (name) { return <Value> },
   valid: false,
   violations: []
 }
@@ -271,7 +274,7 @@ shell.useWith('demo', function (metadata, next) {
 })
 ```
 
-The code above would only run when the user inputs the `demo` command (or subcommand).
+The code above would only run when the user inputs the `demo` command (or and `demo` subcommand).
 
 It is possible to assign middleware to more than one command at a time, and it is possible to target subcommands. For example:
 
