@@ -336,7 +336,11 @@ export default class Command {
 
   addFlag (name, cfg) {
     if (typeof name !== 'string') {
-      throw new Error('Invalid flag name (should be a string).')
+      if (!cfg.hasOwnProperty('name')) {
+        throw new Error('Invalid flag name (should be a string).')
+      } else {
+        name = cfg.name
+      }
     }
 
     this.#flagConfig = this.#flagConfig || {}
