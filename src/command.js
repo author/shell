@@ -556,9 +556,8 @@ export default class Command {
       }
 
       if (this.#middleware.size > 0) {
-        return this.#middleware.run(
-          ...arguments, 
-          async () => await Command.reply(await processor.run(args, callback)))
+        this.#middleware.use(async meta => await Command.reply(fn(meta, callback)))
+        return this.#middleware.run(...arguments, () => {})
       }
 
       return Command.reply(await processor.run(args, callback))
@@ -566,9 +565,8 @@ export default class Command {
 
     // No subcommand was recognized
     if (this.#middleware.size > 0) {
-      return this.#middleware.run(
-        ...arguments, 
-        async () => await Command.reply(fn(data, callback)))
+      this.#middleware.use(async meta => await Command.reply(fn(meta, callback)))
+      return this.#middleware.run(...arguments, () => {})
     }
 
     return Command.reply(fn(data, callback))

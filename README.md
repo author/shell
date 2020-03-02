@@ -289,3 +289,9 @@ shell.useWith(['demo', 'command subcommand'], function (metadata, next) {
 ```
 
 Notice the array as the first argument of the `useWith` method. This middleware would be assigned to `demo` command, all `demo` subcommands, the `subcommand` of `command`, and all subcommands of `subcommand`. If this sounds confusing, just know that middleware is applied to commands, including nested commands.
+
+### Other Middleware
+
+One development goal of this framework is to remain as lightweight and unopinionated as possible. Another is to be as simple to use as possible. These two goals often conflict with each other (the more features you add, the heavier it becomes). In an attempt to find a comfortable balance, some additional middleware libraries are available fo those who want a little extra functionality.
+
+1. [@author.io/shell-middleware](https://github.com/author/shell-middleware)
