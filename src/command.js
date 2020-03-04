@@ -530,8 +530,12 @@ export default class Command {
               console.log(this.help)
               resolve()
             } else {
-              this.#middleware.use(fn)
-              resolve(() => this.#middleware.run(data, () => callback && callback()))
+              try {
+                this.#middleware.use(fn)
+                resolve(() => this.#middleware.run(data, () => callback && callback()))
+              } catch (ee) {
+                reject(ee)
+              }
             }
           } catch (e) {
             reject(e)
@@ -552,7 +556,7 @@ export default class Command {
       }
 
       if (!processor) {
-        throw new Error(`${this.#name} "${cmd}" command not found.`)
+        return new Promise((resolve, reject) => reject(new Error(`${ this.#name } "${cmd}" command not found.`)))
       }
 
       if (this.#middleware.size > 0) {

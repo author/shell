@@ -57,6 +57,18 @@ export default class Shell {
     }
   }
 
+  get version () {
+    return this.#version || 'Unknown'
+  }
+
+  get name () {
+    return this.#name || 'Unknown'
+  }
+
+  get description () {
+    return this.#description || ''
+  }
+
   set tableWidth(value) {
     this.#tableWidth = value
     this.#processors.forEach(cmd => cmd.tableWidth = value)
