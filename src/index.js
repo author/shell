@@ -1,3 +1,5 @@
 import Command from './command.js'
 import Shell from './shell.js'
-export { Command, Shell, { Command, Shell } as default }
+
+const all = { Shell, Command }
+export { Command, Shell, all as default }
