@@ -19,20 +19,22 @@ export default class Shell {
   #autohelp = true
   #tabWidth
   #tableWidth
-  #hasCustomDefaultMethod = false
+  #hasCustomDefaultHandler = false
   #runtime = globalThis.hasOwnProperty('window')
-    ? 'browser' 
+    ? 'browser'
     : (
         globalThis.hasOwnProperty('process')
-        && globalThis.process.release 
+        && globalThis.process.release
         && globalThis.process.release.name
           ? globalThis.process.release.name
           : 'unknown'
       )
-  #defaultMethod = data => {
+  #defaultHandler = (data, cb) => {
     if (data.help && data.help.requested) {
       console.log(data.help.message)
     }
+
+    cb && cb(data)
   }
 
   constructor (cfg = { maxhistory: 100 }) {
@@ -48,8 +50,8 @@ export default class Shell {
       this.#autohelp = cfg.autohelp
     }
 
-    if (cfg.hasOwnProperty('defaultMethod')) {
-      this.defaultMethod = cfg.defaultMethod
+    if (cfg.hasOwnProperty('defaultHandler')) {
+      this.defaultHandler = cfg.defaultHandler
     }
 
     if (Array.isArray(cfg.commands)) {
@@ -77,7 +79,7 @@ export default class Shell {
   set tabWidth(value) {
     this.#tabWidth = value
     this.#processors.forEach(cmd => cmd.tabWidth = value)
-  } 
+  }
 
   get autohelp () {
     return this.#autohelp
@@ -86,17 +88,17 @@ export default class Shell {
   // @private
   set defaultHandler(value) {
     if (typeof value === 'function') {
-      this.#defaultMethod = value
-      this.#hasCustomDefaultMethod = true
+      this.#defaultHandler = value
+      this.#hasCustomDefaultHandler = true
       this.#processors.forEach(cmd => cmd.defaultProcessor = value)
     } else {
-      throw new Error(`Invalid default method (must be a function, not ${typeof cfg.defaultMethod}).`)
+      throw new Error(`Invalid default method (must be a function, not ${typeof cfg.defaultHandler}).`)
     }
   }
 
   // @private
-  get hasCustomDefaultMethod() {
-    return this.#hasCustomDefaultMethod
+  get hasCustomDefaultHandler() {
+    return this.#hasCustomDefaultHandler
   }
 
   set autohelp (value) {
@@ -133,9 +135,9 @@ export default class Shell {
     }
 
     let mainmsg = [this.usage + '\n']
-    
+
     const help = new Map()
-    
+
     let nameWidth = 0
     let aliasWidth = 0
     let tabWidth = this.#tabWidth
@@ -144,7 +146,7 @@ export default class Shell {
     this.#processors.forEach(proc => {
       nameWidth = proc.name.length > nameWidth ? proc.name.length : nameWidth
       aliasWidth = proc.aliases.join(', ').trim().length + proc.aliases.length > aliasWidth ? proc.aliases.join(', ').trim().length + proc.aliases.length : aliasWidth
-      
+
       let summary = proc.description
 
       let size = proc.subcommands.size
@@ -160,7 +162,7 @@ export default class Shell {
 
     help.forEach((data, name) => {
       let msg = name
-      
+
       // Command name
       while (msg.length < nameWidth) {
         msg += ' '
@@ -171,7 +173,7 @@ export default class Shell {
       while (aliases.length < aliasWidth) {
         aliases += ' '
       }
-      
+
       msg += (aliases.trim().length > 0 ? '  [' + aliases.replace(/^(.*[^\s])/i, '$1]$`') : aliases) + '\t'
 
       // Desc
@@ -182,14 +184,14 @@ export default class Shell {
       if (data.description && data.description.length > descWidth) {
         let dsc = new String(data.description)
         let match = new RegExp(`(.{0,${descWidth}}[\\s\n])`, 'g')
-        
-        desc = data.description.match(match)    
+
+        desc = data.description.match(match)
         desc.push(dsc.replace(desc.join(''), ''))
 
         while (desc.length > 1 && desc[desc.length - 1].length + desc[desc.length - 2].length < descWidth) {
           desc[desc.length - 2] += desc.pop()
         }
-     
+
         desc = desc.reverse().map(item => item.trim())
       } else {
         desc.push(data.description)
@@ -267,16 +269,16 @@ export default class Shell {
         throw new Error('Invalid argument. Only "Command" instances may be added to the processor.')
       }
 
-      if (!command.hasCustomDefaultMethod) {
-        command.defaultMethod = this.#defaultMethod
+      if (!command.hasCustomDefaultHandler) {
+        command.defaultHandler = this.#defaultHandler
       }
-      
+
       command.autohelp = this.#autohelp
       command.shell = this
 
       this.#processors.set(command.OID, command)
       this.#commands.set(command.name, command.OID)
-      
+
       command.aliases.forEach(alias => this.#commands.set(alias, command.OID))
     }
   }
@@ -330,7 +332,7 @@ export default class Shell {
         this.#processors.delete(cmd)
         this.#commands.forEach(oid => oid === cmd && this.#commands.delete(oid))
       }
-      
+
       if (typeof cmd === 'string') {
         const OID = this.#commands.get(cmd)
         if (OID) {
@@ -342,13 +344,13 @@ export default class Shell {
 
   async exec (input, callback) {
     this.#history.shift({ input, time: new Date().toLocaleString()})
-    
+
     if (this.#history.length > this.#maxHistoryItems) {
       this.#history.pop()
     }
 
     let parsed = COMMAND_PATTERN.exec(input + ' ')
-    
+
     if (parsed === null) {
       return Command.stderr(this.help)
     }
@@ -390,7 +392,7 @@ export default class Shell {
     arguments[0] = processor.deepParse(args)
 
     return this.#middleware.run(
-      ...arguments, 
+      ...arguments,
       async () => await Command.reply(await processor.run(args)))
   }
 }

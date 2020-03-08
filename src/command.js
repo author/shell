@@ -23,8 +23,8 @@ export default class Command {
   #middleware = new Middleware()
   #tabWidth
   #tableWidth
-  #hasCustomDefaultMethod = false
-  #defaultMethod = data => console.log(this.help)
+  #hasCustomDefaultHandler = false
+  #defaultHandler = data => console.log(this.help)
 
   constructor (cfg = {}) {
     if (typeof cfg !== 'object') {
@@ -53,7 +53,7 @@ export default class Command {
     if (cfg.alias) {
       if (Array.isArray(cfg.alias)) {
         this.aliases = cfg.alias
-      } else {      
+      } else {
         this.aliases.push(cfg.alias)
       }
     }
@@ -70,8 +70,8 @@ export default class Command {
       this.#autohelp = cfg.autohelp
     }
 
-    if (typeof cfg.defaultMethod === 'function') {
-      this.defaultMethod = cfg.defaultMethod
+    if (typeof cfg.defaultHandler === 'function') {
+      this.defaultHandler = cfg.defaultHandler
     }
 
     if (Array.isArray(cfg.commands)) {
@@ -85,7 +85,7 @@ export default class Command {
     const attributes = new Set([
       'commands',
       'subcommands',
-      'defaultMethod',
+      'defaultHandler',
       'autohelp',
       'flags',
       'alias',
@@ -120,17 +120,17 @@ export default class Command {
   // @private
   set defaultHandler (value) {
     if (typeof value === 'function') {
-      this.#defaultMethod = value
-      this.#hasCustomDefaultMethod = true
+      this.#defaultHandler = value
+      this.#hasCustomDefaultHandler = true
       this.#processors.forEach(cmd => cmd.defaultProcessor = value)
     } else {
-      throw new Error(`Invalid default method (must be a function, not ${typeof cfg.defaultMethod}).`)
+      throw new Error(`Invalid default method (must be a function, not ${typeof cfg.defaultHandler}).`)
     }
   }
 
   // @private
-  get hasCustomDefaultMethod () {
-    return this.#hasCustomDefaultMethod
+  get hasCustomDefaultHandler () {
+    return this.#hasCustomDefaultHandler
   }
 
   set parent (cmd) {
@@ -182,11 +182,11 @@ export default class Command {
     if (this.#parent) {
       return `${this.#parent.commandroot} ${this.#name}`.trim()
     }
-    
+
     if (this.#shell) {
       return `${this.#shell.name} ${this.#name}`.trim()
     }
-    
+
     return this.#name
   }
 
@@ -220,7 +220,7 @@ export default class Command {
     let flags = Object.keys(this.#flagConfig || {}).filter(f => f !== 'help')
     if (flags.length > 0) {
       msg.push('Options:\n')
-      
+
       flags.forEach(flag => {
         let message = `  -${flag}`
         flag = this.#flagConfig[flag]
@@ -249,21 +249,21 @@ export default class Command {
         while (desc.length > 1 && desc[desc.length - 1].length + desc[desc.length - 2].length < (this.#tableWidth-prefixLength)) {
           desc[desc.length - 2] += desc.pop()
         }
-        
+
         desc = desc.reverse().map(item => item.trim())
-        
+
         if (desc.length > 0) {
           let prefix = ''
           for (let i = 0; i < prefixLength; i++) {
             prefix += ' '
           }
-          
+
           message += ' : ' + desc.pop()
           while (desc.length > 0) {
             message += `\n${prefix}${desc.pop()}`
           }
         }
-        
+
         msg.push(message)
       })
     } else if (this.#processors.size > 0) {
@@ -371,7 +371,7 @@ export default class Command {
 
     this.#processors.set(command.OID, command)
     this.#subcommands.set(command.name, command.OID)
-    
+
     command.aliases.forEach(alias => this.#subcommands.set(alias, command.OID))
   }
 
@@ -381,7 +381,7 @@ export default class Command {
         this.#processors.delete(cmd)
         this.#subcommands.forEach(oid => oid === cmd && this.#subcommands.delete(oid))
       }
-      
+
       if (typeof cmd === 'string') {
         const OID = this.#subcommands.get(cmd)
         if (OID) {
@@ -429,7 +429,7 @@ export default class Command {
     const data = { command: this.#name, input: input.trim() }
 
     let flagConfig = this.#flagConfig || {}
-      
+
     if (!flagConfig.hasOwnProperty('help')) {
       flagConfig.help = {
         description: `Display ${ this.#name } help.`,
@@ -457,7 +457,7 @@ export default class Command {
         data.parsed[src.name] = src.inputName
       }
     }
-  
+
     data.help = {
       requested: recognized.help
     }
@@ -498,7 +498,7 @@ export default class Command {
   }
 
   async run (input, callback) {
-    let fn = this.#fn || this.#defaultMethod
+    let fn = this.#fn || this.#defaultHandler
     let data = typeof input === 'string' ? this.parse(input) : input
     const parsed = SUBCOMMAND_PATTERN.exec(input)
 
@@ -514,8 +514,8 @@ export default class Command {
       if (!subcommand) {
         for (const [name, id] of this.#subcommands) {
           const subcmd = this.#processors.get(id)
-         
-          if (subcmd.aliases.indexOf(cmd)) {            
+
+          if (subcmd.aliases.indexOf(cmd)) {
             subcommand = subcmd
             break
           }
