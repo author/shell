@@ -7,5 +7,6 @@ install:
   - npm install
 
 script:
-  - ls -l
-  - cd ./test && ls -l && npm run node
+  - npm test
+  # - ls -l
+  # - cd ./test && ls -l && npm run node

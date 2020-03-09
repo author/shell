@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import stripCode from 'rollup-plugin-strip-code'
-import replace from 'rollup-plugin-replace'
+import replace from '@rollup/plugin-replace'
 
 const pkg = JSON.parse(fs.readFileSync('../package.json'))
 
