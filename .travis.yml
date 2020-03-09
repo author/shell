@@ -5,6 +5,7 @@ node_js:
 install:
   - npm run setup
   - npm install
+  - cd ./test && npm i tap-yaml
 
 script:
   - npm test
