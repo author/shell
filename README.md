@@ -98,8 +98,8 @@ const ListCommand = new Command({
     
     // Data comes from @author.io/arg lib. It looks like:
     // {
-    //   command: 'list',
-    //   input: 'whatever user typed after "list"',
+    //   command: <Command>,
+    //   input: 'whatever user typed after "command"',
     //   flags: {
     //     recognized: {}, 
     //     unrecognized: [
