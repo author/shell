@@ -8,6 +8,7 @@ test('Sanity Check - Shell', t => {
   })
 
   t.ok(shell instanceof Shell, 'Basic shell instantiates correctly.')
+
   t.end()
 })
 
@@ -31,27 +32,19 @@ test('Sanity Check - Command', t => {
     commands: [
       mirror,
       {
-        name: 'find',
-        description: 'Search metadoc for all the things.',
-        alias: 'search',
-        flags: {
-          x: {
-            type: 'string',
-            required: true
-          }
-        },
-        handler(data, cb) {
-          console.log(data)
-          console.log(`Mirroring input: ${data.input}`)
-
-          cb && cb()
-        }
-        // Subcommands are supported
-        // , commands: [...]
+        name: 'test',
+        description: 'Test command which has no custom handler.'
       }
     ]
   })
 
   t.ok(CLI instanceof Shell, 'Shell initialized with commands successfully.')
+
+  let defaultHandlerFires = false
+
+  CLI.exec('test', data => defaultHandlerFires = true)
+
+  t.ok(defaultHandlerFires, 'Default handler fires.')
+
   t.end()
 })
