@@ -16,7 +16,7 @@ if (process.env.hasOwnProperty('SAUCE_USERNAME') && process.env.hasOwnProperty('
   local = false
 }
 
-let browsers = {}
+const browsers = {}
 if (!local) {
   const opts = {}
   if (process.env.BROWSERSLIST_CONFIG) {
@@ -31,10 +31,10 @@ if (!local) {
     .forEach(item => {
       if (item.indexOf('-')) {
         let browser = item.split('-').shift().split(' ')
-        let version = /([0-9]+\.?([0-9]+)?)/.exec(browser[1])
+        const version = /([0-9]+\.?([0-9]+)?)/.exec(browser[1])
 
         if (version && browser[0].trim().toLowerCase() !== 'samsung') {
-          let label = `sl_${browser[0]}_${browser[1]}`.toLowerCase()
+          const label = `sl_${browser[0]}_${browser[1]}`.toLowerCase()
           browsers[label] = {
             base: 'SauceLabs',
             browserName: browser[0],
@@ -95,9 +95,9 @@ if (!local) {
 
 module.exports = function (config) {
   config.set({
-    // browserDisconnectTimeout: 10000,
-    // browserDisconnectTolerance: 1,
-    // browserNoActivityTimeout: 10000,
+    browserDisconnectTimeout: 30000,
+    browserDisconnectTolerance: 3,
+    browserNoActivityTimeout: 20000,
     processKillTimeout: 30000,
 
     // base path that will be used to resolve all patterns (eg. files, exclude)

@@ -47,6 +47,7 @@ configuration.push({
   input,
   plugins,
   output: {
+    exports: 'named',
     banner: config.banner,
     file: output,
     format: 'esm',

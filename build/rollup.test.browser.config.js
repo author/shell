@@ -51,13 +51,14 @@ build.supportedBrowsers().forEach(edition => {
   let terserCfg = config.terser
   terserCfg.module = edition === 'current'
   terserCfg.compress.module = edition === 'current'
-  
+
   plugins.push(terser(terserCfg))
 
   configuration.push({
     input,
     plugins,
     output: {
+      exports: 'named',
       banner: config.banner,
       file: `${outdir}/${build.name}-${build.version}${edition !== 'current' ? '-' + edition : ''}.min.js`,
       format: edition === 'current' ? 'esm' : 'iife',
@@ -75,6 +76,7 @@ build.supportedBrowsers().forEach(edition => {
       input,
       plugins,
       output: {
+        exports: 'named',
         banner: config.banner,
         file: `${outdir}/${build.name}-${build.version}-global.min.js`,
         format: 'iife',
