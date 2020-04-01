@@ -21,7 +21,7 @@ There are two types of text-based apps:
 
 **tl;dr** Use this library to create multipurpose tools. Use [@author.io/arg](https://github.com/author/arg) to create single purpose tools.
 
-This framework is designed to support multipurpose CLI tools. At the core, it provides a clean, easily-understood, repeatable pattern for building maintainable multipurpose CLI applications.
+This framework was designed to support multipurpose CLI tools. At the core, it provides a clean, easily-understood, repeatable pattern for building maintainable multipurpose CLI applications.
 
 Multipurpose tools require a layer of organizational overhead to help isolate different commands and features. This overhead is unnecessary in single purpose tools. Single purpose tools just need argument parsing, which the [@author.io/arg](https://github.com/author/arg) does very well. 
 
