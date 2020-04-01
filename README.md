@@ -4,6 +4,15 @@
 
 This is a super-lightweight framework for building text-based programs, like [CLI](https://en.wikipedia.org/wiki/Command-line_interface) applications.
 
+**Sponsors (as of 2020)**
+
+<table cellpadding="10" cellspacing="0" border="0">
+  <tr>
+    <td><a href="https://metadoc.io"><img src="https://github.com/coreybutler/staticassets/raw/master/sponsors/metadoclogobig.png" width="200px"/></a></td>
+    <td><a href="https://butlerlogic.com"><img src="https://github.com/coreybutler/staticassets/raw/master/sponsors/butlerlogic_logo.png" width="200px"/></a></td>
+  </tr>
+</table>
+
 ## Uses
 
 There are two types of text-based apps:
