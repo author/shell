@@ -3,8 +3,10 @@
 import fs from 'fs'
 import path from 'path'
 import { Command, Shell } from '../../src/index.js'
+import { fileURLToPath } from 'url'
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const pkg = JSON.parse(fs.readFileSync('./package.json'))
+const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, './package.json')))
 
 const shell = new Shell({
   name: Object.keys(pkg.bin)[0],
@@ -108,6 +110,20 @@ shell.add(new Command({
     console.log(data)
   }
 }))
+
+
+shell.add(new Command({
+  name: 'doc',
+  description: 'Output the metadoc of this shell.',
+  handler () {
+    console.log(shell.data)
+  }
+}))
+
+shell.use((data, next) => {
+  console.log('This middleware runs on very command.')
+  next()
+})
 
 const cmd = process.argv.slice(2).join(' ').trim()
 // console.log(cmd)

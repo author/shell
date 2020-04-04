@@ -59,6 +59,31 @@ export default class Shell {
     }
   }
 
+  get data () {
+    const commands = {}
+
+    Array.from(this.#processors.values()).forEach(cmd => {
+      let data = cmd.data
+      const name = data.name
+      delete data.name
+      commands[name] = data
+    })
+
+    return {
+      name: this.name,
+      description: this.description,
+      version: this.version,
+      commands,
+      middleware: this.#middleware.data,
+      help: this.help,
+      usage: this.usage,
+      defaultHandler: this.#defaultHandler.toString(),
+      authohelp: this.#autohelp,
+      runtime: this.#runtime,
+      maxHistoryItems: this.#maxHistoryItems
+    }
+  }
+
   get version () {
     return this.#version || 'Unknown'
   }

@@ -107,6 +107,31 @@ export default class Command {
     }
   }
 
+  get data () {
+    const commands = {}
+
+    Array.from(this.#processors.values()).forEach(cmd => {
+      let data = cmd.data
+      const name = data.name
+      delete data.name
+      commands[name] = data
+    })
+
+    const data = {
+      name: this.#name,
+      description: this.description,
+      help: this.help,
+      usage: this.usage,
+      aliases: this.#aliases || [],
+      flags: this.#flagConfig || {},
+      handler: (this.#fn || this.#defaultHandler).toString(),
+      commands,
+      middleware: this.#middleware.data
+    }
+
+    return data
+  }
+
   set tableWidth(value) {
     this.#tableWidth = value
     this.#processors.forEach(cmd => cmd.tableWidth = value)

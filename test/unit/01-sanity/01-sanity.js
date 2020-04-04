@@ -23,7 +23,7 @@ test('Sanity Check - Command', t => {
       cb && cb()
     }
   })
-
+  console.log('>>', mirror.xdata)
   t.ok(mirror instanceof Command, 'Command initialized successfully.')
 
   const CLI = new Shell({
@@ -40,11 +40,8 @@ test('Sanity Check - Command', t => {
 
   t.ok(CLI instanceof Shell, 'Shell initialized with commands successfully.')
 
-  let defaultHandlerFires = false
-
-  CLI.exec('test', data => defaultHandlerFires = true)
-
-  t.ok(defaultHandlerFires, 'Default handler fires.')
-
-  t.end()
+  CLI.exec('test').then(data => {
+    t.pass('Default handler fires.')
+    t.end()
+  }).catch(e => t.fail(e.message))
 })
