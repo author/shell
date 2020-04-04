@@ -57,7 +57,7 @@ If you need to use the older CommonJS format (i.e. `require`), run `npm install 
 **CDN**
 
 ```javascript
-import { Shell, Command } from 'https://cdn.pika.dev/@author.io/browser-shell/v1'
+import { Shell, Command } from 'https://cdn.pika.dev/@author.io/browser-shell'
 ```
 
 Also available from [jsdelivr](https://www.jsdelivr.com/?query=%40author.io%2Fshell) and [unpkg](https://unpkg.com/@author.io/browser-shell).
