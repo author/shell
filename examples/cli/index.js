@@ -121,7 +121,7 @@ shell.add(new Command({
 }))
 
 shell.use((data, next) => {
-  console.log('This middleware runs on very command.')
+  console.log('This middleware runs on every command.')
   next()
 })
 

@@ -200,7 +200,7 @@ export default class Command {
   }
 
   get description () {
-    return this.#description || this.usage
+    return this.#description || this.usage || ''
   }
 
   get commandroot () {
@@ -223,8 +223,8 @@ export default class Command {
     const a = Array.from(this.#aliases)
     const msg = [`${this.commandroot}${a.length > 0 ? ' <' + a.join(', ') + '> ' : ''} [OPTIONS]`.trim()]
 
-    if (this.#description.trim().length > 0) {
-      msg.push('\n  ' + this.#description.trim())
+    if ((this.#description || '').trim().length > 0) {
+      msg.push('\n  ' + (this.#description || '').trim())
     }
     return msg.join('\n').trim()
   }
