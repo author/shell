@@ -34,21 +34,21 @@ This framework was designed to support multipurpose CLI tools. At the core, it p
 
 Multipurpose tools require a layer of organizational overhead to help isolate different commands and features. This overhead is unnecessary in single purpose tools. Single purpose tools just need argument parsing, which the [@author.io/arg](https://github.com/author/arg) does very well. 
 
-`@author.io/arg` is embedded in this framework, making `@author.io/shell` _capable_ of creating single purpose tools, but it's a bit redundant.
+`@author.io/arg` is embedded in this framework, making `@author.io/shell` _capable_ of creating single purpose tools, but it's merely unnecessary overhead for single purpose commands.
 
 **Think about how your tooling evolves...**
 
-Sometimes single purpose tools grow into multipurpose tools over time. Tools which start out using the `@author.io/arg` library be transitioned into multipurpose tools using `@author.io/shell`, with reasonable ease. After all, they use the same code, just nicely separated by purpose.
+Sometimes single purpose tools grow into multipurpose tools over time. Tools which start out using the `@author.io/arg` library can be transitioned into multipurpose tools using `@author.io/shell` (with reasonable ease). After all, they use the same code, just nicely separated by purpose.
 
 ## Installation & Usage
 
-### For Node (ES Modules)
+### For Modern Node (ES Modules)
 
 `npm install @author.io/node-shell`
 
-Please note, you'll need a verison of Node that support ESM Modules. In Node 12, this feature is behind the `--experimental-modules` flag. It is available in Node 13+ without a flag, but your `package.json` file must have the `"type": "module"` attribute.
+Please note, you'll need a verison of Node that supports ES Modules. In Node 12, this feature is behind the `--experimental-modules` flag. It is available in Node 13+ without a flag, but your `package.json` file must have the `"type": "module"` attribute. This feature will be generally available in Node 14.0.0 (release date April 21, 2020).
 
-### For Node (CommonJS/require)
+### For Legacy Node (CommonJS/require)
 
 If you need to use the older CommonJS format (i.e. `require`), run `npm install @author.io/node-shell-legacy` instead.
 
@@ -245,7 +245,7 @@ const cmd = new Command({
 })
 ```
 
-While the differences aren't extreme, it abstracts the need to know whether a flag is recognized or not (or even exists).
+While the differences aren't extreme, it abstracts the need to know whether a flag is recognized or not (or even exists). If a `flag()` is executed for a non-existant flag, it will return `null`.
 
 ## Middleware
 
@@ -283,7 +283,7 @@ shell.useWith('demo', function (metadata, next) {
 })
 ```
 
-The code above would only run when the user inputs the `demo` command (or and `demo` subcommand).
+The code above would only run when the user inputs the `demo` command (or any `demo` subcommand).
 
 It is possible to assign middleware to more than one command at a time, and it is possible to target subcommands. For example:
 
@@ -299,8 +299,28 @@ shell.useWith(['demo', 'command subcommand'], function (metadata, next) {
 
 Notice the array as the first argument of the `useWith` method. This middleware would be assigned to `demo` command, all `demo` subcommands, the `subcommand` of `command`, and all subcommands of `subcommand`. If this sounds confusing, just know that middleware is applied to commands, including nested commands.
 
+Assigned middleware can also be applied directly to a `Command` class. For example,
+
+```javascript
+const cmd = new Command({
+  name: 'demo',
+  flags: {
+    a: { type: String },
+    b: { type: String }
+  },
+  handler: metadata => {
+    console.log(metadata)
+  }
+})
+
+cmd.use(function (metadata, next) {
+  console.log(`this middleware is specific to the "${cmd.name}" command`)
+  next()
+})
+```
+
 ### Other Middleware
 
-One development goal of this framework is to remain as lightweight and unopinionated as possible. Another is to be as simple to use as possible. These two goals often conflict with each other (the more features you add, the heavier it becomes). In an attempt to find a comfortable balance, some additional middleware libraries are available fo those who want a little extra functionality.
+One development goal of this framework is to remain as lightweight and unopinionated as possible. Another is to be as simple to use as possible. These two goals often conflict with each other (the more features you add, the heavier it becomes). In an attempt to find a comfortable balance, some additional middleware libraries are available for those who want a little extra functionality.
 
 1. [@author.io/shell-middleware](https://github.com/author/shell-middleware)
