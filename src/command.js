@@ -1,16 +1,18 @@
 import { Parser } from '../node_modules/@author.io/arg/index.js'
 import Middleware from './middleware.js'
+import Shell from './shell.js'
 
 const STRIP_EQUAL_SIGNS = /(\=+)(?=([^'"\\]*(\\.|['"]([^'"\\]*\\.)*[^'"\\]*['"]))*[^'"]*$)/g
 const SUBCOMMAND_PATTERN = /^([^"'][\S\b]+)[\s+]?([^-].*)$/i
 const FLAG_PATTERN = /((?:"[^"\\]*(?:\\[\S\s][^"\\]*)*"|'[^'\\]*(?:\\[\S\s][^'\\]*)*'|\/[^\/\\]*(?:\\[\S\s][^\/\\]*)*\/[gimy]*(?=\s|$)|(?:\\\s|\S))+)(?=\s|$)/g
+const METHOD_PATTERN = /^([\w]+\s?)\(.*\)\s?{/i
 
 export default class Command {
   #pattern
   #oid
   #name
   #description
-  #aliases
+  #aliases = new Set()
   #customUsage
   #customHelp
   #fn
@@ -35,8 +37,26 @@ export default class Command {
       throw new Error('Invalid command configuration. A "name" attribute is required.')
     }
 
-    if (cfg.handler && typeof cfg.handler !== 'function') {
-      throw new Error('Invalid command configuration. A "handler" function is required.')
+    if (cfg.hasOwnProperty('handler')) {
+      if (typeof cfg.handler === 'string') {
+        cfg.handler = Function('return (' + cfg.handler.replace('function anonymous', 'function') + ').call(this)').call(globalThis)
+      }
+
+      if (typeof cfg.handler !== 'function') {
+        throw new Error('Invalid command configuration. A "handler" function is required.')
+      }
+
+      if (cfg.hasOwnProperty('help') && cfg.help === this.help) {
+        delete cfg.help
+      }
+
+      if (cfg.hasOwnProperty('usage') && cfg.usage === this.usage) {
+        delete cfg.usage
+      }
+    }
+
+    if (cfg.hasOwnProperty('middleware') && Array.isArray(cfg.middleware)) {
+      cfg.middleware.forEach(code => this.use(Function(code)))
     }
 
     this.#name = cfg.name.trim().split(/\s+/)[0]
@@ -97,7 +117,8 @@ export default class Command {
       'usage',
       'pattern',
       'name',
-      'handler'
+      'handler',
+      'middleware'
     ])
 
     const unrecognized = Object.keys(cfg).filter(attribute => !attributes.has(attribute))
@@ -117,16 +138,38 @@ export default class Command {
       commands[name] = data
     })
 
+    let handler = (this.#fn || this.#defaultHandler).toString()
+    if (METHOD_PATTERN.test(handler)) {
+      handler = handler.replace(METHOD_PATTERN.exec(handler)[1], 'function ')
+    }
+
+    let flags = this.#flagConfig || {}
+    for (let [key, value] of Object.entries(flags)) {
+      value.aliases = value.aliases || []
+
+      if (value.hasOwnProperty('alias')) {
+        if (value.aliases.indexOf(value.alias) < 0) {
+          value.aliases.push(value.alias)
+        }
+      }
+
+      delete value.alias
+    }
+
     const data = {
       name: this.#name,
       description: this.description,
       help: this.help,
       usage: this.usage,
-      aliases: this.#aliases || [],
-      flags: this.#flagConfig || {},
-      handler: (this.#fn || this.#defaultHandler).toString(),
+      aliases: Array.from(this.#aliases),
+      flags,
+      handler,
       commands,
       middleware: this.#middleware.data
+    }
+
+    for (let [key, value] of Object.entries(data.flags)) {
+      delete value.alias
     }
 
     return data
@@ -165,7 +208,11 @@ export default class Command {
   }
 
   set shell (shell) {
-    this.#shell = shell
+    if (shell instanceof Shell) {
+      this.#shell = shell
+    } else {
+      throw new Error(`Expected a Shell object, received a "${typeof shell}" object.`)
+    }
   }
 
   get shell () {
@@ -173,10 +220,11 @@ export default class Command {
       if (this.#parent) {
         return this.#parent.shell
       }
-      return ''
+
+      return null
     }
 
-    return this.#shell.name
+    return this.#shell
   }
 
   get autohelp() {
@@ -523,7 +571,7 @@ export default class Command {
   }
 
   async run (input, callback) {
-    let fn = this.#fn || this.#defaultHandler
+    let fn = (this.#fn || this.#defaultHandler).bind(this)
     let data = typeof input === 'string' ? this.parse(input) : input
     const parsed = SUBCOMMAND_PATTERN.exec(input)
 
@@ -589,7 +637,7 @@ export default class Command {
         return this.#middleware.run(...arguments, () => {})
       }
 
-      return Command.reply(await processor.run(args, callback))
+      return Command.reply(await processor.run(args, callback()))
     }
 
     // No subcommand was recognized

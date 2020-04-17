@@ -9,7 +9,11 @@ export default class Middleware {
   get data () { return this._data }
 
   use (method) {
-    this._data.push(method.toString())
+    const methodBody = method.toString()
+    if (methodBody.indexOf('[native code]') < 0) {
+      this._data.push(methodBody)
+    }
+
     this.run = ((stack) => (...args) => stack(...reduce(args), () => {
       const next = last(args)
       method.apply(this, [...reduce(args), next.bind.apply(next, [null, ...reduce(args)])])

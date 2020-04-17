@@ -41,7 +41,7 @@ export default class Shell {
     this.#name = cfg.name || 'unknown'
     this.#description = cfg.description || null
     this.#version = cfg.version || '1.0.0'
-    this.#maxHistoryItems = cfg.maxhistory || 100
+    this.#maxHistoryItems = cfg.maxhistory || cfg.maxHistoryItems || 100
 
     this.#tabWidth = cfg.hasOwnProperty('tabWidth') ? cfg.tabWidth : 4
     this.#tableWidth = cfg.hasOwnProperty('tableWidth') ? cfg.tableWidth : 70
@@ -50,12 +50,30 @@ export default class Shell {
       this.#autohelp = cfg.autohelp
     }
 
-    if (cfg.hasOwnProperty('defaultHandler')) {
+    if (cfg.hasOwnProperty('defaultHandler') && cfg.defaultHandler.toString() !== this.#defaultHandler.toString()) {
       this.defaultHandler = cfg.defaultHandler
     }
 
     if (Array.isArray(cfg.commands)) {
       cfg.commands.forEach(cmd => this.add(cmd))
+    } else if (typeof cfg.commands === 'object') {
+      for (const key in cfg.commands) {
+        let data = cfg.commands[key]
+        data.name = key
+        this.add(data)
+      }
+    }
+
+    if (cfg.hasOwnProperty('middleware') && Array.isArray(cfg.middleware)) {
+      cfg.middleware.forEach(code => this.use(Function('return ' + code)()))
+    }
+
+    if (cfg.hasOwnProperty('help') && cfg.help !== this.help) {
+      this.#customHelp = cfg.help
+    }
+
+    if (cfg.hasOwnProperty('usage') && cfg.usage !== this.usage) {
+      this.#customUsage = cfg.usage
     }
   }
 

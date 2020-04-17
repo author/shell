@@ -26,7 +26,7 @@ fs.rmdirSync(rootdir, { recursive: true })
 let terserCfg = config.terser
 terserCfg.module = true
 // terserCfg.mangle = { properties: true }
-
+console.log(terserCfg)
 // Identify plugins
 const plugins = [
   build.only('node'),
@@ -35,9 +35,8 @@ const plugins = [
     presets: [['@babel/preset-env', { targets: { node: true } }]],
     plugins: [
       ['@babel/plugin-proposal-class-properties', { loose: false }],
-      // ['@babel/plugin-proposal-private-methods', { loose: false }]
-    ],
-    externalHelpersWhitelist: ['classPrivateFieldSet', 'classPrivateFieldGet', 'classPrivateMethods']
+      ['@babel/plugin-proposal-private-methods', { loose: false }]
+    ]
   }),
   terser(terserCfg)
 ]

@@ -1,0 +1,112 @@
+{
+  "name": "dir",
+  "description": "A simple file system utility.",
+  "version": "1.0.0",
+  "commands": {
+    "list": {
+      "description": "List files of a directory. Optionally specify a long format.",
+      "help": "dir list <ls>  [OPTIONS]\n\n  List files of a directory. Optionally specify a long format.\n\nOptions:\n\n  -l     : Long format.\n",
+      "usage": "dir list <ls>  [OPTIONS]\n\n  List files of a directory. Optionally specify a long format.",
+      "aliases": [
+        "ls"
+      ],
+      "flags": {
+        "l": {
+          "description": "Long format.",
+          "default": false,
+          "aliases": []
+        }
+      },
+      "handler": "(data) => {\n      let dir = process.cwd()\n\n      if (data.flags.unrecognized.length > 0) {\n        dir = path.resolve(data.flags.unrecognized[0])\n      }\n\n      const out = fs.readdirSync(dir)\n        .map(item => {\n          if (data.flags.recognized.l) {\n            return ((fs.statSync(path.join(dir, item)).isDirectory() ? '>' : '-') + ' ' + item).trim()\n          }\n\n          return item\n        })\n        .join(data.flags.recognized.l ? '\\n' : ', ')\n\n      console.log(out)\n    }",
+      "commands": {},
+      "middleware": []
+    },
+    "export": {
+      "description": "Export a file representation of a directory.",
+      "help": "dir export [OPTIONS]\n\n  Export a file representation of a directory.\n\nOptions:\n\n  json:       Generate a JSON representation of the directory. \n",
+      "usage": "dir export [OPTIONS]\n\n  Export a file representation of a directory.",
+      "aliases": [],
+      "flags": {},
+      "handler": "(data, cb) => {\n    if (data.help && data.help.requested) {\n      console.log(data.help.message)\n    }\n\n    cb && cb(data)\n  }",
+      "commands": {
+        "json": {
+          "description": "Generate a JSON representation of the directory.",
+          "help": "dir export json [OPTIONS]\n\n  Generate a JSON representation of the directory.\n\nOptions:\n\n  -array [-a]     : Generate an array. This is a pretty long message\n                    for such a short explanation. Kinda Rube\n                    Goldbergish.\n",
+          "usage": "dir export json [OPTIONS]\n\n  Generate a JSON representation of the directory.",
+          "aliases": [],
+          "flags": {
+            "array": {
+              "type": "boolean",
+              "default": false,
+              "description": "Generate an array. This is a pretty long message for such a short explanation. Kinda Rube Goldbergish.",
+              "aliases": [
+                "a"
+              ]
+            }
+          },
+          "handler": "function (data) {\n        if (data.help.requested) {\n          return console.log(this.help)\n        }\n\n        let dir = process.cwd()\n\n        if (data.flags.unrecognized.length > 0) {\n          dir = path.resolve(data.flags.unrecognized[0])\n        }\n\n        const contents = fs.readdirSync(dir)\n\n        if (data.flags.recognized.array) {\n          return console.log(contents)\n        }\n\n        const result = Object.defineProperty({}, dir, {\n          enumerable: true,\n          value: contents\n        })\n\n        console.log(JSON.stringify(result, null, 2))\n      }",
+          "commands": {},
+          "middleware": []
+        }
+      },
+      "middleware": []
+    },
+    "mkdir": {
+      "description": "Make a new directory.",
+      "help": "dir mkdir <md, m>  [OPTIONS]\n\n  Make a new directory.\n\nOptions:\n\n  -p [-R]     : Recursively create the directory if it does not\n                already exist.\n",
+      "usage": "dir mkdir <md, m>  [OPTIONS]\n\n  Make a new directory.",
+      "aliases": [
+        "md",
+        "m"
+      ],
+      "flags": {
+        "p": {
+          "type": "boolean",
+          "default": false,
+          "description": "Recursively create the directory if it does not already exist.",
+          "aliases": [
+            "R"
+          ]
+        }
+      },
+      "handler": "function (data) {\n    console.log('...make a directory...')\n    console.log(data)\n  }",
+      "commands": {},
+      "middleware": []
+    },
+    "doc": {
+      "description": "Output the metadoc of this shell.",
+      "help": "dir doc [OPTIONS]\n\n  Output the metadoc of this shell.\n\nOptions:\n\n  -file [-f]    \n",
+      "usage": "dir doc [OPTIONS]\n\n  Output the metadoc of this shell.",
+      "aliases": [],
+      "flags": {
+        "file": {
+          "name": "file",
+          "aliases": [
+            "f"
+          ]
+        },
+        "help": {
+          "description": "Display doc help.",
+          "aliases": [
+            "h"
+          ],
+          "default": false,
+          "type": "boolean",
+          "name": "help"
+        }
+      },
+      "handler": "function (meta) {\n    let data = this.shell.data\n\n    if (meta.flag('file') !== null) {\n      fs.writeFileSync(path.resolve(meta.flag('file')), JSON.stringify(data, null, 2))\n    } else {\n      console.log(data)\n    }\n  }",
+      "commands": {},
+      "middleware": []
+    }
+  },
+  "middleware": [
+    "(data, next) => {\n  console.log('This middleware runs on every command.')\n  next()\n}"
+  ],
+  "help": "dir 1.0.0\n\n  A simple file system utility.\n\n  - list    [ls]     \t : List files of a directory. Optionally specify a\n                           long format.\n  - export       \t : Export a file representation of a directory.\n                           Has an additional subcommand.\n  - mkdir   [md, m]  \t : Make a new directory.\n  - doc          \t : Output the metadoc of this shell.\n",
+  "usage": "dir 1.0.0\n\n  A simple file system utility.",
+  "defaultHandler": "(data, cb) => {\n    if (data.help && data.help.requested) {\n      console.log(data.help.message)\n    }\n\n    cb && cb(data)\n  }",
+  "authohelp": true,
+  "runtime": "node",
+  "maxHistoryItems": 100
+}

@@ -115,8 +115,20 @@ shell.add(new Command({
 shell.add(new Command({
   name: 'doc',
   description: 'Output the metadoc of this shell.',
-  handler () {
-    console.log(shell.data)
+  flags: {
+    file: {
+      alias: 'f',
+      type: String
+    }
+  },
+  handler (meta) {
+    let data = this.shell.data
+
+    if (meta.flag('file') !== null) {
+      fs.writeFileSync(path.resolve(meta.flag('file')), JSON.stringify(data, null, 2))
+    } else {
+      console.log(data)
+    }
   }
 }))
 
