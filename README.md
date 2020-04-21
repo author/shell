@@ -66,9 +66,9 @@ Also available from [jsdelivr](https://www.jsdelivr.com/?query=%40author.io%2Fsh
 
 If you wish to bundle this library in your build process, use the version most appropriate for your target runtimes:
 
-- `npm install @author/shell` (source)
-- `npm install @author/browser-shell` (Minified ES Module)
-- `npm install @author/browser-shell-es6` (IIFE Minified Module - globally accessible)
+- `npm install @author.io/shell` (source)
+- `npm install @author.io/browser-shell` (Minified ES Module)
+- `npm install @author.io/browser-shell-es6` (IIFE Minified Module - globally accessible)
 
 ### Debugging
 
