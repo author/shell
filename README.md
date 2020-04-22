@@ -1,6 +1,6 @@
 # @author.io/shell ![Version](https://img.shields.io/github/v/tag/author/shell?label=Latest&style=for-the-badge)
 
-![Build Status](https://travis-ci.org/author/shell.svg?branch=master) using the  [cross-runtime template](https://github.com/author/template-cross-runtime).
+![Build](https://github.com/author/shell/workflows/Tag,%20Release,%20&%20Publish/badge.svg) using the [cross-runtime template](https://github.com/author/template-cross-runtime).
 
 This is a super-lightweight framework for building text-based programs, like [CLI](https://en.wikipedia.org/wiki/Command-line_interface) applications.
 
@@ -66,9 +66,9 @@ Also available from [jsdelivr](https://www.jsdelivr.com/?query=%40author.io%2Fsh
 
 If you wish to bundle this library in your build process, use the version most appropriate for your target runtimes:
 
-- `npm install @author/shell` (source)
-- `npm install @author/browser-shell` (Minified ES Module)
-- `npm install @author/browser-shell-es6` (IIFE Minified Module - globally accessible)
+- `npm install @author.io/shell` (source)
+- `npm install @author.io/browser-shell` (Minified ES Module)
+- `npm install @author.io/browser-shell-es6` (IIFE Minified Module - globally accessible)
 
 ### Debugging
 
