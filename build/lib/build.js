@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import chalk from 'chalk' // Included in Rollup
 import stripCode from 'rollup-plugin-strip-code'
 import replace from '@rollup/plugin-replace'
 
@@ -153,5 +154,26 @@ export default class build {
     }
 
     return false
+  }
+
+  ignoreCircularDependency () {
+    const refs = new Set([...arguments])
+
+    return warning => {
+      if (
+        warning.code === 'CIRCULAR_DEPENDENCY' &&
+        refs.size > 0 &&
+        Array.from(refs).filter(p => {
+          try {
+            return !warning.importer.indexOf(path.normalize(p))
+          } catch (e) { return false }
+        }).length > 0
+      ) {
+        return
+      }
+
+      console.log(chalk.yellow.bold(`(!) ${warning.code}`))
+      console.log(chalk.grey(warning.message))
+    }
   }
 }

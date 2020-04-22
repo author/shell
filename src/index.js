@@ -1,5 +1,5 @@
 import Command from './command.js'
 import Shell from './shell.js'
-import Formatter from './format.js'
-const all = { Shell, Command, Formatter }
-export { Command, Shell, Formatter, all as default }
+import { Formatter, Table } from './format.js'
+const all = { Shell, Command, Formatter, Table }
+export { Command, Shell, Formatter, Table, all as default }

@@ -31,12 +31,12 @@ class Formatter {
       const desc = this.#data.description.trim()
       
       if (desc.trim().length > 0 && out !== desc) {
-        out.push(`\n  ${desc.trim()}` + '\n')
+        out.push(new Table([[desc.trim().replace(/\n/gi, '\n  ')]], null, null, this.#tableWidth, [2, 0, 1, 1]).output)
       }
 
       return out.join('\n')
     } else if (this.#data instanceof Shell) {
-      return `${this.#data.name}${this.#data.__commandMap.size > 0 ? ' [COMMAND]' : ''}\n\n  ${this.#data.description || ''} Version ${this.#data.version}.\n`.trim()
+      return `${this.#data.name}${this.#data.description.trim().length > 0 ? new Table([[desc.trim().replace(/\n/gi, '\n  ')]], null, null, this.#tableWidth, [2, 0, 1, 1]).output : ''}${this.#data.__commandMap.size > 0 ? ' [COMMAND]' : ''}\n\n  ${this.#data.description || ''} Version ${this.#data.version}.\n`.trim()
     }
 
     return ''
@@ -48,6 +48,7 @@ class Formatter {
     if (this.#data instanceof Command) {
       const flags = this.#data.__flagConfig
       const rows = []
+      
       if (flags.size > 0) {
         flags.forEach((cfg, flag) => {
           let aliases = Array.from(cfg.aliases||[])
@@ -79,4 +80,4 @@ class Formatter {
   }
 }
 
-export { Formatter as default, Table }
+export { Formatter as default, Formatter, Table }

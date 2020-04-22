@@ -33,6 +33,7 @@ const globalplugins = [
 ]
 
 // 2. Build Browser Production Package: Standard (Minified/Munged)
+const onwarn = build.ignoreCircularDependency('../src/command.js', '../src/shell.js', '../src/format.js')
 outdir += `/browser-${build.name}`
 build.supportedBrowsers().forEach(edition => {
   console.log(`Generating ${edition} browser code.`)
@@ -56,6 +57,7 @@ build.supportedBrowsers().forEach(edition => {
   configuration.push({
     input,
     plugins,
+    onwarn,
     output: {
       banner: config.banner,
       file: `${outdir}/${build.name}-${build.version}${edition !== 'current' ? '-' + edition : ''}.min.js`,
@@ -73,6 +75,7 @@ build.supportedBrowsers().forEach(edition => {
     configuration.push({
       input,
       plugins,
+      onwarn,
       output: {
         banner: config.banner,
         file: `${outdir}/${build.name}-${build.version}-global.min.js`,

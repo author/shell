@@ -325,6 +325,50 @@ One development goal of this framework is to remain as lightweight and unopinion
 
 1. [@author.io/shell-middleware](https://github.com/author/shell-middleware)
 
+### Customized Help/Usage Messages
+
+This library has only one dependency, [@author.io/table](https://github.com/author/table). It is used to format the usage and help messages within a shell app. The `Table` library can be used to create your own custom screens, though most users will likely want to stick with the defaults.
+
+_Example:_
+
+```javascript
+import { Shell, Command, Table } from '@author.io/node-shell'
+
+const shell = new Shell(...)
+shell.usage = '...'
+shell.help = () => {
+  const rows = [
+    ['Command', 'Alias Names'],
+    ['...', '...']
+  ]
+
+  const table = new Table(rows)
+
+  console.log(shell.usage + '\n' + table.output)
+}
+```
+
+**The `usage` and/or `help` attributes of an individual `Command` can also be set:**
+
+```javascript
+import { Shell, Command, Table } from '@author.io/node-shell'
+
+const cmd = new Command(...)
+cmd.usage = '...'
+cmd.help = () => {
+  const rows = [
+    ['Flags', 'Alias Names'],
+    ['...', '...']
+  ]
+
+  const table = new Table(rows)
+
+  console.log(cmd.usage + '\n' + table.output)
+}
+```
+
+There is also a `Formatter` class that helps combine usage/help messages internally. This class is exposed for those who want to dig into the inner workings, but it should be considered as more of an example than a supported feature. Since it is an internal class, it may change without warning (though we'll try to keep the methods consistent across releases).
+
 ### Introspection/Metadata Generation
 
 A JSON metadoc can be produced from the shell:

@@ -43,9 +43,11 @@ const plugins = [
 ]
 
 // 2. Build Node Production Package: Standard (Minified/Munged)
+const onwarn = build.ignoreCircularDependency('../src/command.js', '../src/shell.js', '../src/format.js')
 configuration.push({
   input,
   plugins,
+  onwarn,
   output: {
     exports: 'named',
     banner: config.banner,

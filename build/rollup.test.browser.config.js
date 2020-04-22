@@ -34,6 +34,7 @@ const globalplugins = [
 ]
 
 // 2. Build Browser Production Package: Standard (Minified/Munged)
+const onwarn = build.ignoreCircularDependency('../src/command.js', '../src/shell.js', '../src/format.js')
 build.supportedBrowsers().forEach(edition => {
   console.log(`Generating ${edition} browser code.`)
   const plugins = globalplugins.slice()
@@ -57,6 +58,7 @@ build.supportedBrowsers().forEach(edition => {
   configuration.push({
     input,
     plugins,
+    onwarn,
     output: {
       exports: 'named',
       banner: config.banner,
@@ -75,6 +77,7 @@ build.supportedBrowsers().forEach(edition => {
     configuration.push({
       input,
       plugins,
+      onwarn,
       output: {
         exports: 'named',
         banner: config.banner,
