@@ -327,7 +327,7 @@ One development goal of this framework is to remain as lightweight and unopinion
 
 ### Customized Help/Usage Messages
 
-This library has only one dependency, [@author.io/table](https://github.com/author/table). It is used to format the usage and help messages within a shell app. The `Table` library can be used to create your own custom screens, though most users will likely want to stick with the defaults.
+This library uses a vanilla dependency (i.e. no-subdependencies) called [@author.io/table](https://github.com/author/table) to format the usage and help messages of the shell. The `Table` library can be used to create your own custom screens, though most users will likely want to stick with the defaults. If you want to customize messages, the following example can be used as a starting point. The configuration options for the table can be found in the README of its repository.
 
 _Example:_
 
@@ -344,7 +344,7 @@ shell.help = () => {
 
   const table = new Table(rows)
 
-  console.log(shell.usage + '\n' + table.output)
+  return shell.usage + '\n' + table.output
 }
 ```
 
@@ -363,7 +363,7 @@ cmd.help = () => {
 
   const table = new Table(rows)
 
-  console.log(cmd.usage + '\n' + table.output)
+  return cmd.usage + '\n' + table.output
 }
 ```
 
