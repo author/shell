@@ -2,7 +2,7 @@
 
 import fs from 'fs'
 import path from 'path'
-import { Command, Shell } from '../../src/index.js'
+import { Command, Shell, Formatter } from '../../src/index.js'
 import { fileURLToPath } from 'url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 

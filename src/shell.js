@@ -1,9 +1,11 @@
 import Command from './command.js'
 import Middleware from './middleware.js'
+import Formatter from './format.js'
 
 const COMMAND_PATTERN = /^(\w+)\s+([\s\S]+)?/i
 
 export default class Shell {
+  #formattedDefaultHelp
   #processors = new Map()
   #commands = new Map()
   #middleware = new Middleware()
@@ -35,6 +37,10 @@ export default class Shell {
     }
 
     cb && cb(data)
+  }
+  #updateHelp = () => { 
+    this.#formattedDefaultHelp = new Formatter(this)
+    this.#formattedDefaultHelp.width = this.#tableWidth
   }
 
   constructor (cfg = { maxhistory: 100 }) {
@@ -75,6 +81,13 @@ export default class Shell {
     if (cfg.hasOwnProperty('usage') && cfg.usage !== this.usage) {
       this.#customUsage = cfg.usage
     }
+
+    Object.defineProperty(this, '__commandMap', {
+      enumerable: false,
+      get () {
+        return this.#processors
+      }
+    })
   }
 
   get data () {
@@ -116,12 +129,10 @@ export default class Shell {
 
   set tableWidth(value) {
     this.#tableWidth = value
-    this.#processors.forEach(cmd => cmd.tableWidth = value)
   }
 
-  set tabWidth(value) {
-    this.#tabWidth = value
-    this.#processors.forEach(cmd => cmd.tabWidth = value)
+  get tableWidth () {
+    return this.#tableWidth || 80
   }
 
   get autohelp () {
@@ -161,11 +172,13 @@ export default class Shell {
   }
 
   get usage () {
-    if (this.#customUsage) {
-      return typeof this.#customUsage === 'function' ? this.#customUsage(this) : this.#customUsage
+    if (this.#customUsage !== null) {
+      return typeof this.#customUsage === 'function' ? this.#customUsage() : this.#customUsage
     }
 
-    return `${this.#name} ${this.#version}\n\n  ${this.#description || ''}\n`.trim()
+    this.#updateHelp()
+
+    return this.#formattedDefaultHelp.usage
   }
 
   set usage (value) {
@@ -177,90 +190,94 @@ export default class Shell {
       return typeof this.#customHelp === 'function' ? this.#customHelp(this) : this.#customHelp
     }
 
-    let mainmsg = [this.usage + '\n']
+    this.#updateHelp()
 
-    const help = new Map()
+    return this.#formattedDefaultHelp.help
 
-    let nameWidth = 0
-    let aliasWidth = 0
-    let tabWidth = this.#tabWidth
-    let maxWidth = this.#tableWidth
+    // let mainmsg = [this.usage + '\n']
 
-    this.#processors.forEach(proc => {
-      nameWidth = proc.name.length > nameWidth ? proc.name.length : nameWidth
-      aliasWidth = proc.aliases.join(', ').trim().length + proc.aliases.length > aliasWidth ? proc.aliases.join(', ').trim().length + proc.aliases.length : aliasWidth
+    // const help = new Map()
 
-      let summary = proc.description
+    // let nameWidth = 0
+    // let aliasWidth = 0
+    // let tabWidth = this.#tabWidth
+    // let maxWidth = this.#tableWidth
 
-      let size = proc.subcommands.size
-      if (size > 0) {
-        summary += ` Has ${ size === 1 ? 'an' : size } additional subcommand${ size !== 1 ? 's' : '' }.`
-      }
+    // this.#processors.forEach(proc => {
+    //   nameWidth = proc.name.length > nameWidth ? proc.name.length : nameWidth
+    //   aliasWidth = proc.aliases.join(', ').trim().length + proc.aliases.length > aliasWidth ? proc.aliases.join(', ').trim().length + proc.aliases.length : aliasWidth
 
-      help.set(proc.name, {
-        description: summary,
-        aliases: proc.aliases
-      })
-    })
+    //   let summary = proc.description
 
-    help.forEach((data, name) => {
-      let msg = name
+    //   let size = proc.subcommands.size
+    //   if (size > 0) {
+    //     summary += ` Has ${ size === 1 ? 'an' : size } additional subcommand${ size !== 1 ? 's' : '' }.`
+    //   }
 
-      // Command name
-      while (msg.length < nameWidth) {
-        msg += ' '
-      }
+    //   help.set(proc.name, {
+    //     description: summary,
+    //     aliases: proc.aliases
+    //   })
+    // })
 
-      // Aliases
-      let aliases = data.aliases.map(item => `${item}`).join(', ')
-      while (aliases.length < aliasWidth) {
-        aliases += ' '
-      }
+    // help.forEach((data, name) => {
+    //   let msg = name
 
-      msg += (aliases.trim().length > 0 ? '  [' + aliases.replace(/^(.*[^\s])/i, '$1]$`') : aliases) + '\t'
+    //   // Command name
+    //   while (msg.length < nameWidth) {
+    //     msg += ' '
+    //   }
 
-      // Desc
-      let desc = []
-      let tabs = msg.match(/\t/gi).length
-      let descWidth = maxWidth - (nameWidth + aliasWidth + 10)
+    //   // Aliases
+    //   let aliases = data.aliases.map(item => `${item}`).join(', ')
+    //   while (aliases.length < aliasWidth) {
+    //     aliases += ' '
+    //   }
 
-      if (data.description && data.description.length > descWidth) {
-        let dsc = new String(data.description)
-        let match = new RegExp(`(.{0,${descWidth}}[\\s\n])`, 'g')
+    //   msg += (aliases.trim().length > 0 ? '  [' + aliases.replace(/^(.*[^\s])/i, '$1]$`') : aliases) + '\t'
 
-        desc = data.description.match(match)
-        desc.push(dsc.replace(desc.join(''), ''))
+    //   // Desc
+    //   let desc = []
+    //   let tabs = msg.match(/\t/gi).length
+    //   let descWidth = maxWidth - (nameWidth + aliasWidth + 10)
 
-        while (desc.length > 1 && desc[desc.length - 1].length + desc[desc.length - 2].length < descWidth) {
-          desc[desc.length - 2] += desc.pop()
-        }
+    //   if (data.description && data.description.length > descWidth) {
+    //     let dsc = new String(data.description)
+    //     let match = new RegExp(`(.{0,${descWidth}}[\\s\n])`, 'g')
 
-        desc = desc.reverse().map(item => item.trim())
-      } else {
-        desc.push(data.description)
-      }
+    //     desc = data.description.match(match)
+    //     desc.push(dsc.replace(desc.join(''), ''))
 
-      if (desc.length > 0) {
-        let prefix = ''
-        for (let i = 0; i < (nameWidth + aliasWidth + 10 + (tabs * tabWidth)); i++) {
-          prefix += ' '
-        }
+    //     while (desc.length > 1 && desc[desc.length - 1].length + desc[desc.length - 2].length < descWidth) {
+    //       desc[desc.length - 2] += desc.pop()
+    //     }
 
-        msg += ' : ' + desc.pop()
-        while (desc.length > 0) {
-          msg += `\n${prefix}${desc.pop()}`
-        }
-      }
+    //     desc = desc.reverse().map(item => item.trim())
+    //   } else {
+    //     desc.push(data.description)
+    //   }
 
-      mainmsg.push('  - ' + msg)
-    })
+    //   if (desc.length > 0) {
+    //     let prefix = ''
+    //     for (let i = 0; i < (nameWidth + aliasWidth + 10 + (tabs * tabWidth)); i++) {
+    //       prefix += ' '
+    //     }
 
-    let tab = ''
-    for (let i = 0; i < tabWidth; i++) {
-      tab += ' '
-    }
+    //     msg += ' : ' + desc.pop()
+    //     while (desc.length > 0) {
+    //       msg += `\n${prefix}${desc.pop()}`
+    //     }
+    //   }
 
-    return mainmsg.join('\n') + '\n'.replace(/\n{2,}$/, '\n').replace(/\t/g, tab)
+    //   mainmsg.push('  - ' + msg)
+    // })
+
+    // let tab = ''
+    // for (let i = 0; i < tabWidth; i++) {
+    //   tab += ' '
+    // }
+
+    // return mainmsg.join('\n') + '\n'.replace(/\n{2,}$/, '\n').replace(/\t/g, tab)
   }
 
   set help (value) {

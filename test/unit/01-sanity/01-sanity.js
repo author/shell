@@ -1,6 +1,6 @@
 import 'source-map-support/register.js'
 import test from 'tape'
-import { Command, Shell } from '../../.node/index.js'
+import { Command, Shell, Formatter } from '../../.node/index.js'
 
 test('Sanity Check - Shell', t => {
   const shell = new Shell({
@@ -44,4 +44,37 @@ test('Sanity Check - Command', t => {
     t.pass('Default handler fires.')
     t.end()
   }).catch(e => t.fail(e.message))
+})
+
+test('Output Formatting', t => {
+  const shell = new Shell({
+    name: 'test'
+  })
+
+  const cmd = new Command({
+    name: 'cmd',
+    alias: 'c',
+    flags: {
+      test: {
+        alias: 't',
+        description: 'test description'
+      },
+      more: {
+        aliases: ['m', 'mr'],
+        description: 'This is a longer description that should break onto more than one line, or perhaps even more than one extra line with especially poor grammar and spellling.'
+      },
+      none: {
+        description: 'Ignore me. I do not exist.'
+      }
+    }
+  })
+
+  shell.add(cmd)
+
+  const formatter = new Formatter(cmd)
+  formatter.width = 80
+
+  t.ok(formatter instanceof Formatter, 'Basic formatter instantiates correctly.')
+  console.log(formatter.help)
+  t.end()
 })

@@ -50,6 +50,7 @@
     ]
   },
   "dependencies": {
-    "@author.io/arg": "^1.2.5"
+    "@author.io/arg": "^1.2.5",
+    "@author.io/table": "^1.0.0-beta.2"
   }
 }

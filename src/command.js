@@ -1,6 +1,7 @@
 import { Parser } from '../node_modules/@author.io/arg/index.js'
 import Middleware from './middleware.js'
 import Shell from './shell.js'
+import Formatter from './format.js'
 
 const STRIP_EQUAL_SIGNS = /(\=+)(?=([^'"\\]*(\\.|['"]([^'"\\]*\\.)*[^'"\\]*['"]))*[^'"]*$)/g
 const SUBCOMMAND_PATTERN = /^([^"'][\S\b]+)[\s+]?([^-].*)$/i
@@ -8,6 +9,7 @@ const FLAG_PATTERN = /((?:"[^"\\]*(?:\\[\S\s][^"\\]*)*"|'[^'\\]*(?:\\[\S\s][^'\\
 const METHOD_PATTERN = /^([\w]+\s?)\(.*\)\s?{/i
 
 export default class Command {
+  #formattedDefaultHelp
   #pattern
   #oid
   #name
@@ -23,10 +25,12 @@ export default class Command {
   #parent = null
   #shell = null
   #middleware = new Middleware()
-  #tabWidth
-  #tableWidth
   #hasCustomDefaultHandler = false
   #defaultHandler = data => console.log(this.help)
+  #updateHelp = () => {
+    this.#formattedDefaultHelp = new Formatter(this)
+    this.#formattedDefaultHelp.width = this.shell === null ? 80 : this.shell.tableWidth
+  }
 
   constructor (cfg = {}) {
     if (typeof cfg !== 'object') {
@@ -46,12 +50,12 @@ export default class Command {
         throw new Error('Invalid command configuration. A "handler" function is required.')
       }
 
-      if (cfg.hasOwnProperty('help') && cfg.help === this.help) {
-        delete cfg.help
+      if (cfg.hasOwnProperty('help')) {
+        this.help = cfg.help
       }
 
-      if (cfg.hasOwnProperty('usage') && cfg.usage === this.usage) {
-        delete cfg.usage
+      if (cfg.hasOwnProperty('usage')) {
+        this.usage = cfg.usage
       }
     }
 
@@ -65,22 +69,44 @@ export default class Command {
     this.#pattern = cfg.pattern || /[\s\S]+/i
     this.#customUsage = cfg.usage || null
     this.#customHelp = cfg.help || null
-    this.aliases = cfg.aliases
+    // this.aliases = cfg.aliases
     this.#description = cfg.description || null
-    this.#tabWidth = cfg.hasOwnProperty('tabWidth') ? cfg.tabWidth : 4
-    this.#tableWidth = cfg.hasOwnProperty('tableWidth') ? cfg.tableWidth : 70
 
-    if (cfg.alias) {
-      if (Array.isArray(cfg.alias)) {
-        this.aliases = cfg.alias
-      } else {
-        this.aliases.push(cfg.alias)
+    if (cfg.alias && !cfg.aliases) {
+      cfg.aliases = Array.isArray(cfg.alias) ? cfg.alias : [cfg.alias]
+      delete cfg.alias
+    }
+
+    if (cfg.aliases) {
+      if (!Array.isArray(cfg.aliases)) {
+        throw new Error('The alias property only accepts an array.')
       }
+ 
+      this.#aliases = new Set(cfg.aliases)
     }
 
     if (cfg.flags) {
       if (typeof cfg.flags !== 'object') {
         throw new Error(`Invalid flag configuration (expected and object, received ${typeof cfg.flags}).`)
+      }
+
+      for (const [key, value] of Object.entries(cfg.flags)) {
+        if (value.hasOwnProperty('alias')) {
+          value.aliases = value.aliases || []
+          
+          if (Array.isArray(value.alias)) {
+            value.aliases = Array.from(new Set(...value.aliases, ... value.alias))
+            if (value.aliases.filter(a => typeof a !== 'string') > 0) {
+              throw new Error(`${key} flag aliases must be strings. Type failure on: ${value.aliases.filter(a => typeof a !== 'string').join(', ')}.`)
+            }
+          } else if (typeof value.alias === 'string') {
+            value.aliases.push(value.alias)
+          } else {
+            throw new Error(`Aliases must be strings, not ${typeof value.alias} (${key} flag).`)
+          }
+
+          delete value.alias
+        }
       }
 
       this.#flagConfig = cfg.flags
@@ -110,8 +136,6 @@ export default class Command {
       'flags',
       'alias',
       'aliases',
-      'tabWidth',
-      'tableWidth',
       'description',
       'help',
       'usage',
@@ -126,6 +150,20 @@ export default class Command {
     if (unrecognized.length > 0) {
       throw new Error(`Unrecognized shell configuration attribute(s): ${unrecognized.join(', ')}`)
     }
+
+    Object.defineProperties(this, {
+      __flagConfig: {
+        enumerable: false,
+        get () {
+          const flags = new Map()
+          Object.keys(this.#flagConfig).forEach(key => flags.set(key, this.#flagConfig[key]))
+          flags.delete('help')
+          return flags
+        }
+      }
+    })
+
+    this.#updateHelp()
   }
 
   get data () {
@@ -144,6 +182,7 @@ export default class Command {
     }
 
     let flags = this.#flagConfig || {}
+    
     for (let [key, value] of Object.entries(flags)) {
       value.aliases = value.aliases || []
 
@@ -175,16 +214,6 @@ export default class Command {
     return data
   }
 
-  set tableWidth(value) {
-    this.#tableWidth = value
-    this.#processors.forEach(cmd => cmd.tableWidth = value)
-  }
-
-  set tabWidth(value) {
-    this.#tabWidth = value
-    this.#processors.forEach(cmd => cmd.tabWidth = value)
-  }
-
   // @private
   set defaultHandler (value) {
     if (typeof value === 'function') {
@@ -204,10 +233,15 @@ export default class Command {
   set parent (cmd) {
     if (cmd instanceof Command) {
       this.#parent = cmd
+    } else {
+      throw new Error(`Cannot set parent of "${this.name}" command to anything other than another command. To make this command a direct descendent of the main shell, use the shell attribute instead.`)
     }
   }
 
   set shell (shell) {
+    if (!shell) {
+      throw new Error(`Cannot set shell of ${this.name} command to a non-Shell object.`)
+    }
     if (shell instanceof Shell) {
       this.#shell = shell
     } else {
@@ -248,7 +282,7 @@ export default class Command {
   }
 
   get description () {
-    return this.#description || this.usage || ''
+    return this.#description || ''
   }
 
   get commandroot () {
@@ -264,17 +298,13 @@ export default class Command {
   }
 
   get usage () {
-    if (this.#customUsage) {
+    if (this.#customUsage !== null) {
       return typeof this.#customUsage === 'function' ? this.#customUsage() : this.#customUsage
     }
 
-    const a = Array.from(this.#aliases)
-    const msg = [`${this.commandroot}${a.length > 0 ? ' <' + a.join(', ') + '> ' : ''} [OPTIONS]`.trim()]
+    this.#updateHelp()
 
-    if ((this.#description || '').trim().length > 0) {
-      msg.push('\n  ' + (this.#description || '').trim())
-    }
-    return msg.join('\n').trim()
+    return this.#formattedDefaultHelp.usage
   }
 
   set usage (value) {
@@ -286,79 +316,9 @@ export default class Command {
       return typeof this.#customHelp === 'function' ? this.#customHelp() : this.#customHelp
     }
 
-    let maxWidth = this.#tableWidth
-    let tabWidth = this.#tabWidth
+    this.#updateHelp()
 
-    let msg = [this.usage + '\n']
-    let flags = Object.keys(this.#flagConfig || {}).filter(f => f !== 'help')
-    if (flags.length > 0) {
-      msg.push('Options:\n')
-
-      flags.forEach(flag => {
-        let message = `  -${flag}`
-        flag = this.#flagConfig[flag]
-        flag.alias = Array.isArray(flag.alias) ? flag.alias : [flag.alias]
-        if (flag.aliases) {
-          flag.alias = flag.alias.concat(flag.aliases)
-        }
-        flag.alias = new Set(flag.alias.filter(a => typeof a === 'string'))
-
-        if (flag.alias.size > 0) {
-          message += ` [${Array.from(flag.alias).map(a => '-'+a).join(', ')}]`
-        }
-        message += '\t'
-
-        let desc = []
-        let tabs = message.match(/\t/gi).length
-        let prefixLength = message.length + 2 + (this.#tabWidth*tabs)
-        let dsc = new String(flag.description)
-        const match = new RegExp(`(.{0,${this.#tableWidth-prefixLength}}[\\s\n])`, 'g')
-
-        if (flag.description) {
-          desc = flag.description.match(match)
-          desc.push(dsc.replace(desc.join(''), ''))
-        }
-
-        while (desc.length > 1 && desc[desc.length - 1].length + desc[desc.length - 2].length < (this.#tableWidth-prefixLength)) {
-          desc[desc.length - 2] += desc.pop()
-        }
-
-        desc = desc.reverse().map(item => item.trim())
-
-        if (desc.length > 0) {
-          let prefix = ''
-          for (let i = 0; i < prefixLength; i++) {
-            prefix += ' '
-          }
-
-          message += ' : ' + desc.pop()
-          while (desc.length > 0) {
-            message += `\n${prefix}${desc.pop()}`
-          }
-        }
-
-        msg.push(message)
-      })
-    } else if (this.#processors.size > 0) {
-      msg.push('Options:\n')
-    }
-
-    this.#processors.forEach(proc => {
-      let message = `  ${ proc.name }: \t  ${ proc.description } `
-
-      if (proc.aliases.length > 0) {
-        message = `${ message } Aliases: ${ proc.aliases.join(', ') }.`
-      }
-      msg.push(message)
-    })
-
-    let tab = ''
-    for (let i = 0; i < tabWidth; i++) {
-      tab += ' '
-    }
-
-    return (msg.join('\n') + '\n').replace(/\n{2,}$/, '\n').replace(/\t/gi, tab)
-    // return `${this.#name} help goes here`
+    return this.#formattedDefaultHelp.help
   }
 
   set help (value) {
@@ -396,7 +356,7 @@ export default class Command {
   }
 
   get aliases () {
-    return this.#aliases
+    return Array.from(this.#aliases) || []
   }
 
   get OID () {
@@ -439,8 +399,6 @@ export default class Command {
 
     command.parent = this
     command.autohelp = this.#autohelp
-    command.tabWidth = this.#tabWidth
-    command.tableWidth = this.#tableWidth
 
     this.#processors.set(command.OID, command)
     this.#subcommands.set(command.name, command.OID)

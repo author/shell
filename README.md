@@ -324,3 +324,17 @@ cmd.use(function (metadata, next) {
 One development goal of this framework is to remain as lightweight and unopinionated as possible. Another is to be as simple to use as possible. These two goals often conflict with each other (the more features you add, the heavier it becomes). In an attempt to find a comfortable balance, some additional middleware libraries are available for those who want a little extra functionality.
 
 1. [@author.io/shell-middleware](https://github.com/author/shell-middleware)
+
+### Introspection/Metadata Generation
+
+A JSON metadoc can be produced from the shell:
+
+```javascript
+console.log(shell.data)
+```
+
+Simple CLI utilities can also be loaded entirely from a JSON file by passing the object into the shell constructor as the only argument. The limitation is no imports or hoisted variables/methods will be recognized in a shell which is loaded this way.
+
+### Related Modules
+
+1. [@author.io/table](https://github.com/author/table) - Used to generate the default usage/help messages for the shell and subcommands.

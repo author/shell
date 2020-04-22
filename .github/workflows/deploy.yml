@@ -84,7 +84,7 @@ jobs:
         if: steps.autotagger.outputs.tagname != ''
         uses: author/action-publish@master
         with:
-          scan: .dist
+          scan: .dist, ./
         env: 
           REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
 
