@@ -23,7 +23,7 @@ test('Sanity Check - Command', t => {
       cb && cb()
     }
   })
-  console.log('>>', mirror.xdata)
+
   t.ok(mirror instanceof Command, 'Command initialized successfully.')
 
   const CLI = new Shell({
@@ -43,7 +43,11 @@ test('Sanity Check - Command', t => {
   CLI.exec('test').then(data => {
     t.pass('Default handler fires.')
     t.end()
-  }).catch(e => t.fail(e.message))
+  }).catch(e => {
+    console.log(e)
+    t.fail(e.message)
+    t.end()
+  })
 })
 
 test('Output Formatting', t => {

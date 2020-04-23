@@ -1,46 +1,22 @@
 import { Parser } from '../node_modules/@author.io/arg/index.js'
-import Middleware from './middleware.js'
 import Shell from './shell.js'
-import Formatter from './format.js'
+import Base from './base.js'
 
 const STRIP_EQUAL_SIGNS = /(\=+)(?=([^'"\\]*(\\.|['"]([^'"\\]*\\.)*[^'"\\]*['"]))*[^'"]*$)/g
 const SUBCOMMAND_PATTERN = /^([^"'][\S\b]+)[\s+]?([^-].*)$/i
 const FLAG_PATTERN = /((?:"[^"\\]*(?:\\[\S\s][^"\\]*)*"|'[^'\\]*(?:\\[\S\s][^'\\]*)*'|\/[^\/\\]*(?:\\[\S\s][^\/\\]*)*\/[gimy]*(?=\s|$)|(?:\\\s|\S))+)(?=\s|$)/g
 const METHOD_PATTERN = /^([\w]+\s?)\(.*\)\s?{/i
 
-export default class Command {
-  #formattedDefaultHelp
+export default class Command extends Base {
   #pattern
   #oid
-  #name
-  #description
   #aliases = new Set()
-  #customUsage
-  #customHelp
   #fn
   #flagConfig = null
-  #subcommands = new Map()
-  #processors = new Map()
-  #autohelp = true
   #parent = null
   #shell = null
-  #middleware = new Middleware()
-  #hasCustomDefaultHandler = false
-  #defaultHandler = data => console.log(this.help)
-  #updateHelp = () => {
-    this.#formattedDefaultHelp = new Formatter(this)
-    this.#formattedDefaultHelp.width = this.shell === null ? 80 : this.shell.tableWidth
-  }
-
+  
   constructor (cfg = {}) {
-    if (typeof cfg !== 'object') {
-      throw new Error('Invalid command configuration. Expected an object.')
-    }
-
-    if (!cfg.hasOwnProperty('name')) {
-      throw new Error('Invalid command configuration. A "name" attribute is required.')
-    }
-
     if (cfg.hasOwnProperty('handler')) {
       if (typeof cfg.handler === 'string') {
         cfg.handler = Function('return (' + cfg.handler.replace('function anonymous', 'function') + ').call(this)').call(globalThis)
@@ -49,29 +25,26 @@ export default class Command {
       if (typeof cfg.handler !== 'function') {
         throw new Error('Invalid command configuration. A "handler" function is required.')
       }
-
-      if (cfg.hasOwnProperty('help')) {
-        this.help = cfg.help
-      }
-
-      if (cfg.hasOwnProperty('usage')) {
-        this.usage = cfg.usage
-      }
     }
+
+    super(cfg)
 
     if (cfg.hasOwnProperty('middleware') && Array.isArray(cfg.middleware)) {
       cfg.middleware.forEach(code => this.use(Function(code)))
     }
 
-    this.#name = cfg.name.trim().split(/\s+/)[0]
+    // this.defaultHandler = (data, cb) => {
+    //   if (data.help && data.help.requested) {
+    //     console.log(data.help.message)
+    //   }
+
+    //   cb && cb(data)
+    // }
+
     this.#fn = cfg.handler
     this.#oid = Symbol(((cfg.name || cfg.usage) || cfg.pattern) || 'command')
     this.#pattern = cfg.pattern || /[\s\S]+/i
-    this.#customUsage = cfg.usage || null
-    this.#customHelp = cfg.help || null
-    // this.aliases = cfg.aliases
-    this.#description = cfg.description || null
-
+    
     if (cfg.alias && !cfg.aliases) {
       cfg.aliases = Array.isArray(cfg.alias) ? cfg.alias : [cfg.alias]
       delete cfg.alias
@@ -112,20 +85,8 @@ export default class Command {
       this.#flagConfig = cfg.flags
     }
 
-    if (typeof cfg.autohelp === 'boolean') {
-      this.#autohelp = cfg.autohelp
-    }
-
-    if (typeof cfg.defaultHandler === 'function') {
-      this.defaultHandler = cfg.defaultHandler
-    }
-
-    if (Array.isArray(cfg.commands)) {
-      cfg.commands.forEach(cmd => this.add(cmd))
-    }
-
     if (Array.isArray(cfg.subcommands)) {
-      cfg.subcommands.forEach(cmd => this.add(cmd))
+      this.add(...cfg.subcommands)
     }
 
     const attributes = new Set([
@@ -142,7 +103,8 @@ export default class Command {
       'pattern',
       'name',
       'handler',
-      'middleware'
+      'middleware',
+      'extraOptions'
     ])
 
     const unrecognized = Object.keys(cfg).filter(attribute => !attributes.has(attribute))
@@ -156,27 +118,25 @@ export default class Command {
         enumerable: false,
         get () {
           const flags = new Map()
-          Object.keys(this.#flagConfig).forEach(key => flags.set(key, this.#flagConfig[key]))
-          flags.delete('help')
+          if (this.#flagConfig !== null) {
+            Object.keys(this.#flagConfig).forEach(key => flags.set(key, this.#flagConfig[key]))
+            flags.delete('help')
+          }
+
           return flags
         }
       }
     })
 
-    this.#updateHelp()
+    this.__width = this.shell === null ? 80 : this.shell.tableWidth || 80
+
+    this.updateHelp()
   }
 
   get data () {
-    const commands = {}
+    const commands = super.data
 
-    Array.from(this.#processors.values()).forEach(cmd => {
-      let data = cmd.data
-      const name = data.name
-      delete data.name
-      commands[name] = data
-    })
-
-    let handler = (this.#fn || this.#defaultHandler).toString()
+    let handler = (this.#fn || this.defaultHandler).toString()
     if (METHOD_PATTERN.test(handler)) {
       handler = handler.replace(METHOD_PATTERN.exec(handler)[1], 'function ')
     }
@@ -196,7 +156,7 @@ export default class Command {
     }
 
     const data = {
-      name: this.#name,
+      name: this.name,
       description: this.description,
       help: this.help,
       usage: this.usage,
@@ -204,7 +164,7 @@ export default class Command {
       flags,
       handler,
       commands,
-      middleware: this.#middleware.data
+      middleware: this.middleware.data
     }
 
     for (let [key, value] of Object.entries(data.flags)) {
@@ -212,22 +172,6 @@ export default class Command {
     }
 
     return data
-  }
-
-  // @private
-  set defaultHandler (value) {
-    if (typeof value === 'function') {
-      this.#defaultHandler = value
-      this.#hasCustomDefaultHandler = true
-      this.#processors.forEach(cmd => cmd.defaultProcessor = value)
-    } else {
-      throw new Error(`Invalid default method (must be a function, not ${typeof cfg.defaultHandler}).`)
-    }
-  }
-
-  // @private
-  get hasCustomDefaultHandler () {
-    return this.#hasCustomDefaultHandler
   }
 
   set parent (cmd) {
@@ -244,6 +188,7 @@ export default class Command {
     }
     if (shell instanceof Shell) {
       this.#shell = shell
+      this.__width = this.shell === null ? 80 : shell.tableWidth
     } else {
       throw new Error(`Expected a Shell object, received a "${typeof shell}" object.`)
     }
@@ -261,68 +206,16 @@ export default class Command {
     return this.#shell
   }
 
-  get autohelp() {
-    return this.#autohelp
-  }
-
-  set autohelp(value) {
-    if (typeof value !== 'boolean') {
-      return
-    }
-    this.#autohelp = value
-    this.#processors.forEach(cmd => cmd.autohelp = value)
-  }
-
-  get subcommands () {
-    return this.#processors
-  }
-
-  get name () {
-    return this.#name
-  }
-
-  get description () {
-    return this.#description || ''
-  }
-
   get commandroot () {
     if (this.#parent) {
-      return `${this.#parent.commandroot} ${this.#name}`.trim()
+      return `${this.#parent.commandroot} ${this.name}`.trim()
     }
 
     if (this.#shell) {
-      return `${this.#shell.name} ${this.#name}`.trim()
+      return `${this.#shell.name} ${this.name}`.trim()
     }
 
-    return this.#name
-  }
-
-  get usage () {
-    if (this.#customUsage !== null) {
-      return typeof this.#customUsage === 'function' ? this.#customUsage() : this.#customUsage
-    }
-
-    this.#updateHelp()
-
-    return this.#formattedDefaultHelp.usage
-  }
-
-  set usage (value) {
-    this.#customUsage = value
-  }
-
-  get help () {
-    if (this.#customHelp) {
-      return typeof this.#customHelp === 'function' ? this.#customHelp() : this.#customHelp
-    }
-
-    this.#updateHelp()
-
-    return this.#formattedDefaultHelp.help
-  }
-
-  set help (value) {
-    this.#customHelp = value
+    return this.name
   }
 
   set aliases (value) {
@@ -363,10 +256,6 @@ export default class Command {
     return this.#oid
   }
 
-  getCommand (name) {
-    return this.#subcommands.get(name)
-  }
-
   addFlag (name, cfg) {
     if (typeof name !== 'string') {
       if (!cfg.hasOwnProperty('name')) {
@@ -388,56 +277,10 @@ export default class Command {
     return this.#flagConfig.hasOwnProperty(name)
   }
 
-  add (command) {
-    if (!(command instanceof Command)) {
-      if (typeof command === 'object') {
-        command = new Command(command)
-      } else {
-        throw new Error('Invalid argument. Only "Command" instances may be added to the processor.')
-      }
-    }
-
-    command.parent = this
-    command.autohelp = this.#autohelp
-
-    this.#processors.set(command.OID, command)
-    this.#subcommands.set(command.name, command.OID)
-
-    command.aliases.forEach(alias => this.#subcommands.set(alias, command.OID))
-  }
-
-  remove () {
-    for (const cmd of arguments) {
-      if (typeof cmd === 'symbol') {
-        this.#processors.delete(cmd)
-        this.#subcommands.forEach(oid => oid === cmd && this.#subcommands.delete(oid))
-      }
-
-      if (typeof cmd === 'string') {
-        const OID = this.#subcommands.get(cmd)
-        if (OID) {
-          this.remove(OID)
-        }
-      }
-    }
-  }
-
-  use () {
-    for (const arg of arguments) {
-      if (typeof arg !== 'function') {
-        throw new Error(`All "use()" arguments must be valid functions.\n${ arg.toString().substring(0, 50) } ${ arg.toString().length > 50 ? '...' : '' }`)
-      }
-
-      this.#middleware.use(arg)
-    }
-
-    this.#processors.forEach(subCmd => subCmd.use(...arguments))
-  }
-
   deepParse (input) {
     let meta = this.parse(input)
 
-    if (this.#subcommands.size === 0) {
+    if (this.__commands.size === 0) {
       return meta
     }
 
@@ -446,24 +289,24 @@ export default class Command {
     }
 
     let args = meta.input.split(/\s+/)
-    let subcmd = this.#subcommands.get(args.shift())
+    let subcmd = this.__commands.get(args.shift())
 
     if (!subcmd) {
       return meta
     }
 
-    return this.#processors.get(subcmd).deepParse(args.join(' '))
+    return this.__processors.get(subcmd).deepParse(args.join(' '))
   }
 
   parse (input) {
     // Parse the command input for flags
-    const data = { command: this.#name, input: input.trim() }
+    const data = { command: this.name, input: input.trim() }
 
     let flagConfig = this.#flagConfig || {}
 
     if (!flagConfig.hasOwnProperty('help')) {
       flagConfig.help = {
-        description: `Display ${ this.#name } help.`,
+        description: `Display ${ this.name } help.`,
         aliases: ['h'],
         default: false,
         type: 'boolean'
@@ -481,7 +324,7 @@ export default class Command {
     data.flags = { recognized, unrecognized: parser.unrecognizedFlags }
     data.valid = parser.valid
     data.violations = parser.violations
-
+    
     data.parsed = {}
     if (Object.keys(parser.data.flagSource).length > 0) {
       for (const [key, src] of Object.entries(parser.data.flagSource)) {
@@ -529,22 +372,22 @@ export default class Command {
   }
 
   async run (input, callback) {
-    let fn = (this.#fn || this.#defaultHandler).bind(this)
+    let fn = (this.#fn || this.defaultHandler).bind(this)
     let data = typeof input === 'string' ? this.parse(input) : input
     const parsed = SUBCOMMAND_PATTERN.exec(input)
 
     arguments[0] = this.deepParse(input)
-
+    
     // A possible subcommand was input
     if (parsed) {
       let cmd = parsed[1]
       let args = parsed.length > 2 ? parsed[2] : ''
       let command = null
-      let subcommand = this.#subcommands.get(cmd)
+      let subcommand = this.__commands.get(cmd)
 
       if (!subcommand) {
-        for (const [name, id] of this.#subcommands) {
-          const subcmd = this.#processors.get(id)
+        for (const [name, id] of this.__commands) {
+          const subcmd = this.__processors.get(id)
 
           if (subcmd.aliases.indexOf(cmd)) {
             subcommand = subcmd
@@ -557,13 +400,13 @@ export default class Command {
       if (!subcommand) {
         return await (new Promise((resolve, reject) => {
           try {
-            if (this.#autohelp && data.help.requested) {
-              console.log(this.help)
+            if (this.autohelp && data.help.requested) {
+              console.log(this.help)              
               resolve()
             } else {
               try {
-                this.#middleware.use(fn)
-                resolve(() => this.#middleware.run(data, () => callback && callback()))
+                this.middleware.use(fn)
+                resolve(() => this.middleware.run(data, () => callback && callback()))
               } catch (ee) {
                 reject(ee)
               }
@@ -573,10 +416,10 @@ export default class Command {
           }
         }))
       }
-
-      const processor = this.#processors.get(subcommand)
-
-      if (this.#autohelp) {
+      console.log(4)  
+      const processor = this.__processors.get(subcommand)
+      console.log(5)  
+      if (this.autohelp) {
         if (data.help.requested) {
           if (processor) {
             return console.log(processor.help)
@@ -587,21 +430,21 @@ export default class Command {
       }
 
       if (!processor) {
-        return new Promise((resolve, reject) => reject(new Error(`${ this.#name } "${cmd}" command not found.`)))
+        return new Promise((resolve, reject) => reject(new Error(`${ this.name } "${cmd}" command not found.`)))
       }
 
-      if (this.#middleware.size > 0) {
-        this.#middleware.use(async meta => await Command.reply(fn(meta, callback)))
-        return this.#middleware.run(...arguments, () => {})
+      if (this.middleware.size > 0) {
+        this.middleware.use(async meta => await Command.reply(fn(meta, callback)))
+        return this.middleware.run(...arguments, () => {})
       }
 
       return Command.reply(await processor.run(args, callback()))
     }
 
     // No subcommand was recognized
-    if (this.#middleware.size > 0) {
-      this.#middleware.use(async meta => await Command.reply(fn(meta, callback)))
-      return this.#middleware.run(...arguments, () => {})
+    if (this.middleware.size > 0) {
+      this.middleware.use(async meta => await Command.reply(fn(meta, callback)))
+      return this.middleware.run(...arguments, () => {})
     }
 
     return Command.reply(fn(data, callback))

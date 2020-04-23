@@ -25,10 +25,11 @@ class Formatter {
   }
 
   get usage () {
+    const desc = this.#data.description.trim()
+    
     if (this.#data instanceof Command) {
       const aliases = this.#data.aliases
-      const out = [`${this.#data.commandroot}${aliases.length > 0 ? ' <' + aliases.join(', ') + '>' : ''}${this.#data.__flagConfig.size > 0 ? ' [OPTIONS]' : ''}`]
-      const desc = this.#data.description.trim()
+      const out = [`${this.#data.commandroot}${aliases.length > 0 ? ' <' + aliases.join(', ') + '>' : ''}${this.#data.__flagConfig.size > 0 ? ' [OPTIONS]' : ''}${this.#data.__extraOptions.size > 0 ? ' ' + Array.from(this.#data.__extraOptions).join(', ') : ''}`]
       
       if (desc.trim().length > 0 && out !== desc) {
         out.push(new Table([[desc.trim().replace(/\n/gi, '\n  ')]], null, null, this.#tableWidth, [2, 0, 1, 1]).output)
@@ -36,7 +37,7 @@ class Formatter {
 
       return out.join('\n')
     } else if (this.#data instanceof Shell) {
-      return `${this.#data.name}${this.#data.description.trim().length > 0 ? new Table([[desc.trim().replace(/\n/gi, '\n  ')]], null, null, this.#tableWidth, [2, 0, 1, 1]).output : ''}${this.#data.__commandMap.size > 0 ? ' [COMMAND]' : ''}\n\n  ${this.#data.description || ''} Version ${this.#data.version}.\n`.trim()
+      return `${this.#data.name}${desc.trim().length > 0 ? new Table([[desc.trim().replace(/\n/gi, '\n  ')]], null, null, this.#tableWidth, [2, 0, 1, 1]).output : ''}${this.#data.__processors.size > 0 ? ' [COMMAND]' : ''}${this.#data.__extraOptions.size > 0 ? ' ' + Array.from(this.#data.__extraOptions).join(', ') : ''}\n\n  ${this.#data.description || ''} Version ${this.#data.version}.\n`.trim()
     }
 
     return ''
@@ -56,12 +57,12 @@ class Formatter {
           rows.push(['-' + flag, aliases, cfg.description])
         })
       }
-      
+
       const table = new Table(rows, this.#colAlign, this.#colWidth, this.#tableWidth, [2, 0, usage.length > 0 ? 1 : 0, 0])
-      
+
       return usage + '\n\nOptions:' + table.output
     } else if (this.#data instanceof Shell) {
-      const rows = Array.from(this.#data.__commandMap.values()).map(cmd => {
+      const rows = Array.from(this.#data.__processors.values()).map(cmd => {
         return [cmd.name, (cmd.aliases||[]).length > 0 ? `[${cmd.aliases.join(', ').trim()}]` : '', cmd.description]
       })
 

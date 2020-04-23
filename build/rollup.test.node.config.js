@@ -43,7 +43,7 @@ const plugins = [
 ]
 
 // 2. Build Node Production Package: Standard (Minified/Munged)
-const onwarn = build.ignoreCircularDependency('../src/command.js', '../src/shell.js', '../src/format.js')
+const onwarn = build.ignoreCircularDependency('../src/command.js', '../src/shell.js', '../src/format.js', '../src/base.js')
 configuration.push({
   input,
   plugins,

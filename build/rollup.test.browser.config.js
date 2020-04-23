@@ -34,7 +34,7 @@ const globalplugins = [
 ]
 
 // 2. Build Browser Production Package: Standard (Minified/Munged)
-const onwarn = build.ignoreCircularDependency('../src/command.js', '../src/shell.js', '../src/format.js')
+const onwarn = build.ignoreCircularDependency('../src/command.js', '../src/shell.js', '../src/format.js', '../src/base.js')
 build.supportedBrowsers().forEach(edition => {
   console.log(`Generating ${edition} browser code.`)
   const plugins = globalplugins.slice()
