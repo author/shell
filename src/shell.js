@@ -123,6 +123,10 @@ export default class Shell extends Base {
     let parsed = COMMAND_PATTERN.exec(input + ' ')
 
     if (parsed === null) {
+      if (input.indexOf('version') !== -1 || input.indexOf('-v') !== -1) {
+        return console.log(this.version)
+      }
+      
       return Command.stderr(this.help)
     }
 
@@ -135,6 +139,10 @@ export default class Shell extends Base {
     const action = this.__commands.get(cmd)
 
     if (!action) {
+      if (cmd.toLowerCase() === 'version') {
+        return console.log(this.version)
+      }
+
       return Command.stderr(this.help)
     }
 

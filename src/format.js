@@ -37,7 +37,7 @@ class Formatter {
 
       return out.join('\n')
     } else if (this.#data instanceof Shell) {
-      return `${this.#data.name}${desc.trim().length > 0 ? new Table([[desc.trim().replace(/\n/gi, '\n  ')]], null, null, this.#tableWidth, [2, 0, 1, 1]).output : ''}${this.#data.__processors.size > 0 ? ' [COMMAND]' : ''}${this.#data.__extraOptions.size > 0 ? ' ' + Array.from(this.#data.__extraOptions).join(', ') : ''}\n\n  ${this.#data.description || ''} Version ${this.#data.version}.\n`.trim()
+      return `${this.#data.name}${this.#data.__processors.size > 0 ? ' [COMMAND]' : ''}\n${desc.trim().length > 0 ? new Table([[desc.trim().replace(/\n/gi, '\n  ')]], null, null, this.#tableWidth, [2, 0, 1, 1]).output : ''}${this.#data.__extraOptions.size > 0 ? ' ' + Array.from(this.#data.__extraOptions).join(', ') : ''}\n`.trim()
     }
 
     return ''

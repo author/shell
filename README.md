@@ -87,6 +87,8 @@ import { Shell, Command } from '@author.io/node-shell'
 const ListCommand = new Command({
   name: 'list',
   description: 'List the contents of the directory.',
+  // extraOptions are listed after the command in the default help screen. Ex: "dir list <dir>"
+  extraOptions: '<dir>',
   alias: 'ls',
   // Any flag parsing options from the @author.io/arg library can be configured here.
   // See https://github.com/author/arg#configuration-methods for a list.
@@ -317,6 +319,46 @@ cmd.use(function (metadata, next) {
   console.log(`this middleware is specific to the "${cmd.name}" command`)
   next()
 })
+```
+
+### Built-in "Middleware"
+
+Displaying help and version information is built-in (overridable).
+
+**Help**
+
+Appending `--help` to anything will display the help content for the shell/command/subcommand. This will respect any custom usage/help configurations that may be defined.
+
+**Shell Version**
+
+A `version` command is available on the shell. For example:
+
+```sh
+$ cmd version
+1.0.0
+```
+
+The following common flag variations map to the version command, producing the same output:
+
+```sh
+$ cmd --version
+1.0.0
+
+$ cmd -v
+1.0.0
+```
+
+This can be overridden by creating a command called `version`, the same way any other command is created.
+
+```javascript
+const v = new Command({
+  name: 'version',
+  handler (meta) {
+    console.log(this.shell.version)
+  }
+})
+
+shell.add(v)
 ```
 
 ### Other Middleware
