@@ -1,6 +1,6 @@
 {
   "name": "@author.io/shell",
-  "version": "1.3.5",
+  "version": "1.3.6",
   "description": "A micro-framework for creating CLI-like experiences. This supports Node.js and browsers.",
   "main": "src/index.js",
   "scripts": {
@@ -46,11 +46,12 @@
     ],
     "globals": [
       "window",
-      "global"
+      "global",
+      "globalThis"
     ]
   },
   "dependencies": {
-    "@author.io/arg": "^1.2.5",
+    "@author.io/arg": "^1.2.6",
     "@author.io/table": "^1.0.1"
   }
 }
