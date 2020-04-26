@@ -2,7 +2,7 @@ import { Parser } from '../node_modules/@author.io/arg/index.js'
 import Shell from './shell.js'
 import Base from './base.js'
 
-const STRIP_EQUAL_SIGNS = /(\=+)(?=([^'"\\]*(\\.|['"]([^'"\\]*\\.)*[^'"\\]*['"]))*[^'"]*$)/g
+// const STRIP_EQUAL_SIGNS = /(\=+)(?=([^'"\\]*(\\.|['"]([^'"\\]*\\.)*[^'"\\]*['"]))*[^'"]*$)/g
 const SUBCOMMAND_PATTERN = /^([^"'][\S\b]+)[\s+]?([^-].*)$/i
 const FLAG_PATTERN = /((?:"[^"\\]*(?:\\[\S\s][^"\\]*)*"|'[^'\\]*(?:\\[\S\s][^'\\]*)*'|\/[^\/\\]*(?:\\[\S\s][^\/\\]*)*\/[gimy]*(?=\s|$)|(?:\\\s|\S))+)(?=\s|$)/g
 const METHOD_PATTERN = /^([\w]+\s?)\(.*\)\s?{/i
@@ -307,14 +307,15 @@ export default class Command extends Base {
     if (!flagConfig.hasOwnProperty('help')) {
       flagConfig.help = {
         description: `Display ${ this.name } help.`,
-        aliases: ['h'],
+        // aliases: ['h'],
         default: false,
         type: 'boolean'
       }
     }
 
-    let source = input.replace(STRIP_EQUAL_SIGNS, '').trim() + ' '
-    const flags = Array.from(FLAG_PATTERN[Symbol.matchAll](source), x => x[0])
+    // let source = input.replace(STRIP_EQUAL_SIGNS, '').trim() + ' '
+
+    const flags = Array.from(FLAG_PATTERN[Symbol.matchAll](input), x => x[0])
     const parser = new Parser(flags, flagConfig)
 
     let recognized = parser.data
@@ -347,7 +348,11 @@ export default class Command extends Base {
         writable: false,
         value: name => {
           try {
-            return parser.data.flagSource[name].value
+            if (typeof name === 'number') {
+              return Array.from(parser.unrecognizedFlags)[name]
+            } else {
+              return parser.data.flagSource[name].value
+            }
           } catch (e) {
             return undefined
           }
