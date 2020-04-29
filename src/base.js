@@ -27,11 +27,11 @@ export default class Base {
       throw new Error('Invalid command configuration. A "name" attribute is required.')
     }
 
-    if (cfg.hasOwnProperty('help') && cfg.help !== this.help) {
+    if (cfg.hasOwnProperty('help')) {
       this.#customHelp = cfg.help
     }
 
-    if (cfg.hasOwnProperty('usage') && cfg.usage !== this.usage) {
+    if (cfg.hasOwnProperty('usage')) {
       this.#customUsage = cfg.usage
     }
 

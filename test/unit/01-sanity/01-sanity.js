@@ -82,3 +82,47 @@ test('Output Formatting', t => {
   console.log(formatter.help)
   t.end()
 })
+
+test('Subcommand Config', t => {
+  const cfg = {
+    name: 'account',
+    description: 'Perform operations on a user account.',
+    handler (meta, cb) {
+      console.log('TODO: Output account details')
+    },
+    commands: [
+      {
+        name: 'create',
+        description: 'Create a user account.',
+        arguments: '<email>',
+        flags: {
+          name: {
+            alias: 'n',
+            description: 'Account display name'
+          },
+          phone: {
+            alias: 'p',
+            description: 'Account phone number'
+          },
+          avatar: {
+            alias: 'a',
+            description: 'Account avatar image URL'
+          }
+        },
+
+        handler (meta, cb) {
+          console.log(meta)
+        }
+      }
+    ]
+  }
+
+  const shell = new Shell({
+    name: 'test',
+    commands: [cfg]
+  })
+
+  shell.exec('account create')
+  t.pass('test')
+  t.end()
+})
