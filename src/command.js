@@ -104,7 +104,7 @@ export default class Command extends Base {
       'name',
       'handler',
       'middleware',
-      'extraOptions'
+      'arguments'
     ])
 
     const unrecognized = Object.keys(cfg).filter(attribute => !attributes.has(attribute))
@@ -421,9 +421,9 @@ export default class Command extends Base {
           }
         }))
       }
-      console.log(4)  
+
       const processor = this.__processors.get(subcommand)
-      console.log(5)  
+
       if (this.autohelp) {
         if (data.help.requested) {
           if (processor) {
@@ -443,7 +443,7 @@ export default class Command extends Base {
         return this.middleware.run(...arguments, () => {})
       }
 
-      return Command.reply(await processor.run(args, callback()))
+      return Command.reply(await processor.run(args, callback))
     }
 
     // No subcommand was recognized

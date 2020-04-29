@@ -29,7 +29,7 @@ class Formatter {
     
     if (this.#data instanceof Command) {
       const aliases = this.#data.aliases
-      const out = [`${this.#data.commandroot}${aliases.length > 0 ? ' <' + aliases.join(', ') + '>' : ''}${this.#data.__flagConfig.size > 0 ? ' [OPTIONS]' : ''}${this.#data.__extraOptions.size > 0 ? ' ' + Array.from(this.#data.__extraOptions).join(', ') : ''}`]
+      const out = [`${this.#data.commandroot}${aliases.length > 0 ? '|' + aliases.join('|') : ''}${this.#data.__flagConfig.size > 0 ? ' [FLAGS]' : ''}${this.#data.__arguments.size > 0 ? ' ' + Array.from(this.#data.__arguments).join(', ') : ''}`]
       
       if (desc.trim().length > 0 && out !== desc) {
         out.push(new Table([[desc.trim().replace(/\n/gi, '\n  ')]], null, null, this.#tableWidth, [2, 0, 1, 1]).output)
@@ -37,7 +37,7 @@ class Formatter {
 
       return out.join('\n')
     } else if (this.#data instanceof Shell) {
-      return `${this.#data.name}${this.#data.__processors.size > 0 ? ' [COMMAND]' : ''}\n${desc.trim().length > 0 ? new Table([[desc.trim().replace(/\n/gi, '\n  ')]], null, null, this.#tableWidth, [2, 0, 1, 1]).output : ''}${this.#data.__extraOptions.size > 0 ? ' ' + Array.from(this.#data.__extraOptions).join(', ') : ''}\n`.trim()
+      return `${this.#data.name}${this.#data.__processors.size > 0 ? ' [COMMAND]' : ''}\n${desc.trim().length > 0 ? new Table([[desc.trim().replace(/\n/gi, '\n  ')]], null, null, this.#tableWidth, [2, 0, 1, 1]).output : ''}${this.#data.__arguments.size > 0 ? ' ' + Array.from(this.#data.__arguments).join(', ') : ''}\n`.trim()
     }
 
     return ''
@@ -60,16 +60,18 @@ class Formatter {
 
       const table = new Table(rows, this.#colAlign, this.#colWidth, this.#tableWidth, [2, 0, usage.length > 0 ? 1 : 0, 0])
 
-      return usage + '\n\nOptions:' + table.output
+      return usage + '\n\nFlags:' + table.output
     } else if (this.#data instanceof Shell) {
       const rows = Array.from(this.#data.__processors.values()).map(cmd => {
-        return [cmd.name, (cmd.aliases||[]).length > 0 ? `[${cmd.aliases.join(', ').trim()}]` : '', cmd.description]
+        console.log('>>>', cmd.name, cmd.aliases)
+        let nm = [cmd.name].concat(cmd.aliases)
+        return [nm.join('|'), cmd.description]
       })
 
       let result = [usage]
 
       if (rows.length > 0) {
-        const table = new Table(rows, this.#colAlign, this.#colWidth, this.#tableWidth, [2])
+        const table = new Table(rows, this.#colAlign, ['25%', '75%'], this.#tableWidth, [2])
         result.push(`\nCommands:\n`)
         result.push(table.output)
       }

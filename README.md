@@ -87,8 +87,8 @@ import { Shell, Command } from '@author.io/node-shell'
 const ListCommand = new Command({
   name: 'list',
   description: 'List the contents of the directory.',
-  // extraOptions are listed after the command in the default help screen. Ex: "dir list <dir>"
-  extraOptions: '<dir>',
+  // arguments are listed after the command in the default help screen. Ex: "dir list <dir>"
+  arguments: '<dir>',
   alias: 'ls',
   // Any flag parsing options from the @author.io/arg library can be configured here.
   // See https://github.com/author/arg#configuration-methods for a list.

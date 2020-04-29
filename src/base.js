@@ -8,7 +8,7 @@ export default class Base {
   #description
   #customUsage
   #customHelp
-  #extraOptions = new Set()
+  #arguments = new Set()
   #autohelp = true
   #processors = new Map()
   #commands = new Map()
@@ -51,12 +51,12 @@ export default class Base {
       this.defaultHandler = cfg.defaultHandler
     }
 
-    if (typeof cfg.extraOptions === 'string') {
-      cfg.extraOptions = cfg.extraOptions.split(/\s+\,/)
+    if (typeof cfg.arguments === 'string') {
+      cfg.arguments = cfg.arguments.split(/\s+\,/)
     }
 
-    if (Array.isArray(cfg.extraOptions)) {
-      this.#extraOptions = new Set([...cfg.extraOptions])
+    if (Array.isArray(cfg.arguments)) {
+      this.#arguments = new Set([...cfg.arguments])
     }
     
     this.#defaultHandler = cfg.defaultHandler || this.#defaultHandler
@@ -74,10 +74,10 @@ export default class Base {
     }
 
     Object.defineProperties(this, {
-      __extraOptions: {
+      __arguments: {
         enumerable: true,
         get() {
-          return this.#extraOptions
+          return this.#arguments
         }
       },
       __processors: {
