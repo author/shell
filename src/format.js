@@ -60,10 +60,9 @@ class Formatter {
 
       const table = new Table(rows, this.#colAlign, this.#colWidth, this.#tableWidth, [2, 0, usage.length > 0 ? 1 : 0, 0])
 
-      return usage + '\n\nFlags:' + table.output
+      return usage + (flags.size > 0 ? '\n\nFlags:' + table.output : '')
     } else if (this.#data instanceof Shell) {
       const rows = Array.from(this.#data.__processors.values()).map(cmd => {
-        console.log('>>>', cmd.name, cmd.aliases)
         let nm = [cmd.name].concat(cmd.aliases)
         return [nm.join('|'), cmd.description]
       })
