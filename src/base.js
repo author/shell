@@ -16,14 +16,16 @@ export default class Base {
   #name = 'Unknown'
   #middleware = new Middleware()
   #hasCustomDefaultHandler = false
-  #defaultHandler = function () {
+  #defaultHandler = function (meta) {
     if (this.parent !== null && this.parent.hasCustomDefaultHandler) {
       return this.parent.defaultHandler(...arguments)
     } else if (this.shell.hasCustomDefaultHandler) {
       return this.shell.defaultHandler(...arguments)
     }
 
-    console.log(this.help)
+    if (this.#autohelp) {
+      console.log(this.help)
+    }
   }
 
   constructor(cfg = {}) {

@@ -131,7 +131,8 @@ test('Subcommand Config', t => {
 //   const shell = new Shell({
 //     name: 'test',
 //     version: '1.0.0',
-//     defaultHandler: () => console.log('yo'),
+//     disableHelp: true,
+//     // defaultHandler: () => console.log('yo'),
 //     commands: [
 //       {
 //         name: 'account',
@@ -144,6 +145,9 @@ test('Subcommand Config', t => {
 //             name: 'create',
 //             description: 'Create a user account.',
 //             arguments: '<email>',
+//             help () {
+//               return 'overridden help'
+//             },
 //             flags: {
 //               name: {
 //                 alias: 'n',
