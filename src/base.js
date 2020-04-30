@@ -16,7 +16,15 @@ export default class Base {
   #name = 'Unknown'
   #middleware = new Middleware()
   #hasCustomDefaultHandler = false
-  #defaultHandler = data => console.log(this.help)
+  #defaultHandler = function () {
+    if (this.parent !== null && this.parent.hasCustomDefaultHandler) {
+      return this.parent.defaultHandler(...arguments)
+    } else if (this.shell.hasCustomDefaultHandler) {
+      return this.shell.defaultHandler(...arguments)
+    }
+
+    console.log(this.help)
+  }
 
   constructor(cfg = {}) {
     if (typeof cfg !== 'object') {
@@ -63,7 +71,6 @@ export default class Base {
       this.#arguments = new Set([...cfg.arguments])
     }
     
-    this.#defaultHandler = cfg.defaultHandler || this.#defaultHandler
     this.#name = (cfg.name || 'unknown').trim().split(/\s+/)[0]
     this.#description = cfg.description || null
 
@@ -265,9 +272,9 @@ export default class Base {
         }
       }
 
-      if (!command.hasCustomDefaultHandler) {
-        command.defaultHandler = this.defaultHandler
-      }
+      // if (!command.hasCustomDefaultHandler) {
+      //   command.defaultHandler = this.defaultHandler
+      // }
 
       command.autohelp = this.autohelp
 

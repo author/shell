@@ -126,3 +126,77 @@ test('Subcommand Config', t => {
   t.pass('Configuring subcommands does not throw an error')
   t.end()
 })
+
+// test('Default command help (regression test)', t => {
+//   const shell = new Shell({
+//     name: 'test',
+//     version: '1.0.0',
+//     defaultHandler: () => console.log('yo'),
+//     commands: [
+//       {
+//         name: 'account',
+//         description: 'Perform operations on a user account.',
+//         handler: (meta, cb) => {
+//           console.log('TODO: Output account details')
+//         },
+//         commands: [
+//           {
+//             name: 'create',
+//             description: 'Create a user account.',
+//             arguments: '<email>',
+//             flags: {
+//               name: {
+//                 alias: 'n',
+//                 description: 'Account display name'
+//               },
+//               phone: {
+//                 alias: 'p',
+//                 description: 'Account phone number'
+//               },
+//               avatar: {
+//                 alias: 'a',
+//                 description: 'Account avatar image URL'
+//               }
+//             }
+//             // handler: (meta, cb) => {
+//             //   // console.log(meta);
+//             // }
+//           }
+//         ]
+//       },
+//       {
+//         name: 'find',
+//         description: 'Search Metadoc for all the things.',
+//         alias: 'search',
+//         handler: (meta, cb) => {
+//         },
+//         flags: {
+//           maxresults: {
+//             type: 'string',
+//             single: true
+//           }
+//         }
+//       },
+//       {
+//         name: 'load',
+//         description: 'Load a metadoc.',
+//         handler: (meta, cb) => {
+//         }
+//       },
+//       {
+//         name: 'logout',
+//         alias: 'signout',
+//         handler: (meta, cb) => {
+//           console.log(meta)
+//           cb && cb()
+//         }
+//       }
+//     ]
+//   })
+
+//   shell.exec('account create')
+//   // console.log('---------')
+//   // shell.exec('blah')
+//   t.pass('ok')
+//   t.end()
+// })

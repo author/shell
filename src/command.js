@@ -33,14 +33,6 @@ export default class Command extends Base {
       cfg.middleware.forEach(code => this.use(Function(code)))
     }
 
-    this.defaultHandler = (data, cb) => {
-      if (data.help && data.help.requested) {
-        console.log(data.help.message)
-      }
-
-      cb && cb(data)
-    }
-
     this.#fn = cfg.handler
     this.#oid = Symbol(((cfg.name || cfg.usage) || cfg.pattern) || 'command')
     this.#pattern = cfg.pattern || /[\s\S]+/i
@@ -180,6 +172,10 @@ export default class Command extends Base {
     } else {
       throw new Error(`Cannot set parent of "${this.name}" command to anything other than another command. To make this command a direct descendent of the main shell, use the shell attribute instead.`)
     }
+  }
+
+  get parent () {
+    return this.#parent
   }
 
   set shell (shell) {
