@@ -85,7 +85,7 @@ export default class Command extends Base {
       'commands',
       'subcommands',
       'defaultHandler',
-      'autohelp',
+      'disableHelp',
       'flags',
       'alias',
       'aliases',
