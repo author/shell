@@ -33,13 +33,13 @@ export default class Command extends Base {
       cfg.middleware.forEach(code => this.use(Function(code)))
     }
 
-    // this.defaultHandler = (data, cb) => {
-    //   if (data.help && data.help.requested) {
-    //     console.log(data.help.message)
-    //   }
+    this.defaultHandler = (data, cb) => {
+      if (data.help && data.help.requested) {
+        console.log(data.help.message)
+      }
 
-    //   cb && cb(data)
-    // }
+      cb && cb(data)
+    }
 
     this.#fn = cfg.handler
     this.#oid = Symbol(((cfg.name || cfg.usage) || cfg.pattern) || 'command')
