@@ -164,7 +164,13 @@ export default class Shell extends Base {
         }
       }, [])
 
-      if (this.middleware.size === 0) {
+    if (args.trim().toLowerCase() === '--help') {
+      if (!this.autohelp) {
+        return await Command.reply()
+      }
+    }
+
+    if (this.middleware.size === 0) {
       return await Command.reply(await processor.run(args, callback))
     }
 

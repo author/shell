@@ -195,7 +195,7 @@ test('Default command help (regression test)', t => {
     ]
   })
 
-  shell.exec('account create --help')
+  shell.exec('account')
   // console.log('---------')
   // shell.exec('blah')
   t.pass('ok')
