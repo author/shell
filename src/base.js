@@ -35,8 +35,12 @@ export default class Base {
       this.#customUsage = cfg.usage
     }
 
-    if (cfg.hasOwnProperty('autohelp')) {
-      this.#autohelp = cfg.autohelp
+    if (cfg.hasOwnProperty('disablehelp') && !cfg.hasOwnProperty('disableHelp')) {
+      cfg.disableHelp = cfg.disablehelp
+    }
+
+    if (cfg.hasOwnProperty('disableHelp')) {
+      this.#autohelp = !cfg.disableHelp
     }
 
     if (typeof cfg.help === 'function' || typeof cfg.help === 'string') {

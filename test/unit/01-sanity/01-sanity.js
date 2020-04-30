@@ -123,6 +123,6 @@ test('Subcommand Config', t => {
   })
 
   shell.exec('account create')
-  t.pass('test')
+  t.pass('Configuring subcommands does not throw an error')
   t.end()
 })

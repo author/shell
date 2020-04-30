@@ -87,6 +87,7 @@ import { Shell, Command } from '@author.io/node-shell'
 const ListCommand = new Command({
   name: 'list',
   description: 'List the contents of the directory.',
+  disableHelp: false, // Set to true to turn off default help messages for the entire shell (you can still provide your own). Defaults to false.
   // arguments are listed after the command in the default help screen. Ex: "dir list <dir>"
   arguments: '<dir>',
   alias: 'ls',
