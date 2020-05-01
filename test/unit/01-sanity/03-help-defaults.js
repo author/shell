@@ -36,9 +36,9 @@ test('Request help via flag', t => {
   shell.exec('a b c --help')
     .then(r => {
       // fs.writeFileSync('./test.txt', Buffer.from(msg))
-      t.ok(msg === `mycli a b c
+      t.ok(shell.getCommand('a b c').help === `mycli a b c
 
-  Choices are great.`, 'Displayed correct default help message')
+  Choices are great.`, 'XDisplayed correct default help message')
     })
     .catch(e => t.fail(e.message))
     .finally(() => t.end())
@@ -51,7 +51,7 @@ test('Default help when no handler exists', t => {
 
   shell.exec('a b c')
     .then(r => {
-      t.ok(msg === `mycli a b c
+      t.ok(shell.getCommand('a b c').help === `mycli a b c
 
   Choices are great.`, 'Displayed correct default help message when no handler exists')
     })
@@ -80,7 +80,7 @@ test('Disabled help', t => {
   shell.exec('a b c --help')
     .then(r => {
       // fs.writeFileSync('./test.txt', Buffer.from(msg))
-      t.ok(msg.trim() === '', `Expected no help message. Received "${msg}"`)
+      t.ok(shell.getCommand('a b c').help.trim() === '', `Expected no help message. Received "${msg}"`)
     })
     .catch(e => t.fail(e.message))
     .finally(() => t.end())

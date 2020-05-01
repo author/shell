@@ -409,13 +409,13 @@ export default class Command extends Base {
       this.middleware.use(...parentMiddleware)
     }
 
+    if (arguments[0].help && arguments[0].help.requested) {
+      return console.log(this.help)
+    }
+
     // No subcommand was recognized
     if (this.middleware.size > 0) {
       return this.middleware.run(arguments[0], async meta => await Command.reply(fn(meta, callback)))
-    }
-
-    if (arguments[0].help && arguments[0].help.requested) {
-      return Command.reply(fn(data, () => console.log(this.help)))
     }
 
     return Command.reply(fn(data, callback))
