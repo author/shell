@@ -24,7 +24,7 @@ export default class Shell extends Base {
     super(cfg)
 
     if (cfg.hasOwnProperty('middleware') && Array.isArray(cfg.middleware)) {
-      cfg.middleware.forEach(code => this.use(Function('return ' + code)()))
+      cfg.middleware.forEach(code => this.initializeMiddleware(code))
     }
 
     this.#version = cfg.version || '1.0.0'
@@ -110,7 +110,7 @@ export default class Shell extends Base {
 
     const fns = Array.from(arguments).slice(1)
 
-    commands.forEach(cmd => this.#middlewareGroups.set(cmd, (this.#middlewareGroups.get(cmd) || []).concat(fns)))
+    commands.forEach(cmd => this.#middlewareGroups.set(cmd.trim(), (this.#middlewareGroups.get(cmd.trim()) || []).concat(fns)))
   }
 
   async exec (input, callback) {
@@ -125,6 +125,8 @@ export default class Shell extends Base {
     if (parsed === null) {
       if (input.indexOf('version') !== -1 || input.indexOf('-v') !== -1) {
         return console.log(this.version)
+      } else if (input.indexOf('help') !== -1) {
+        return console.log(this.help)
       }
       
       return Command.stderr(this.help)
@@ -146,38 +148,23 @@ export default class Shell extends Base {
       return Command.stderr(this.help)
     }
 
-    const processor = this.__processors.get(action)
+    let processor = this.__processors.get(action)
 
     if (!processor) {
       return Command.stderr('Command not found.')
     }
 
-    // Apply command-specific middleware (configured via useWith)
-    processor.commandroot.replace(new RegExp('^' + this.name, 'i'), '')
-      .trim()
-      .split(/\s+/)
-      .reduce((cmdpath, name) => {
-        cmdpath.push(name)
-        const fns = this.#middlewareGroups.get(cmdpath.join(' '))
-        if (fns) {
-          processor.use(...fns)
-        }
-      }, [])
+    const term = processor.getTerminalCommand(args)
+    return await Command.reply(await term.command.run(term.arguments, callback))
+  }
 
-    if (args.trim().toLowerCase() === '--help') {
-      if (!this.autohelp) {
-        return await Command.reply()
-      }
-    }
+  getCommandMiddleware (cmd) {
+    let results = []
+    cmd.split(/\s+/).forEach((c, i, a) => {
+      let r = this.#middlewareGroups.get(a.slice(0, i + 1).join(' '))
+      r && results.push(r.flat(Infinity))
+    })
 
-    if (this.middleware.size === 0) {
-      return await Command.reply(await processor.run(args, callback))
-    }
-
-    arguments[0] = processor.deepParse(args)
-
-    return this.middleware.run(
-      ...arguments,
-      async () => await Command.reply(await processor.run(args)))
+    return results.flat(Infinity)
   }
 }

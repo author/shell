@@ -49,8 +49,8 @@ export default class Base {
       cfg.disableHelp = cfg.disablehelp
     }
 
-    if (cfg.hasOwnProperty('disableHelp')) {
-      this.#autohelp = !cfg.disableHelp
+    if (cfg.hasOwnProperty('disableHelp') && cfg.disableHelp === true) {
+      this.#autohelp = false
     }
 
     if (typeof cfg.help === 'function' || typeof cfg.help === 'string') {
@@ -113,6 +113,20 @@ export default class Base {
         set (v) {
           this.#width = v || 80
         }
+      },
+      initializeMiddleware: {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: code => {
+          if (typeof code === 'string') {
+            this.use(Function('return ' + code)())
+          } else if (typeof code === 'function') {
+            this.use(code)
+          } else {
+            throw new Error('Invalid middleware: ' + code.toString())
+          }
+        }
       }
     })
   }
@@ -163,6 +177,10 @@ export default class Base {
   get help () {
     if (this.#customHelp) {
       return typeof this.#customHelp === 'function' ? this.#customHelp(this) : this.#customHelp
+    }
+
+    if (!this.autohelp) {
+      return ''
     }
 
     this.updateHelp()
@@ -244,7 +262,7 @@ export default class Base {
     }
   }
 
-  use() {
+  use () {
     for (const arg of arguments) {
       if (typeof arg !== 'function') {
         throw new Error(`All "use()" arguments must be valid functions.\n${arg.toString().substring(0, 50)} ${arg.toString().length > 50 ? '...' : ''}`)
@@ -253,7 +271,7 @@ export default class Base {
       this.#middleware.use(arg)
     }
 
-    this.__processors.forEach(subCmd => subCmd.use(...arguments))
+    this.#processors.forEach(subCmd => subCmd.use(...arguments))
   }
 
   get middleware () {
@@ -261,7 +279,7 @@ export default class Base {
   }
 
   get commands() {
-    return this.__processors
+    return this.#processors
   }
 
   add () {
@@ -273,10 +291,6 @@ export default class Base {
           throw new Error('Invalid argument. Only "Command" instances may be added to the processor.')
         }
       }
-
-      // if (!command.hasCustomDefaultHandler) {
-      //   command.defaultHandler = this.defaultHandler
-      // }
 
       command.autohelp = this.autohelp
 

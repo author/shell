@@ -1,7 +1,7 @@
 import 'source-map-support/register.js'
 import test from 'tape'
 import { Command, Shell, Formatter } from '../../.node/index.js'
-
+import fs from 'fs'
 test('Sanity Check - Shell', t => {
   const shell = new Shell({
     name: 'test'
@@ -44,7 +44,6 @@ test('Sanity Check - Command', t => {
     t.pass('Default handler fires.')
     t.end()
   }).catch(e => {
-    console.log(e)
     t.fail(e.message)
     t.end()
   })
@@ -79,11 +78,21 @@ test('Output Formatting', t => {
   formatter.width = 80
 
   t.ok(formatter instanceof Formatter, 'Basic formatter instantiates correctly.')
-  console.log(formatter.help)
+  // fs.writeFileSync('./test.txt', Buffer.from(formatter.help))
+  t.ok(formatter.help === `test cmd|c [FLAGS]
+
+Flags:
+  -test       [-t]            test description                                   
+  -more       [-m, -mr]       This is a longer description that should break onto
+                              more than one line, or perhaps even more than one  
+                              extra line with especially poor grammar and        
+                              spellling.                                         
+  -none                       Ignore me. I do not exist.                         `, 'Correctly generated default help message.')
   t.end()
 })
 
 test('Subcommand Config', t => {
+  let ok = false
   const cfg = {
     name: 'account',
     description: 'Perform operations on a user account.',
@@ -111,7 +120,7 @@ test('Subcommand Config', t => {
         },
 
         handler (meta, cb) {
-          console.log(meta)
+          ok = true
         }
       }
     ]
@@ -122,82 +131,35 @@ test('Subcommand Config', t => {
     commands: [cfg]
   })
 
-  shell.exec('account create')
-  t.pass('Configuring subcommands does not throw an error')
-  t.end()
+  shell.exec('account create').then(r => {
+    t.ok(ok, 'Configuring subcommands does not throw an error')
+  }).catch(e => t.fail(e.message))
+    .finally(() => t.end())
 })
 
-// test('Default command help (regression test)', t => {
-//   const shell = new Shell({
-//     name: 'test',
-//     version: '1.0.0',
-//     disableHelp: true,
-//     // defaultHandler: () => console.log('yo'),
-//     commands: [
-//       {
-//         name: 'account',
-//         description: 'Perform operations on a user account.',
-//         handler: (meta, cb) => {
-//           console.log('TODO: Output account details')
-//         },
-//         commands: [
-//           {
-//             name: 'create',
-//             description: 'Create a user account.',
-//             arguments: '<email>',
-//             flags: {
-//               name: {
-//                 alias: 'n',
-//                 description: 'Account display name'
-//               },
-//               phone: {
-//                 alias: 'p',
-//                 description: 'Account phone number'
-//               },
-//               avatar: {
-//                 alias: 'a',
-//                 description: 'Account avatar image URL'
-//               }
-//             }
-//             // handler: (meta, cb) => {
-//             //   // console.log(meta);
-//             // }
-//           }
-//         ]
-//       },
-//       {
-//         name: 'find',
-//         description: 'Search Metadoc for all the things.',
-//         alias: 'search',
-//         handler: (meta, cb) => {
-//         },
-//         flags: {
-//           maxresults: {
-//             type: 'string',
-//             single: true
-//           }
-//         }
-//       },
-//       {
-//         name: 'load',
-//         description: 'Load a metadoc.',
-//         handler: (meta, cb) => {
-//         }
-//       },
-//       {
-//         name: 'logout',
-//         alias: 'signout',
-//         handler: (meta, cb) => {
-//           console.log(meta)
-//           cb && cb()
-//         }
-//       }
-//     ]
-//   })
+test('Default command help (regression test)', t => {
+  const shell = new Shell({
+    name: 'test',
+    version: '1.0.0',
+    disableHelp: true,
+    commands: [
+      {
+        name: 'account',
+        description: 'Perform operations on a user account.',
+        handler: (meta, cb) => {},
+        commands: [
+          {
+            name: 'create',
+            description: 'Create a user account.',
+            arguments: '<email>'
+          }
+        ]
+      }
+    ]
+  })
 
-//   shell.exec('account')
-//   // console.log('---------')
-//   // shell.exec('blah')
-//   t.pass('ok')
-//   t.end()
-// })
+  shell.exec('account')
+
+  t.pass('Ran without error.')
+  t.end()
+})

@@ -30,7 +30,7 @@ export default class Command extends Base {
     super(cfg)
 
     if (cfg.hasOwnProperty('middleware') && Array.isArray(cfg.middleware)) {
-      cfg.middleware.forEach(code => this.use(Function(code)))
+      cfg.middleware.forEach(code => this.initializeMiddleware(code))
     }
 
     this.#fn = cfg.handler
@@ -116,6 +116,31 @@ export default class Command extends Base {
           }
 
           return flags
+        }
+      },
+      getTerminalCommand: {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: input => {
+          let args = input.trim().split(/\t+|\s+/)
+          let cmd = this
+
+          while (args.length > 0) {
+            const arg = args[0]
+            const subcmd = cmd.getCommand(arg)
+            if (subcmd) {
+              cmd = subcmd
+              args.shift()
+            } else {
+              break
+            }
+          }
+
+          return {
+            command: cmd,
+            arguments: args.join(' ')
+          }
         }
       }
     })
@@ -373,79 +398,20 @@ export default class Command extends Base {
   }
 
   async run (input, callback) {
-    let fn = (this.#fn || this.defaultHandler).bind(this)
-    let data = typeof input === 'string' ? this.parse(input) : input
-    const parsed = SUBCOMMAND_PATTERN.exec(input)
+    const fn = (this.#fn || this.defaultHandler).bind(this)
+    const data = typeof input === 'string' ? this.parse(input) : input
 
     arguments[0] = this.deepParse(input)
+
+    const parentMiddleware = this.shell.getCommandMiddleware(this.commandroot.replace(new RegExp(`^${this.shell.name}`, 'i'), '').trim())
     
-    // A possible subcommand was input
-    if (parsed) {
-      let cmd = parsed[1]
-      let args = parsed.length > 2 ? parsed[2] : ''
-      let command = null
-      let subcommand = this.__commands.get(cmd)
-
-      if (!subcommand) {
-        for (const [name, id] of this.__commands) {
-          const subcmd = this.__processors.get(id)
-
-          if (subcmd.aliases.indexOf(cmd)) {
-            subcommand = subcmd
-            break
-          }
-        }
-      }
-
-      // If the prospective subcommand is not recognized, run the main processor
-      if (!subcommand) {
-        return await (new Promise((resolve, reject) => {
-          try {
-            if (this.autohelp && data.help.requested) {
-              console.log(this.help)              
-              resolve()
-            } else {
-              try {
-                this.middleware.use(fn)
-                resolve(() => this.middleware.run(data, () => callback && callback()))
-              } catch (ee) {
-                reject(ee)
-              }
-            }
-          } catch (e) {
-            reject(e)
-          }
-        }))
-      }
-
-      const processor = this.__processors.get(subcommand)
-
-      if (this.autohelp) {
-        if (data.help.requested) {
-          if (processor) {
-            return console.log(processor.help)
-          } else {
-            return console.log(this.help)
-          }
-        }
-      }
-
-      if (!processor) {
-        return new Promise((resolve, reject) => reject(new Error(`${ this.name } "${cmd}" command not found.`)))
-      }
-
-      if (this.middleware.size > 0) {
-        this.middleware.use(async meta => await Command.reply(fn(meta, callback)))
-        return this.middleware.run(...arguments, () => {})
-      }
-
-      return Command.reply(await processor.run(args, callback))
+    if (parentMiddleware.length > 0) {
+      this.middleware.use(...parentMiddleware)
     }
 
     // No subcommand was recognized
     if (this.middleware.size > 0) {
-      this.middleware.use(async meta => await Command.reply(fn(meta, callback)))
-      return this.middleware.run(...arguments, () => {})
+      return this.middleware.run(arguments[0], async meta => await Command.reply(fn(meta, callback)))
     }
 
     return Command.reply(fn(data, callback))

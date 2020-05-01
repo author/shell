@@ -46,7 +46,7 @@ Sometimes single purpose tools grow into multipurpose tools over time. Tools whi
 
 `npm install @author.io/node-shell`
 
-Please note, you'll need a verison of Node that supports ES Modules. In Node 12, this feature is behind the `--experimental-modules` flag. It is available in Node 13+ without a flag, but your `package.json` file must have the `"type": "module"` attribute. This feature will be generally available in Node 14.0.0 (release date April 21, 2020).
+Please note, you'll need a verison of Node that supports ES Modules. In Node 12, this feature is behind the `--experimental-modules` flag. It is available in Node 13+ without a flag, but your `package.json` file must have the `"type": "module"` attribute. This feature is generally available as of [Node 14.0.0](https://nodejs.org).
 
 ### For Legacy Node (CommonJS/require)
 
@@ -60,15 +60,17 @@ If you need to use the older CommonJS format (i.e. `require`), run `npm install 
 import { Shell, Command } from 'https://cdn.pika.dev/@author.io/browser-shell'
 ```
 
-Also available from [jsdelivr](https://www.jsdelivr.com/?query=%40author.io%2Fshell) and [unpkg](https://unpkg.com/@author.io/browser-shell).
+Also available from [jsdelivr](https://www.jsdelivr.com/package/npm/@author.io/browser-shell) and [unpkg](https://unpkg.com/@author.io/browser-shell).
 
 **npm options**
 
 If you wish to bundle this library in your build process, use the version most appropriate for your target runtimes:
 
-- `npm install @author.io/shell` (source)
 - `npm install @author.io/browser-shell` (Minified ES Module)
 - `npm install @author.io/browser-shell-es6` (IIFE Minified Module - globally accessible)
+- `npm install @author.io/shell` (source)
+
+**TAKE NOTICE: The source may not be what you think it is.** The source code may contain Node or browser code that is stripped out during the build process. We have a goal of making the _API_ runtime-agnostic, not the implementation. We do everything we can to avoid runtime-specific source code though, and it is rare to have node or browser-specific source code... we just can't guarantee the source will be easily embeddable. We recommend consuming the prebuilt editions.
 
 ### Debugging
 
@@ -94,7 +96,8 @@ const ListCommand = new Command({
   // Any flag parsing options from the @author.io/arg library can be configured here.
   // See https://github.com/author/arg#configuration-methods for a list.
   flags: {
-    l: {
+    long: {
+      alias: 'l',
       description: 'Long format'.
       type: 'boolean',
       default: false
@@ -106,7 +109,7 @@ const ListCommand = new Command({
     }
   },
   handler (metadata, callback) {
-    // ... this is where your command actually runs ...
+    // ... this is where your command actually does something ...
     
     // Data comes from @author.io/arg lib. It looks like:
     // {
@@ -127,7 +130,10 @@ const ListCommand = new Command({
     console.log(metadata)
 
     // A single flag's value can be retrieved with this helper method.
-    console.log(metadata.flag('l))
+    console.log(metadata.flag('long'))
+
+    // Any unrecognized flags can be retrieved by index number (0-based)
+    console.log(metadata.flag(0)) // The first unrecognized flag... returns null if it doesn't exist
 
     // Execution callbacks are optional. If a callback is passed from the 
     // execution context to this handler, it will run after the command 

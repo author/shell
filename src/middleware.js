@@ -1,8 +1,10 @@
-const last = a => a[a.length - 1]
-const reduce = a => a.slice(0, -1)
-
 export default class Middleware {
-  constructor () { Object.defineProperty(this, '_data', { enumerable: false, value: [] }) }
+  constructor () {
+    Object.defineProperties(this, {
+      _data: { enumerable: false, configurable: false, value: [] },
+      go: { enumerable: false, configurable: false, writable: true, value: (...args) => { args.pop().apply(this, args) } }
+    })
+  }
 
   get size () { return this._data.length }
 
@@ -14,13 +16,20 @@ export default class Middleware {
       this._data.push(methodBody)
     }
 
-    this.run = ((stack) => (...args) => stack(...reduce(args), () => {
-      const next = last(args)
-      method.apply(this, [...reduce(args), next.bind.apply(next, [null, ...reduce(args)])])
-    }))(this.run)
+    this.go = (stack => (...args) => {
+      let next = args.pop()
+      stack(...args, () => {
+        method.apply(this, [...args, next.bind(null, ...args)])
+      })
+    })(this.go)
   }
 
-  run (...args) {
-    last(args).apply(this, reduce(args))
+  run () {
+    const args = Array.from(arguments)
+    if (args.length === 0 || typeof args[args.length - 1] !== 'function') {
+      args.push(() => {})
+    }
+
+    this.go(...args)
   }
 }
