@@ -1,7 +1,7 @@
 import 'source-map-support/register.js'
 import test from 'tape'
 import { Shell, Middleware } from '../../.node/index.js'
-import fs from 'fs'
+// import fs from 'fs'
 
 let msg = ''
 const cfg = () => {
