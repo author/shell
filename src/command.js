@@ -398,7 +398,7 @@ export default class Command extends Base {
   }
 
   async run (input, callback) {
-    const fn = (this.#fn || this.defaultHandler).bind(this)
+    let fn = (this.#fn || this.defaultHandler).bind(this)
     const data = typeof input === 'string' ? this.parse(input) : input
 
     arguments[0] = this.deepParse(input)
@@ -412,6 +412,10 @@ export default class Command extends Base {
     // No subcommand was recognized
     if (this.middleware.size > 0) {
       return this.middleware.run(arguments[0], async meta => await Command.reply(fn(meta, callback)))
+    }
+
+    if (arguments[0].help && arguments[0].help.requested) {
+      return Command.reply(fn(data, () => console.log(this.help)))
     }
 
     return Command.reply(fn(data, callback))

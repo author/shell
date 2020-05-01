@@ -1,7 +1,8 @@
 import 'source-map-support/register.js'
 import test from 'tape'
 import { Command, Shell, Formatter } from '../../.node/index.js'
-import fs from 'fs'
+// import fs from 'fs'
+
 test('Sanity Check - Shell', t => {
   const shell = new Shell({
     name: 'test'
