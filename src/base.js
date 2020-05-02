@@ -66,13 +66,13 @@ export default class Base {
     }
 
     if (typeof cfg.arguments === 'string') {
-      cfg.arguments = cfg.arguments.split(/\s+\,/)
+      cfg.arguments = cfg.arguments.split(/\s+|\t+|\,+|\;+/).map(arg => arg.trim())
     }
 
     if (Array.isArray(cfg.arguments)) {
-      this.#arguments = new Set([...cfg.arguments])
+      this.#arguments = cfg.arguments
     }
-    
+
     this.#name = (cfg.name || 'unknown').trim().split(/\s+/)[0]
     this.#description = cfg.description || null
 
@@ -112,6 +112,12 @@ export default class Base {
         },
         set (v) {
           this.#width = v || 80
+        }
+      },
+      arguments: {
+        enumerable: false,
+        get () {
+          return this.#arguments
         }
       },
       initializeMiddleware: {

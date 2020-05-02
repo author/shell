@@ -6,6 +6,7 @@ import Base from './base.js'
 const SUBCOMMAND_PATTERN = /^([^"'][\S\b]+)[\s+]?([^-].*)$/i
 const FLAG_PATTERN = /((?:"[^"\\]*(?:\\[\S\s][^"\\]*)*"|'[^'\\]*(?:\\[\S\s][^'\\]*)*'|\/[^\/\\]*(?:\\[\S\s][^\/\\]*)*\/[gimy]*(?=\s|$)|(?:\\\s|\S))+)(?=\s|$)/g
 const METHOD_PATTERN = /^([\w]+\s?)\(.*\)\s?{/i
+const STRIP_QUOTE_PATTERN = /"([^"\\]*(\\.[^"\\]*)*)"|\'([^\'\\]*(\\.[^\'\\]*)*)\'/ig
 
 export default class Command extends Base {
   #pattern
@@ -334,13 +335,12 @@ export default class Command extends Base {
       }
     }
 
-    // let source = input.replace(STRIP_EQUAL_SIGNS, '').trim() + ' '
-
     const flags = Array.from(FLAG_PATTERN[Symbol.matchAll](input), x => x[0])
     const parser = new Parser(flags, flagConfig)
-
-    let recognized = parser.data
-
+    const pdata = parser.data
+    const recognized = {}
+    
+    parser.recognizedFlags.forEach(flag => recognized[flag] = pdata[flag])
     parser.unrecognizedFlags.forEach(arg => delete recognized[arg])
 
     data.flags = { recognized, unrecognized: parser.unrecognizedFlags }
@@ -348,8 +348,8 @@ export default class Command extends Base {
     data.violations = parser.violations
     
     data.parsed = {}
-    if (Object.keys(parser.data.flagSource).length > 0) {
-      for (const [key, src] of Object.entries(parser.data.flagSource)) {
+    if (Object.keys(pdata.flagSource).length > 0) {
+      for (const [key, src] of Object.entries(pdata.flagSource)) {
         data.parsed[src.name] = src.inputName
       }
     }
@@ -362,6 +362,8 @@ export default class Command extends Base {
       data.help.message = this.help
     }
 
+    const args = this.arguments
+    
     Object.defineProperties(data, {
       flag: {
         enumerable: true,
@@ -372,7 +374,7 @@ export default class Command extends Base {
             if (typeof name === 'number') {
               return Array.from(parser.unrecognizedFlags)[name]
             } else {
-              return parser.data.flagSource[name].value
+              return pdata.flagSource[name].value
             }
           } catch (e) {
             return undefined
@@ -386,6 +388,52 @@ export default class Command extends Base {
       shell: {
         enumerable: true,
         get: () => this.shell
+      },
+      data: {
+        enumerable: true,
+        get () {
+          let uf = parser.unrecognizedFlags
+          let result = Object.assign({}, recognized)
+          delete result.help
+
+          if (uf.length > 0) {
+            args.forEach((name, i) => {
+              let value = uf[i]
+              let normalizedValue = Object.keys(pdata).filter(key => key.toLowerCase() === value)
+              normalizedValue = (normalizedValue.length > 0 ? normalizedValue.pop() : value)
+
+              if (normalizedValue !== undefined) {
+                normalizedValue = normalizedValue.trim()
+
+                if (STRIP_QUOTE_PATTERN.test(normalizedValue)) {
+                  normalizedValue = normalizedValue.substring(1, normalizedValue.length - 1)
+                }
+              }
+
+              if (result.hasOwnProperty(name)) {
+                result[name] = Array.isArray(result[name]) ? result[name]: [result[name]]
+                result[name].push(normalizedValue)
+              } else {
+                result[name] = normalizedValue
+              }
+            })
+
+            if (uf.length > args.length) {
+              uf.slice(args.length)
+                .forEach((flag, i) => {
+                  let name = `unknown${i + 1}`
+                  while (result.hasOwnProperty(name)) {
+                    let number = name.substring(7)
+                    name = 'unknown' + (parseInt(number) + 1)
+                  }
+
+                  result[name] = flag
+                })
+            }
+          }
+
+          return result
+        }
       }
     })
 
