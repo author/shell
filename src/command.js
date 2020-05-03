@@ -13,7 +13,7 @@ export default class Command extends Base {
   #oid
   #aliases = new Set()
   #fn
-  #flagConfig = null
+  #flagConfig = {}
   #parent = null
   #shell = null
   
@@ -30,8 +30,12 @@ export default class Command extends Base {
 
     super(cfg)
 
-    if (cfg.hasOwnProperty('middleware') && Array.isArray(cfg.middleware)) {
-      cfg.middleware.forEach(code => this.initializeMiddleware(code))
+    if (cfg.hasOwnProperty('use') && Array.isArray(cfg.use)) {
+      cfg.use.forEach(code => this.initializeMiddleware(code))
+    }
+
+    if (cfg.hasOwnProperty('trailer') && Array.isArray(cfg.trailer)) {
+      cfg.trailer.forEach(code => this.initializeTrailer(code))
     }
 
     this.#fn = cfg.handler
@@ -97,25 +101,37 @@ export default class Command extends Base {
       'name',
       'handler',
       'middleware',
-      'arguments'
+      'use',
+      'arguments',
+      'commonflag',
+      'commonflags',
+      'trailer'
     ])
 
     const unrecognized = Object.keys(cfg).filter(attribute => !attributes.has(attribute))
 
     if (unrecognized.length > 0) {
-      throw new Error(`Unrecognized shell configuration attribute(s): ${unrecognized.join(', ')}`)
+      throw new Error(`Unrecognized configuration attribute(s): ${unrecognized.join(', ')}`)
     }
 
     Object.defineProperties(this, {
+      __commonFlags: {
+        enumerable: false,
+        get () {
+          let flags = Object.assign({}, this.__commonflags, this.#flagConfig)
+          
+          if (this.parent !== null) {
+            flags = Object.assign(flags, this.parent.__commonFlags)
+          }
+
+          return Object.assign({}, this.shell.__commonflags, flags)
+        }
+      },
       __flagConfig: {
         enumerable: false,
         get () {
-          const flags = new Map()
-          if (this.#flagConfig !== null) {
-            Object.keys(this.#flagConfig).forEach(key => flags.set(key, this.#flagConfig[key]))
-            flags.delete('help')
-          }
-
+          let flags = new Map(Object.entries(Object.assign(this.__commonFlags, this.#flagConfig || {})))
+          flags.delete('help')
           return flags
         }
       },
@@ -146,6 +162,8 @@ export default class Command extends Base {
       }
     })
 
+    this.__commonflags = cfg.commonflags || {}
+
     this.__width = this.shell === null ? 80 : this.shell.tableWidth || 80
 
     this.updateHelp()
@@ -159,7 +177,7 @@ export default class Command extends Base {
       handler = handler.replace(METHOD_PATTERN.exec(handler)[1], 'function ')
     }
 
-    let flags = this.#flagConfig || {}
+    let flags = Object.assign(this.__commonFlags, this.#flagConfig || {})
     
     for (let [key, value] of Object.entries(flags)) {
       value.aliases = value.aliases || []
@@ -182,7 +200,9 @@ export default class Command extends Base {
       flags,
       handler,
       commands,
-      middleware: this.middleware.data
+      disableHelp: !this.autohelp,
+      use: this.middleware.data,
+      trailer: this.trailers.data
     }
 
     for (let [key, value] of Object.entries(data.flags)) {
@@ -287,7 +307,6 @@ export default class Command extends Base {
       }
     }
 
-    this.#flagConfig = this.#flagConfig || {}
     this.#flagConfig[name] = cfg
   }
 
@@ -324,7 +343,7 @@ export default class Command extends Base {
     // Parse the command input for flags
     const data = { command: this.name, input: input.trim() }
 
-    let flagConfig = this.#flagConfig || {}
+    let flagConfig = Object.assign(this.__commonFlags, this.#flagConfig || {})
 
     if (!flagConfig.hasOwnProperty('help')) {
       flagConfig.help = {
@@ -339,7 +358,7 @@ export default class Command extends Base {
     const parser = new Parser(flags, flagConfig)
     const pdata = parser.data
     const recognized = {}
-    
+
     parser.recognizedFlags.forEach(flag => recognized[flag] = pdata[flag])
     parser.unrecognizedFlags.forEach(arg => delete recognized[arg])
 
@@ -457,16 +476,34 @@ export default class Command extends Base {
       this.middleware.use(...parentMiddleware)
     }
 
+    let trailers = this.trailers
+
     if (arguments[0].help && arguments[0].help.requested) {
-      return console.log(this.help)
+      console.log(this.help)
+      
+      if (trailers.size > 0) {
+        trailers.run(arguments[0])
+      }
+
+      return
     }
 
     // No subcommand was recognized
     if (this.middleware.size > 0) {
-      return this.middleware.run(arguments[0], async meta => await Command.reply(fn(meta, callback)))
+      this.middleware.run(arguments[0], async meta => await Command.reply(fn(meta, callback)))
+      
+      if (trailers.size > 0) {
+        trailers.run(arguments[0])
+      }
+
+      return
     }
 
-    return Command.reply(fn(data, callback))
+    Command.reply(fn(data, callback))
+
+    if (trailers.size > 0) {
+      trailers.run(arguments[0])
+    }
   }
 
   static stderr (err) {
@@ -483,6 +520,7 @@ export default class Command extends Base {
         if (typeof callback === 'function') {
           callback()
         }
+        
         resolve()
       } catch (e) {
         reject(e)

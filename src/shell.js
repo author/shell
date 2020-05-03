@@ -23,8 +23,14 @@ export default class Shell extends Base {
   constructor (cfg = { maxhistory: 100 }) {
     super(cfg)
 
-    if (cfg.hasOwnProperty('middleware') && Array.isArray(cfg.middleware)) {
-      cfg.middleware.forEach(code => this.initializeMiddleware(code))
+    this.__commonflags = cfg.commonflags || {}
+
+    if (cfg.hasOwnProperty('use') && Array.isArray(cfg.use)) {
+      cfg.use.forEach(code => this.initializeMiddleware(code))
+    }
+
+    if (cfg.hasOwnProperty('trailer') && Array.isArray(cfg.trailer)) {
+      cfg.trailer.forEach(code => this.initializeTrailer(code))
     }
 
     this.#version = cfg.version || '1.0.0'
@@ -40,11 +46,12 @@ export default class Shell extends Base {
       description: this.description,
       version: this.version,
       commands,
-      middleware: this.middleware.data,
+      use: this.middleware.data,
+      trailer: this.trailers.data,
       help: this.help,
       usage: this.usage,
       defaultHandler: this.defaultHandler.toString(),
-      authohelp: this.autohelp,
+      disableHelp: !this.autohelp,
       runtime: this.#runtime,
       maxHistoryItems: this.#maxHistoryItems
     }

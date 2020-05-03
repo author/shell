@@ -59,7 +59,7 @@ test('Basic Shell & Command Middleware', t => {
       handler () {},
       commands: [{
         name: 'b',
-        middleware: [(meta, next) => { count++; next() }],
+        use: [(meta, next) => { count++; next() }],
         handler () {},
         commands: [{
           name: 'c',
@@ -91,7 +91,7 @@ test('Command Specific Middleware', t => {
       handler () { },
       commands: [{
         name: 'b',
-        middleware: [(meta, next) => { count++; next() }],
+        use: [(meta, next) => { count++; next() }],
         handler () { },
         commands: [{
           name: 'c',
@@ -113,13 +113,47 @@ test('Command Specific Middleware', t => {
   })
 })
 
+test('Basic Trailers', t => {
+  let ok = false
+  let after = 0
+
+  const shell = new Shell({
+    name: 'test',
+    commands: [{
+      name: 'a',
+      handler () { },
+      commands: [{
+        name: 'b',
+        use: [(meta, next) => { next() }],
+        handler () { },
+        commands: [{
+          name: 'c',
+          handler () {
+            ok = true
+          },
+          trailer: [
+            (meta, next) => { after++; next() },
+            meta => {
+              t.ok(after === 1, `Expected 1 trailer to run. Recognized ${after}.`)
+              t.pass('Ran trailer.')
+              t.end()
+            }
+          ]
+        }]
+      }]
+    }]
+  })
+
+  shell.exec('a b c')
+})
+
 // test('Regression Test: Middleware Duplication', t => {
 //   let count = 0
 
 //   const shell = new Shell({
 //     name: 'Metadoc CLI',
 //     version: '1.0.0',
-//     middleware: [
+//     use: [
 //       (meta, next) => {
 //         console.log('A')
 //         count++
@@ -136,7 +170,7 @@ test('Command Specific Middleware', t => {
 //             name: 'create',
 //             description: 'Create a user account.',
 //             arguments: '<email>',
-//             middleware: [(d, next) => {
+//             use: [(d, next) => {
 //               console.log('C')
 //               count++
 //               next()

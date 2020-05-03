@@ -40,43 +40,9 @@ Multipurpose tools require a layer of organizational overhead to help isolate di
 
 Sometimes single purpose tools grow into multipurpose tools over time. Tools which start out using the `@author.io/arg` library can be transitioned into multipurpose tools using `@author.io/shell` (with reasonable ease). After all, they use the same code, just nicely separated by purpose.
 
-## Installation & Usage
-
-### For Modern Node (ES Modules)
-
-`npm install @author.io/node-shell`
-
-Please note, you'll need a verison of Node that supports ES Modules. In Node 12, this feature is behind the `--experimental-modules` flag. It is available in Node 13+ without a flag, but your `package.json` file must have the `"type": "module"` attribute. This feature is generally available as of [Node 14.0.0](https://nodejs.org).
-
-### For Legacy Node (CommonJS/require)
-
-If you need to use the older CommonJS format (i.e. `require`), run `npm install @author.io/node-shell-legacy` instead.
-
-### For Browsers
-
-**CDN**
-
-```javascript
-import { Shell, Command } from 'https://cdn.pika.dev/@author.io/browser-shell'
-```
-
-Also available from [jsdelivr](https://www.jsdelivr.com/package/npm/@author.io/browser-shell) and [unpkg](https://unpkg.com/@author.io/browser-shell).
-
-**npm options**
-
-If you wish to bundle this library in your build process, use the version most appropriate for your target runtimes:
-
-- `npm install @author.io/browser-shell` (Minified ES Module)
-- `npm install @author.io/browser-shell-es6` (IIFE Minified Module - globally accessible)
-- `npm install @author.io/shell` (source)
-
-**TAKE NOTICE: The source may not be what you think it is.** The source code may contain Node or browser code that is stripped out during the build process. We have a goal of making the _API_ runtime-agnostic, not the implementation. We do everything we can to avoid runtime-specific source code though, and it is rare to have node or browser-specific source code... we just can't guarantee the source will be easily embeddable. We recommend consuming the prebuilt editions.
-
-### Debugging
-
-Each distribution has a corresponding `-debug` version that should be installed _alongside_ the main module (the debugging is an add-on module). For example, `npm install @author.io/node-shell-debug --save-dev` would install the debugging code for Node.
-
 ## Basic Examples
+
+See the [Installation Guide](#installation) when you're ready to get started.
 
 There is a complete working example of a CLI app (with a mini tutorial) in the examples directory.
 
@@ -90,8 +56,8 @@ const ListCommand = new Command({
   name: 'list',
   description: 'List the contents of the directory.',
   disableHelp: false, // Set to true to turn off default help messages for the entire shell (you can still provide your own). Defaults to false.
-  // arguments are listed after the command in the default help screen. Ex: "dir list <dir>"
-  arguments: '<dir>',
+  // arguments are listed after the command in the default help screen. Ex: "dir list path"
+  arguments: 'path', // Can be space/comma/tab/semicolon delimited or an array.
   alias: 'ls',
   // Any flag parsing options from the @author.io/arg library can be configured here.
   // See https://github.com/author/arg#configuration-methods for a list.
@@ -105,7 +71,8 @@ const ListCommand = new Command({
     rootDir: {
       description: 'The root directory to list.',
       aliases: ['input', 'in', 'src'],
-      single: true
+      single: true,
+      // validate: RegExp/Function (see github.com/author/arg)
     }
   },
   handler (metadata, callback) {
@@ -125,7 +92,8 @@ const ListCommand = new Command({
     //   },
     //   valid: false,
     //   violations: [],
-    //   flag (name) { return String }
+    //   flag (name) { return String },
+    //   data (getter)
     // }
     console.log(metadata)
 
@@ -148,10 +116,19 @@ const shell = new Shell({
   name: 'myapp',
   version: '1.0.0',
   description: 'My demo app.',
+  // This middleware runs before all command handlers.
+  use: [
+    (meta, next) => { ...; next() }
+  ],
+  // Trailers are like "post-middleware" that run after command handlers.
+  trailer: [
+    (meta, next) => { ...; next() }
+    (meta, next) => { console.log('All done!') }
+  ],
   commands: [
     // These can be instances of Command...
     list,
-    
+
     // or just the configuration of a Command
     {
       name: 'find',
@@ -221,7 +198,10 @@ Each command has a handler function, which is responsible for doing something. T
 - **`flag()`** is a special method for retrieving the value of any flag (recognized or unrecognized). See below.
 - **valid** indicates whether the input conforms to the parsing rules.
 - **violations** is an array of strings, where each string represents a violation of the parsing rules.
+- **data** _(getter)_ returns a key/value object with all of the known flags, as well as an _attempt_ to map any unrecognized flags with known argument names. (See basic example for argument example)
 
+<details>
+<summary><b>Understanding flag()</b></summary>
 _The `flag()` method_ is a shortcut to help developers create more maintainable and understandable code. Consider the following example that does **not** use the flag method:
 
 ```javascript
@@ -255,6 +235,179 @@ const cmd = new Command({
 ```
 
 While the differences aren't extreme, it abstracts the need to know whether a flag is recognized or not (or even exists). If a `flag()` is executed for a non-existant flag, it will return `null`.
+</details>
+
+<details>
+<summary><b>Understanding <i>data</i></b></summary>
+The `data` attribute supplied to handlers in the metadata argument contains the values for known flags, and _**attempts to map unknown arguments** to configured argument names_.
+
+For example,
+
+```javascript
+const shell = new Shell({
+  name: 'account',
+  commands: [{
+    name: 'create',
+    arguments: 'email displayName',
+    handler (meta) {
+      console.log(meta.data)
+    }
+  }]
+})
+
+shell.exec('create me@domain.com "John Doe" test1 test2')
+```
+
+_Output:_
+
+```json
+{
+  "email": "me@domain.com",
+  "displayName": "John Doe",
+  "unknown1": "test1",
+  "unknown2": "test2
+}
+```
+
+If there is a name conflict, the output will contain an array of values. For example:
+
+```javascript
+const shell = new Shell({
+  name: 'account',
+  commands: [{
+    name: 'create',
+    arguments: 'email displayName',
+    flags: {
+      email: {
+        alias: 'e'
+      }
+    },
+    handler (meta) {
+      console.log(meta.data)
+    }
+  }]
+})
+
+shell.exec('create me@domain.com -e bob@other.com')
+```
+
+_Output:_
+
+```json
+{
+  "email": ["bob@other.com", "me@domain.com"],
+  "displayName": "John Doe",
+}
+```
+
+> Notice the values from the known flags are _first_.
+</details>
+
+## Universal Flags
+_Common flags are automatically applied to multiple commands._
+
+Sometimes a CLI app has multiple commands/subcommands that need the same flag associated with each command/subcommand. For example, if a `--note` flag were needed on every command, it would be a pain to copy/paste the config into every single command. Common flags resolve this by automatically applying to all commands from the point where the common flag is configured (i.e. the point where inheritance/nesting begins).
+
+<details>
+<summary>Apply a common flag to ALL commands</summary>
+To include the same flag on all commands, add a common flag to the shell.
+
+```javascript
+const shell = new Shell({
+  name: 'mycli',
+  commmonflags: {
+    note: {
+      alias: 'n',
+      description: 'Save a note about the operation.'
+    }
+  },
+  commands: [{
+    name: 'create',
+    flag: {
+      writable: {
+        alias: 'w',
+        description: 'Make it writable.'
+      }
+    },
+    ...
+  }, {
+    name: 'read',
+    ...
+  }]
+})
+
+shell.exec('create --help')
+shell.exec('read --help')
+```
+
+<b>create output:</b>
+```sh
+mycli create
+
+Flags:
+  note      [-n]          Save a note about the operation.
+  writable  [-w]          Make it writable.
+```
+
+<b>read` output:</b>
+```sh
+mycli read
+
+Flags:
+  note      [-n]          Save a note about the operation.
+```
+</details>
+
+<details>
+<summary>Apply a common flag to a specific command/subcommands</summary>
+
+```javascript
+const shell = new Shell({
+  name: 'mycli',
+  commands: [{
+    name: 'create',
+    commmonflags: {
+      note: {
+        alias: 'n',
+        description: 'Save a note about the operation.'
+      }
+    },
+    flag: {
+      writable: {
+        alias: 'w',
+        description: 'Make it writable.'
+      }
+    },
+    commands: [...]
+    ...
+  }, {
+    name: 'read',
+    description: 'Read a directory.',
+    ...
+  }]
+})
+
+shell.exec('create --help')
+shell.exec('read --help')
+```
+
+_`create` output:_
+```sh
+mycli create
+
+Flags:
+  note      [-n]          Save a note about the operation.
+  writable  [-w]          Make it writable.
+```
+
+_`read` output:_
+```sh
+mycli read
+  
+  Read a directory.
+
+```
+</details>
 
 ## Middleware
 
@@ -368,11 +521,58 @@ const v = new Command({
 shell.add(v)
 ```
 
-### Other Middleware
+### Middleware Libraries
 
 One development goal of this framework is to remain as lightweight and unopinionated as possible. Another is to be as simple to use as possible. These two goals often conflict with each other (the more features you add, the heavier it becomes). In an attempt to find a comfortable balance, some additional middleware libraries are available for those who want a little extra functionality.
 
 1. [@author.io/shell-middleware](https://github.com/author/shell-middleware)
+1. Submit a PR to add yours here.
+
+### Trailers
+_(Postware/Afterware)_
+
+Trailers operate just like middleware, but they execute _after_ the command handler is executed.
+
+```javascript
+const shell = new Shell({
+  name: 'mycli',
+  trailer: [
+    function () { console.log('Done!' ) }
+  ],
+  command: [{
+    name: 'dir',
+    handler () {
+      console.log('ls -l')
+    },
+    // Subcommands
+    commands: [{
+      name: 'perm',
+      description: 'Permissions',
+      handler () {
+        console.log('Display permissions for a directory.')
+      }
+    }]
+  }]
+})
+
+// Execute the "dir" command
+shell.exec('dir')
+
+// Execute the "perm" subcommand
+shell.exec('dir perm')
+```
+
+_`dir` command output:_
+```sh
+ls -l
+Done!
+```
+
+_`dir perm` subcommand output:_
+```sh
+Display permissions for a directory.
+Done!
+```
 
 ### Customized Help/Usage Messages
 
@@ -427,6 +627,55 @@ console.log(shell.data)
 ```
 
 Simple CLI utilities can also be loaded entirely from a JSON file by passing the object into the shell constructor as the only argument. The limitation is no imports or hoisted variables/methods will be recognized in a shell which is loaded this way.
+
+## Installation
+
+### Node.js
+
+<details>
+<summary>Modern (ES Modules)</summary>
+<br/>
+
+```sh
+npm install @author.io/node-shell
+```
+
+Please note, you'll need a verison of Node that supports ES Modules. In Node 12, this feature is behind the `--experimental-modules` flag. It is available in Node 13+ without a flag, but your `package.json` file must have the `"type": "module"` attribute. This feature is generally available as of [Node 14.0.0](https://nodejs.org).
+</details>
+
+<details>
+<summary>Legacy (CommonJS/require)</summary>
+<br/>
+
+If you need to use the older CommonJS format (i.e. `require`), run `npm install @author.io/node-shell-legacy` instead.
+</details>
+
+### Browsers
+
+**CDN**
+
+```javascript
+import { Shell, Command } from 'https://cdn.pika.dev/@author.io/browser-shell'
+```
+
+Also available from [jsdelivr](https://www.jsdelivr.com/package/npm/@author.io/browser-shell) and [unpkg](https://unpkg.com/@author.io/browser-shell).
+
+<details>
+<summary><b>npm options</b></summary>
+<br/>
+
+If you wish to bundle this library in your build process, use the version most appropriate for your target runtimes:
+
+- `npm install @author.io/browser-shell` (Minified ES Module)
+- `npm install @author.io/browser-shell-es6` (IIFE Minified Module - globally accessible)
+- `npm install @author.io/shell` (source)
+
+**TAKE NOTICE: The source may not be what you think it is.** The source code may contain Node or browser code that is stripped out during the build process. We have a goal of making the _API_ runtime-agnostic, not the implementation. We do everything we can to avoid runtime-specific source code though, and it is rare to have node or browser-specific source code... we just can't guarantee the source will be easily embeddable. We recommend consuming the prebuilt editions.
+</details>
+
+### Debugging
+
+Each distribution has a corresponding `-debug` version that should be installed _alongside_ the main module (the debugging is an add-on module). For example, `npm install @author.io/node-shell-debug --save-dev` would install the debugging code for Node.
 
 ### Related Modules
 

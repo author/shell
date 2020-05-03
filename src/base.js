@@ -15,6 +15,8 @@ export default class Base {
   #width = 80
   #name = 'Unknown'
   #middleware = new Middleware()
+  #trailer = new Middleware()
+  #commonflags = {}
   #hasCustomDefaultHandler = false
   #defaultHandler = function (meta) {
     if (this.parent !== null && this.parent.hasCustomDefaultHandler) {
@@ -86,32 +88,65 @@ export default class Base {
       }
     }
 
+    if (cfg.hasOwnProperty('middleware')) {
+      console.warn('The "middleware" attribute has been replaced with the "use" attribute.')
+      cfg.use = cfg.middleware
+      delete cfg.middleware
+    }
+
+    if (!cfg.hasOwnProperty('commonflag')) {
+      if (cfg.hasOwnProperty('commonFlag')) {
+        cfg.commonflag = cfg.commonFlag
+      } else if (cfg.hasOwnProperty('commonflags')) {
+        cfg.commonflag = cfg.commonflags
+      } else if (cfg.hasOwnProperty('commonFlag')) {
+        cfg.commonflag = cfg.commonFlag
+      } else if (cfg.hasOwnProperty('commonFlags')) {
+        cfg.commonflag = cfg.commonFlags
+      }
+    }
+
+    if (cfg.hasOwnProperty('commonflag')) {
+      if (typeof cfg.commonflag !== 'object') {
+        throw new Error('The "commonflag" configuration attribute must be an object.')
+      }
+    }
+
     Object.defineProperties(this, {
       __arguments: {
-        enumerable: true,
+        enumerable: false,
         get() {
           return this.#arguments
         }
       },
       __processors: {
-        enumerable: true,
+        enumerable: false,
         get() {
           return this.#processors
         }
       },
       __commands: {
-        enumerable: true,
+        enumerable: false,
         get() {
           return this.#commands
         }
       },
       __width: {
-        enumerable: true,
+        enumerable: false,
         get() {
           return this.#width
         },
         set (v) {
           this.#width = v || 80
+        }
+      },
+      __commonflags: {
+        enumerable: false,
+        get () {
+          return this.#commonflags
+        },
+        set (value) {
+          this.#commonflags = value
         }
       },
       arguments: {
@@ -131,6 +166,20 @@ export default class Base {
             this.use(code)
           } else {
             throw new Error('Invalid middleware: ' + code.toString())
+          }
+        }
+      },
+      initializeTrailer: {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: code => {
+          if (typeof code === 'string') {
+            this.trailer(Function('return ' + code)())
+          } else if (typeof code === 'function') {
+            this.trailer(code)
+          } else {
+            throw new Error('Invalid trailer: ' + code.toString())
           }
         }
       }
@@ -235,6 +284,18 @@ export default class Base {
     return commands
   }
 
+  get middleware() {
+    return this.#middleware
+  }
+
+  get trailers () {
+    return this.#trailer
+  }
+
+  get commands() {
+    return this.#processors
+  }
+
   getCommand(name = null) {
     if (!name) {
       return null
@@ -280,12 +341,18 @@ export default class Base {
     this.#processors.forEach(subCmd => subCmd.use(...arguments))
   }
 
-  get middleware () {
-    return this.#middleware
-  }
+  trailer () {
+    this.#trailer = this.#trailer || new Middleware()
 
-  get commands() {
-    return this.#processors
+    for (const arg of arguments) {
+      if (typeof arg !== 'function') {
+        throw new Error(`All "trailer()" arguments must be valid functions.\n${arg.toString().substring(0, 50)} ${arg.toString().length > 50 ? '...' : ''}`)
+      }
+
+      this.#trailer.use(arg)
+    }
+
+    this.#processors.forEach(subCmd => subCmd.trailer(...arguments))
   }
 
   add () {

@@ -38,7 +38,7 @@ test('Request help via flag', t => {
       // fs.writeFileSync('./test.txt', Buffer.from(msg))
       t.ok(shell.getCommand('a b c').help === `mycli a b c
 
-  Choices are great.`, 'XDisplayed correct default help message')
+  Choices are great.`, 'Displayed correct default help message')
     })
     .catch(e => t.fail(e.message))
     .finally(() => t.end())

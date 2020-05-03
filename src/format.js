@@ -29,7 +29,7 @@ class Formatter {
     
     if (this.#data instanceof Command) {
       const aliases = this.#data.aliases
-      const out = [`${this.#data.commandroot}${aliases.length > 0 ? '|' + aliases.join('|') : ''}${this.#data.__flagConfig.size > 0 ? ' [FLAGS]' : ''}${this.#data.__arguments.size > 0 ? ' ' + Array.from(this.#data.__arguments).join(', ') : ''}`]
+      const out = [`${this.#data.commandroot}${aliases.length > 0 ? '|' + aliases.join('|') : ''}${this.#data.__flagConfig.size > 0 ? ' [FLAGS]' : ''}${this.#data.__arguments.size > 0 ? ' ' + Array.from(this.#data.__arguments).map(i => '<' + i + '>').join(', ') : ''}`]
       
       if (desc.trim().length > 0 && out !== desc) {
         out.push(new Table([[desc.trim().replace(/\n/gi, '\n  ')]], null, null, this.#tableWidth, [2, 0, 1, 1]).output)
@@ -37,7 +37,7 @@ class Formatter {
 
       return out.join('\n')
     } else if (this.#data instanceof Shell) {
-      return `${this.#data.name}${this.#data.__processors.size > 0 ? ' [COMMAND]' : ''}\n${desc.trim().length > 0 ? new Table([[desc.trim().replace(/\n/gi, '\n  ')]], null, null, this.#tableWidth, [2, 0, 1, 1]).output : ''}${this.#data.__arguments.size > 0 ? ' ' + Array.from(this.#data.__arguments).join(', ') : ''}\n`.trim()
+      return `${this.#data.name}${this.#data.__processors.size > 0 ? ' [COMMAND]' : ''}\n${desc.trim().length > 0 ? new Table([[desc.trim().replace(/\n/gi, '\n  ')]], null, null, this.#tableWidth, [2, 0, 1, 1]).output : ''}${this.#data.__arguments.size > 0 ? ' ' + Array.from(this.#data.__arguments).map(i => '[' + i + ']').join(', ') : ''}\n`.trim()
     }
 
     return ''
@@ -52,14 +52,13 @@ class Formatter {
       
       if (flags.size > 0) {
         flags.forEach((cfg, flag) => {
-          let aliases = Array.from(cfg.aliases||[])
+          let aliases = Array.from(cfg.aliases||cfg.alias||[])
           aliases = aliases.length === 0 ? '' : '[' + aliases.map(a => `-${a}`).join(', ') + ']'
-          rows.push(['-' + flag, aliases, cfg.description])
+          rows.push(['-' + flag, aliases || '', cfg.description || ''])
         })
       }
 
       const table = new Table(rows, this.#colAlign, this.#colWidth, this.#tableWidth, [2, 0, usage.length > 0 ? 1 : 0, 0])
-
       return usage + (flags.size > 0 ? '\n\nFlags:' + table.output : '')
     } else if (this.#data instanceof Shell) {
       const rows = Array.from(this.#data.__processors.values()).map(cmd => {
