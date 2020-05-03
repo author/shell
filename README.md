@@ -228,7 +228,9 @@ Each command has a handler function, which is responsible for doing something. T
 
 <details>
 <summary><b>Understanding flag()</b></summary>
-_The `flag()` method_ is a shortcut to help developers create more maintainable and understandable code. Consider the following example that does **not** use the flag method:
+<br/>
+
+The `flag()` method is a shortcut to help developers create more maintainable and understandable code. Consider the following example that does **not** use the flag method:
 
 ```javascript
 const cmd = new Command({
