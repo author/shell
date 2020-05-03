@@ -30,15 +30,41 @@ There are two types of text-based apps:
 
 **tl;dr** Use this library to create multipurpose tools. Use [@author.io/arg](https://github.com/author/arg) to create single purpose tools.
 
+<details>
+<summary>Detailed Explanation</summary>
+<br/>
+
 This framework was designed to support multipurpose CLI tools. At the core, it provides a clean, easily-understood, repeatable pattern for building maintainable multipurpose CLI applications.
 
 Multipurpose tools require a layer of organizational overhead to help isolate different commands and features. This overhead is unnecessary in single purpose tools. Single purpose tools just need argument parsing, which the [@author.io/arg](https://github.com/author/arg) does very well. 
 
 `@author.io/arg` is embedded in this framework, making `@author.io/shell` _capable_ of creating single purpose tools, but it's merely unnecessary overhead for single purpose commands.
+</details>
+<br/>
 
 **Think about how your tooling evolves...**
 
 Sometimes single purpose tools grow into multipurpose tools over time. Tools which start out using the `@author.io/arg` library can be transitioned into multipurpose tools using `@author.io/shell` (with reasonable ease). After all, they use the same code, just nicely separated by purpose.
+
+## Differentiating Features
+
+1. Supports **middleware** (express-style)
+1. Supports **postware** (middleware that runs after a command)
+1. **Customizable** help/usage screens
+1. **Introspectable**: Produces/consumes JSON (load a compatible JSON file and have a working CLI)
+1. Dynamically add/remove commands.
+1. Command/execution **history** tracking
+1. **Universal flags**: define a flag once, reuse everywhere.
+
+<details>
+<summary><b>Also has better source & distribution code</b></summary>
+
+1. Cross-runtime (browser & node)
+1. Separation of Concerns: Arg parsing and text formatting are separate microlibs.
+1. Modern ES Module syntax
+1. 40+ unit tests
+
+</details>
 
 ## Basic Examples
 
