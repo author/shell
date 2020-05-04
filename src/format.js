@@ -29,7 +29,7 @@ class Formatter {
     
     if (this.#data instanceof Command) {
       const aliases = this.#data.aliases
-      const out = [`${this.#data.commandroot}${aliases.length > 0 ? '|' + aliases.join('|') : ''}${this.#data.__flagConfig.size > 0 ? ' [FLAGS]' : ''}${this.#data.__arguments.size > 0 ? ' ' + Array.from(this.#data.__arguments).map(i => '<' + i + '>').join(', ') : ''}`]
+      const out = [`${this.#data.commandroot}${aliases.length > 0 ? '|' + aliases.join('|') : ''}${this.#data.__flagConfig.size > 0 ? ' [FLAGS]' : ''}${this.#data.arguments.size > 0 ? ' ' + Array.from(this.#data.arguments).map(i => '<' + i + '>').join(', ') : ''}`]
       
       if (desc.trim().length > 0 && out !== desc) {
         out.push(new Table([[desc.trim().replace(/\n/gi, '\n  ')]], null, null, this.#tableWidth, [2, 0, 1, 1]).output)
@@ -37,7 +37,7 @@ class Formatter {
 
       return out.join('\n')
     } else if (this.#data instanceof Shell) {
-      return `${this.#data.name}${this.#data.__processors.size > 0 ? ' [COMMAND]' : ''}\n${desc.trim().length > 0 ? new Table([[desc.trim().replace(/\n/gi, '\n  ')]], null, null, this.#tableWidth, [2, 0, 1, 1]).output : ''}${this.#data.__arguments.size > 0 ? ' ' + Array.from(this.#data.__arguments).map(i => '[' + i + ']').join(', ') : ''}\n`.trim()
+      return `${this.#data.name}${this.#data.__processors.size > 0 ? ' [COMMAND]' : ''}\n${desc.trim().length > 0 ? new Table([[desc.trim().replace(/\n/gi, '\n  ')]], null, null, this.#tableWidth, [2, 0, 1, 1]).output : ''}${this.#data.arguments.size > 0 ? ' ' + Array.from(this.#data.arguments).map(i => '[' + i + ']').join(', ') : ''}\n`.trim()
     }
 
     return ''
@@ -49,12 +49,33 @@ class Formatter {
     if (this.#data instanceof Command) {
       const flags = this.#data.__flagConfig
       const rows = []
-      
+
       if (flags.size > 0) {
         flags.forEach((cfg, flag) => {
           let aliases = Array.from(cfg.aliases||cfg.alias||[])
           aliases = aliases.length === 0 ? '' : '[' + aliases.map(a => `-${a}`).join(', ') + ']'
-          rows.push(['-' + flag, aliases || '', cfg.description || ''])
+          
+          let dsc = [cfg.description || '']
+
+          if (cfg.hasOwnProperty('options') && this.#data.describeOptions) {
+            dsc.push(`Options: ${cfg.options.join(', ')}.`)
+          }
+          
+          if (cfg.hasOwnProperty('allowMultipleValues') && cfg.allowMultipleValues === true && this.#data.describeMultipleValues) {
+            dsc.push('Can be used multiple times.')
+          }
+
+          if (cfg.hasOwnProperty('default') && this.#data.describeDefault) {
+            dsc.push(`(Default: ${cfg.default.toString()})`)
+          }
+
+          if (cfg.hasOwnProperty('required') && cfg.required === true && this.#data.describeRequired) {
+            dsc.unshift('Required.')
+          }
+
+          dsc = dsc.join(' ').trim()
+          
+          rows.push(['-' + flag, aliases || '', dsc || ''])
         })
       }
 

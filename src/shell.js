@@ -23,6 +23,8 @@ export default class Shell extends Base {
   constructor (cfg = { maxhistory: 100 }) {
     super(cfg)
 
+    this.initializeHelpAnnotations(cfg)
+
     this.__commonflags = cfg.commonflags || {}
 
     if (cfg.hasOwnProperty('use') && Array.isArray(cfg.use)) {

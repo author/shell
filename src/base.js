@@ -17,6 +17,13 @@ export default class Base {
   #middleware = new Middleware()
   #trailer = new Middleware()
   #commonflags = {}
+  #display = {
+    // These are all null, representing they're NOT configured.
+    Default: null,
+    Options: null,
+    MultipleValues: null,
+    Required: null
+  }
   #hasCustomDefaultHandler = false
   #defaultHandler = function (meta) {
     if (this.parent !== null && this.parent.hasCustomDefaultHandler) {
@@ -72,7 +79,7 @@ export default class Base {
     }
 
     if (Array.isArray(cfg.arguments)) {
-      this.#arguments = cfg.arguments
+      this.#arguments = new Set(cfg.arguments)
     }
 
     this.#name = (cfg.name || 'unknown').trim().split(/\s+/)[0]
@@ -113,12 +120,6 @@ export default class Base {
     }
 
     Object.defineProperties(this, {
-      __arguments: {
-        enumerable: false,
-        get() {
-          return this.#arguments
-        }
-      },
       __processors: {
         enumerable: false,
         get() {
@@ -182,6 +183,26 @@ export default class Base {
             throw new Error('Invalid trailer: ' + code.toString())
           }
         }
+      },
+      initializeHelpAnnotations: {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: cfg => {
+          if (cfg.hasOwnProperty('describeDefault') && typeof cfg.describeDefault === 'boolean') {
+            console.log('HERE')
+            this.#display.Default = cfg.describeDefault
+          }
+          if (cfg.hasOwnProperty('describeOptions') && typeof cfg.describeOptions === 'boolean') {
+            this.#display.Options = cfg.describeOptions
+          }
+          if (cfg.hasOwnProperty('describeMultipleValues') && typeof cfg.describeMultipleValues === 'boolean') {
+            this.#display.MultipleValues = cfg.describeMultipleValues
+          }
+          if (cfg.hasOwnProperty('describeRequired') && typeof cfg.describeRequired === 'boolean') {
+            this.#display.Required = cfg.describeRequired
+          }
+        }
       }
     })
   }
@@ -209,6 +230,40 @@ export default class Base {
   updateHelp () {
     this.#formattedDefaultHelp = new Formatter(this)
     this.#formattedDefaultHelp.width = this.#width
+  }
+
+  describeHelp (attr, prop) {
+    if (this.#display[prop] !== null) {
+      return this.#display[prop]
+    }
+
+    if (this instanceof Command) {
+      if (this.shell[attr] !== null) {
+        return this.shell[attr]
+      }
+      
+      if (this.parent !== null) {
+        return this.parent[attr]
+      }
+    }
+
+    return true
+  }
+
+  get describeDefault () {
+    return this.describeHelp('describeDefault', 'Default')
+  }
+
+  get describeOptions () {
+    return this.describeHelp('describeOptions', 'Options')
+  }
+
+  get describeMultipleValues () {
+    return this.describeHelp('describeMultipleValues', 'MultipleValues')
+  }
+
+  get describeRequired () {
+    return this.describeHelp('describeRequired', 'Required')
   }
 
   get usage() {

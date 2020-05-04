@@ -72,7 +72,7 @@ See the [Installation Guide](#installation) when you're ready to get started.
 
 There is a complete working example of a CLI app (with a mini tutorial) in the examples directory.
 
-_This example imports the library for Node. Simply swap the Node import for the appropriate browser import if you're building a web utility. Everything else is the same for both Node and browser environments._ 
+_This example imports the library for Node. Simply swap the Node import for the appropriate browser import if you're building a web utility. Everything else is the same for both Node and browser environments._
 
 ```javascript
 import { Shell, Command } from '@author.io/node-shell'
@@ -604,9 +604,49 @@ Done!
 
 ### Customized Help/Usage Messages
 
-This library uses a vanilla dependency (i.e. no-subdependencies) called [@author.io/table](https://github.com/author/table) to format the usage and help messages of the shell. The `Table` library can be used to create your own custom screens, though most users will likely want to stick with the defaults. If you want to customize messages, the following example can be used as a starting point. The configuration options for the table can be found in the README of its repository.
+**Customizing Flag Appearance:**
 
-_Example:_
+The `Shell` and `Command` classes can both accept several boolean attributes to customize the description of each flag within a command. Each of these is `true` by default.
+
+1. `describeDefault`: Display the default flag value.
+1. `describeOptions`: List the valid options for a flag.
+1. `describeMultipleValues`: Appends `Can be used multiple times.` to the flag description
+1. `describeRequired`: Prepends `Required.` to the flag description whenever a flag is required.
+
+<details>
+<summary>Example</summary>
+<br/>
+
+```javascript
+const c = new Command({
+  name: '...',
+  flags: {
+    name: {
+      alias: 'nm',
+      required: true,
+      default: 'Rad Dev',
+      allowMultipleValues: true,
+      options: ['Mr Awesome', 'Mrs Awesome', 'Rad Dev'],
+      description: 'Specify a name.'
+    }
+  }
+})
+```
+
+The help message for this flag would look like:
+
+```sh
+Flags:
+  -name       ['nm']          Required. Specify a name. Options: Mr 
+                              Awesome, Mrs Awesome, Rad Dev. Can be 
+                              used multiple times. (Default Rad Dev)
+```
+</details>
+<br/>
+
+**Customizing the Entire Message:**
+
+This library uses a vanilla dependency (i.e. no-subdependencies) called [@author.io/table](https://github.com/author/table) to format the usage and help messages of the shell. The `Table` library can be used to create your own custom screens, though most users will likely want to stick with the defaults. If you want to customize messages, the following example can be used as a starting point. The configuration options for the table can be found in the README of its repository.
 
 ```javascript
 import { Shell, Command, Table } from '@author.io/node-shell'

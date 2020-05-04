@@ -38,6 +38,8 @@ export default class Command extends Base {
       cfg.trailer.forEach(code => this.initializeTrailer(code))
     }
 
+    this.initializeHelpAnnotations(cfg)
+
     this.#fn = cfg.handler
     this.#oid = Symbol(((cfg.name || cfg.usage) || cfg.pattern) || 'command')
     this.#pattern = cfg.pattern || /[\s\S]+/i
@@ -91,6 +93,10 @@ export default class Command extends Base {
       'subcommands',
       'defaultHandler',
       'disableHelp',
+      'describeDefault',
+      'describeOptions',
+      'describeMultipleValues',
+      'describeRequired',
       'flags',
       'alias',
       'aliases',
