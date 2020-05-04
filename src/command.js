@@ -402,6 +402,10 @@ export default class Command extends Base {
               return pdata.flagSource[name].value
             }
           } catch (e) {
+            if (this.arguments.has(name)) {
+              return Array.from(parser.unrecognizedFlags)[args.indexOf(name)]
+            }
+
             return undefined
           }
         }
