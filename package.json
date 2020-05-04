@@ -22,7 +22,8 @@
   "keywords": [
     "cli",
     "args",
-    "arg"
+    "arg",
+    "shell"
   ],
   "author": "Corey Butler",
   "license": "MIT",
