@@ -108,7 +108,7 @@ test('Map unnamed arguments when duplicate names are supplied', t => {
     .finally(() => t.end())
 })
 
-test('wtf', t => {
+test('Ordered Named Arguments', t => {
   const shell = new Shell({
     name: 'cli',
     commands: [{
@@ -116,7 +116,6 @@ test('wtf', t => {
       description: 'Perform operations on a user account.',
 
       handler (meta, cb) {
-        console.log('TODO: Output account details')
         cb()
       },
 
@@ -124,7 +123,7 @@ test('wtf', t => {
         {
           name: 'create',
           description: 'Create a user account.',
-          arguments: 'email password',
+          arguments: ['email', 'password'],
 
           flags: {
             name: {
@@ -149,46 +148,9 @@ test('wtf', t => {
           },
 
           handler (meta, cb) {
-            t.ok(meta.flag('email') === 'test@domain.com', 'Correct')
-            t.ok(meta.flag('password') === 'pwd', 'Correct')
+            t.ok(meta.flag('email') === 'test@domain.com', 'Correctly identifies first name argument')
+            t.ok(meta.flag('password') === 'pwd', 'Correct identifies second name argument')
             t.end()
-          }
-        },
-
-        {
-          name: 'delete',
-          description: 'Delete your Metadoc account',
-
-          handler (meta, cb) {
-            const confirmed = window.confirm('All your preferences, notes, bookmarks, and workspaces will be PERMANENTLY DELETED. THIS CANNOT BE UNDONE. Are you sure you want to delete your account?')
-
-            if (!confirmed) {
-              return
-            }
-
-            API.run('deleteAccount', meta.data, err => {
-              if (err) {
-                return alert(err.message)
-              }
-
-              console.log('DELETED')
-            })
-          }
-        },
-
-        {
-          name: 'verify',
-          description: 'Verify an account',
-          arguments: 'code',
-
-          handler (meta, cb) {
-            API.run('verifyAccount', meta.data, err => {
-              if (err) {
-                return alert(err.message)
-              }
-
-              console.log('VERIFIED')
-            })
           }
         }
       ]

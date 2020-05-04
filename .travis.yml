@@ -9,6 +9,7 @@ install:
   - cd ./test && rm -rf node_modules/yaml && npm i yaml@1.7.2 && cd ../
 
 script:
-  - npm test
+  # Only run node tests since sauce labs fails all the time
+  - npm run test:browser
   # - ls -l
   # - cd ./test && ls -l && npm run node
