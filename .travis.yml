@@ -10,6 +10,6 @@ install:
 
 script:
   # Only run node tests since sauce labs fails all the time
-  - npm run test:browser
+  - npm run test:node
   # - ls -l
   # - cd ./test && ls -l && npm run node
