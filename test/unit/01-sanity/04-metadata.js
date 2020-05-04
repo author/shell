@@ -107,3 +107,93 @@ test('Map unnamed arguments when duplicate names are supplied', t => {
     .catch(e => t.fail(e.message))
     .finally(() => t.end())
 })
+
+test('wtf', t => {
+  const shell = new Shell({
+    name: 'cli',
+    commands: [{
+      name: 'account',
+      description: 'Perform operations on a user account.',
+
+      handler (meta, cb) {
+        console.log('TODO: Output account details')
+        cb()
+      },
+
+      commands: [
+        {
+          name: 'create',
+          description: 'Create a user account.',
+          arguments: 'email password',
+
+          flags: {
+            name: {
+              alias: 'n',
+              description: 'Account display name'
+            },
+
+            phone: {
+              alias: 'p',
+              description: 'Account phone number'
+            },
+
+            avatar: {
+              alias: 'a',
+              description: 'Account avatar image URL'
+            },
+
+            validate: {
+              alias: 'v',
+              description: 'Validate email'
+            }
+          },
+
+          handler (meta, cb) {
+            t.ok(meta.flag('email') === 'test@domain.com', 'Correct')
+            t.ok(meta.flag('password') === 'pwd', 'Correct')
+            t.end()
+          }
+        },
+
+        {
+          name: 'delete',
+          description: 'Delete your Metadoc account',
+
+          handler (meta, cb) {
+            const confirmed = window.confirm('All your preferences, notes, bookmarks, and workspaces will be PERMANENTLY DELETED. THIS CANNOT BE UNDONE. Are you sure you want to delete your account?')
+
+            if (!confirmed) {
+              return
+            }
+
+            API.run('deleteAccount', meta.data, err => {
+              if (err) {
+                return alert(err.message)
+              }
+
+              console.log('DELETED')
+            })
+          }
+        },
+
+        {
+          name: 'verify',
+          description: 'Verify an account',
+          arguments: 'code',
+
+          handler (meta, cb) {
+            API.run('verifyAccount', meta.data, err => {
+              if (err) {
+                return alert(err.message)
+              }
+
+              console.log('VERIFIED')
+            })
+          }
+        }
+      ]
+    }]
+  })
+
+  shell.exec('account create test@domain.com pwd')
+})
