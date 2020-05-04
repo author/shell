@@ -387,7 +387,7 @@ export default class Command extends Base {
       data.help.message = this.help
     }
 
-    const args = this.arguments
+    const args = Array.from(this.arguments)
     
     Object.defineProperties(data, {
       flag: {
@@ -420,41 +420,39 @@ export default class Command extends Base {
           let uf = parser.unrecognizedFlags
           let result = Object.assign({}, recognized)
           delete result.help
+          
+          args.forEach((name, i) => {
+            let value = uf[i]
+            let normalizedValue = Object.keys(pdata).filter(key => key.toLowerCase() === value)
+            normalizedValue = (normalizedValue.length > 0 ? normalizedValue.pop() : value)
 
-          if (uf.length > 0) {
-            args.forEach((name, i) => {
-              let value = uf[i]
-              let normalizedValue = Object.keys(pdata).filter(key => key.toLowerCase() === value)
-              normalizedValue = (normalizedValue.length > 0 ? normalizedValue.pop() : value)
+            if (normalizedValue !== undefined) {
+              normalizedValue = normalizedValue.trim()
 
-              if (normalizedValue !== undefined) {
-                normalizedValue = normalizedValue.trim()
-
-                if (STRIP_QUOTE_PATTERN.test(normalizedValue)) {
-                  normalizedValue = normalizedValue.substring(1, normalizedValue.length - 1)
-                }
+              if (STRIP_QUOTE_PATTERN.test(normalizedValue)) {
+                normalizedValue = normalizedValue.substring(1, normalizedValue.length - 1)
               }
-
-              if (result.hasOwnProperty(name)) {
-                result[name] = Array.isArray(result[name]) ? result[name]: [result[name]]
-                result[name].push(normalizedValue)
-              } else {
-                result[name] = normalizedValue
-              }
-            })
-
-            if (uf.length > args.length) {
-              uf.slice(args.length)
-                .forEach((flag, i) => {
-                  let name = `unknown${i + 1}`
-                  while (result.hasOwnProperty(name)) {
-                    let number = name.substring(7)
-                    name = 'unknown' + (parseInt(number) + 1)
-                  }
-
-                  result[name] = flag
-                })
             }
+
+            if (result.hasOwnProperty(name)) {
+              result[name] = Array.isArray(result[name]) ? result[name]: [result[name]]
+              result[name].push(normalizedValue)
+            } else {
+              result[name] = normalizedValue
+            }
+          })
+
+          if (uf.length > args.length) {
+            uf.slice(args.length)
+              .forEach((flag, i) => {
+                let name = `unknown${i + 1}`
+                while (result.hasOwnProperty(name)) {
+                  let number = name.substring(7)
+                  name = 'unknown' + (parseInt(number) + 1)
+                }
+
+                result[name] = flag
+              })
           }
 
           return result
