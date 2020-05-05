@@ -190,7 +190,6 @@ export default class Base {
         writable: false,
         value: cfg => {
           if (cfg.hasOwnProperty('describeDefault') && typeof cfg.describeDefault === 'boolean') {
-            console.log('HERE')
             this.#display.Default = cfg.describeDefault
           }
           if (cfg.hasOwnProperty('describeOptions') && typeof cfg.describeOptions === 'boolean') {
