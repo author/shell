@@ -29,7 +29,7 @@ class Formatter {
     
     if (this.#data instanceof Command) {
       const aliases = this.#data.aliases
-      const out = [`${this.#data.commandroot}${aliases.length > 0 ? '|' + aliases.join('|') : ''}${this.#data.__flagConfig.size > 0 ? ' [FLAGS]' : ''}${this.#data.arguments.size > 0 ? ' ' + Array.from(this.#data.arguments).map(i => '<' + i + '>').join(', ') : ''}`]
+      const out = [`${this.#data.commandroot}${aliases.length > 0 ? '|' + aliases.join('|') : ''}${this.#data.__flagConfig.size > 0 ? ' [FLAGS]' : ''}${this.#data.arguments.size > 0 ? ' ' + Array.from(this.#data.arguments).map(i => '<' + i + '>').join(' ') : ''}`]
       
       if (this.#data.__processors.size > 0) {
         out[out.length - 1] += (this.#data.arguments.size > 0 || this.#data.__flagConfig.size > 0 ? ' |' : '') + ' [COMMAND]'
@@ -41,7 +41,7 @@ class Formatter {
 
       return out.join('\n')
     } else if (this.#data instanceof Shell) {
-      return `${this.#data.name}${this.#data.__processors.size > 0 ? ' [COMMAND]' : ''}\n${desc.trim().length > 0 ? new Table([[desc.trim().replace(/\n/gi, '\n  ')]], null, null, this.#tableWidth, [2, 0, 1, 1]).output : ''}${this.#data.arguments.size > 0 ? ' ' + Array.from(this.#data.arguments).map(i => '[' + i + ']').join(', ') : ''}\n`.trim()
+      return `${this.#data.name}${this.#data.__processors.size > 0 ? ' [COMMAND]' : ''}\n${desc.trim().length > 0 ? new Table([[desc.trim().replace(/\n/gi, '\n  ')]], null, null, this.#tableWidth, [2, 0, 1, 1]).output : ''}${this.#data.arguments.size > 0 ? ' ' + Array.from(this.#data.arguments).map(i => '[' + i + ']').join(' ') : ''}\n`.trim()
     }
 
     return ''
