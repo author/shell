@@ -31,6 +31,10 @@ class Formatter {
       const aliases = this.#data.aliases
       const out = [`${this.#data.commandroot}${aliases.length > 0 ? '|' + aliases.join('|') : ''}${this.#data.__flagConfig.size > 0 ? ' [FLAGS]' : ''}${this.#data.arguments.size > 0 ? ' ' + Array.from(this.#data.arguments).map(i => '<' + i + '>').join(', ') : ''}`]
       
+      if (this.#data.__processors.size > 0) {
+        out[out.length - 1] += (this.#data.arguments.size > 0 || this.#data.__flagConfig.size > 0 ? ' |' : '') + ' [COMMAND]'
+      }
+
       if (desc.trim().length > 0 && out !== desc) {
         out.push(new Table([[desc.trim().replace(/\n/gi, '\n  ')]], null, null, this.#tableWidth, [2, 0, 1, 1]).output)
       }
@@ -41,6 +45,23 @@ class Formatter {
     }
 
     return ''
+  }
+
+  get subcommands () {
+    const rows = Array.from(this.#data.__processors.values()).map(cmd => {
+      let nm = [cmd.name].concat(cmd.aliases)
+      return [nm.join('|'), cmd.description]
+    })
+
+    let result = []
+
+    if (rows.length > 0) {
+      const table = new Table(rows, this.#colAlign, ['25%', '75%'], this.#tableWidth, [2])
+      result.push(`\nCommands:\n`)
+      result.push(table.output)
+    }
+
+    return result.join('\n')
   }
 
   get help () {
@@ -80,22 +101,14 @@ class Formatter {
       }
 
       const table = new Table(rows, this.#colAlign, this.#colWidth, this.#tableWidth, [2, 0, usage.length > 0 ? 1 : 0, 0])
-      return usage + (flags.size > 0 ? '\n\nFlags:' + table.output : '')
-    } else if (this.#data instanceof Shell) {
-      const rows = Array.from(this.#data.__processors.values()).map(cmd => {
-        let nm = [cmd.name].concat(cmd.aliases)
-        return [nm.join('|'), cmd.description]
-      })
-
-      let result = [usage]
-
-      if (rows.length > 0) {
-        const table = new Table(rows, this.#colAlign, ['25%', '75%'], this.#tableWidth, [2])
-        result.push(`\nCommands:\n`)
-        result.push(table.output)
-      }
       
-      return result.join('\n')
+      let subcommands = '\n' + this.subcommands
+      if (subcommands.trim().length === 0) {
+        subcommands = ''
+      }
+      return usage + (flags.size > 0 ? '\n\nFlags:' + table.output : '') + subcommands
+    } else if (this.#data instanceof Shell) {
+      return [usage, this.subcommands].join('\n')
     }
 
     return ''
