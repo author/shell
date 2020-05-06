@@ -106,7 +106,7 @@ class Formatter {
       if (subcommands.trim().length === 0) {
         subcommands = ''
       }
-      return usage + (flags.size > 0 ? '\n\nFlags:' + table.output : '') + subcommands
+      return usage + (flags.size > 0 ? '\n\nFlags:\n' + table.output : '') + subcommands
     } else if (this.#data instanceof Shell) {
       return [usage, this.subcommands].join('\n')
     }

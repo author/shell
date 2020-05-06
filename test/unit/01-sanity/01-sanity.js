@@ -2,6 +2,7 @@ import 'source-map-support/register.js'
 import test from 'tape'
 import { Command, Shell, Formatter } from '../../.node/index.js'
 // import fs from 'fs'
+// import path from 'path'
 
 test('Sanity Check - Shell', t => {
   const shell = new Shell({
@@ -80,9 +81,11 @@ test('Output Formatting', t => {
 
   t.ok(formatter instanceof Formatter, 'Basic formatter instantiates correctly.')
   // fs.writeFileSync('./test.txt', Buffer.from(formatter.help))
+  // console.log(formatter.help)
   t.ok(formatter.help === `test cmd|c [FLAGS]
 
 Flags:
+
   -test       [-t]            test description                                   
   -more       [-m, -mr]       This is a longer description that should break onto
                               more than one line, or perhaps even more than one  

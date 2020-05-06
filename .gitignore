@@ -9,6 +9,7 @@
 !.*.yml
 node_modules
 test/output/**/*
+test/*.txt
 /**/*.old
 test/package-lock.json
 build/package-lock.json

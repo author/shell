@@ -45,7 +45,7 @@ export default class Command extends Base {
     this.#pattern = cfg.pattern || /[\s\S]+/i
     
     if (cfg.alias && !cfg.aliases) {
-      cfg.aliases = Array.isArray(cfg.alias) ? cfg.alias : [cfg.alias]
+      cfg.aliases = typeof cfg.alias === 'string' ? [cfg.alias] : (Array.isArray(cfg.alias) ? cfg.alias : Array.from(cfg.alias))
       delete cfg.alias
     }
 
