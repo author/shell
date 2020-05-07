@@ -40,7 +40,7 @@ export default class Shell extends Base {
     this.#tabWidth = cfg.hasOwnProperty('tabWidth') ? cfg.tabWidth : 4
   
     // This sets a global symbol that dev tools can find.
-    Object.defineProperty(globalThis, Symbol('SHELL_INTEGRATIONS'), { enumerable: false, get () { return this }})
+    globalThis[Symbol('SHELL_INTEGRATIONS')] = this
   }
 
   get data () {

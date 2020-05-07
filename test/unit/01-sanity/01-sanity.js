@@ -10,7 +10,7 @@ test('Sanity Check - Shell', t => {
   })
 
   t.ok(shell instanceof Shell, 'Basic shell instantiates correctly.')
-
+  t.ok(Object.getOwnPropertySymbols(globalThis).filter(s => globalThis[s] instanceof Shell).length === 1, 'The shell is discoverable.')
   t.end()
 })
 
