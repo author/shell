@@ -204,6 +204,8 @@ export default class Base {
         }
       }
     })
+
+    this.updateHelp()
   }
 
   get name () {
@@ -270,17 +272,17 @@ export default class Base {
       return typeof this.#customUsage === 'function' ? this.#customUsage() : this.#customUsage
     }
 
-    this.updateHelp()
-
     return this.#formattedDefaultHelp.usage
   }
 
   set usage (value) {
     if (typeof value === 'string' && value.trim().length === 0) {
-      this.#customUsage = null
+      value = null
     }
 
     this.#customUsage = value
+
+    this.updateHelp()
   }
 
   get help () {
@@ -292,17 +294,17 @@ export default class Base {
       return ''
     }
 
-    this.updateHelp()
-    
     return this.#formattedDefaultHelp.help
   }
 
   set help (value) {
     if (typeof value === 'string' && value.trim().length === 0) {
-      this.#customHelp = null
+      value = null
     }
 
     this.#customHelp = value
+
+    this.updateHelp()
   }
 
   // @private

@@ -167,3 +167,28 @@ test('Default command help (regression test)', t => {
   t.pass('Ran without error.')
   t.end()
 })
+
+test('Basic Introspection', t => {
+  const shell = new Shell({
+    name: 'test',
+    version: '1.0.0',
+    disableHelp: true,
+    commands: [
+      {
+        name: 'account',
+        description: 'Perform operations on a user account.',
+        handler: (meta, cb) => { },
+        commands: [
+          {
+            name: 'create',
+            description: 'Create a user account.',
+            arguments: '<email>'
+          }
+        ]
+      }
+    ]
+  })
+
+  t.ok(typeof shell.data === 'object', 'Generates a data object representing the shell.')
+  t.end()
+})
