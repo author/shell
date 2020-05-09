@@ -179,4 +179,12 @@ export default class Shell extends Base {
 
     return results.flat(Infinity)
   }
+
+  // Clear the terminal
+  clear () {
+    console.clear()
+    // .write('\x1b[0f') // regular clear
+    // .write('\x1b[2J') // full clear
+    // .write('\033[0;0f') //ubuntu
+  }
 }
