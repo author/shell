@@ -79,13 +79,19 @@ export default class Shell extends Base {
       return []
     }
 
-    return this.#history.slice(0, count)
+    return count === null ? this.#history.slice() : this.#history.slice(0, count)
   }
 
   priorCommand (count = 0) {
+    if (this.#history.length === 0) {
+      return null
+    }
+    
     if (count < 0) {
       return this.nextCommand(abs(count))
     }
+
+    count = count % this.#history.length
 
     this.#cursor += count
 
@@ -93,20 +99,27 @@ export default class Shell extends Base {
       this.#cursor = this.#history.length - 1
     }
 
-    return this.#history[this.#cursor]
+    return this.#history[this.#cursor].input
   }
 
   nextCommand (count = 1) {
+    if (this.#history.length === 0) {
+      return null
+    }
+    
     if (count < 0) {
       return this.priorCommand(abs(count))
     }
 
+    count = count % this.#history.length
+
     this.#cursor -= count
     if (this.#cursor < 0) {
       this.#cursor = 0
+      return undefined
     }
 
-    return this.#history[this.#cursor]
+    return this.#history[this.#cursor].input
   }
 
   useWith (commands) {
@@ -126,7 +139,7 @@ export default class Shell extends Base {
   }
 
   async exec (input, callback) {
-    this.#history.shift({ input, time: new Date().toLocaleString()})
+    this.#history.unshift({ input, time: new Date().toLocaleString()})
 
     if (this.#history.length > this.#maxHistoryItems) {
       this.#history.pop()
