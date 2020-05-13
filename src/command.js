@@ -1,12 +1,7 @@
 import { Parser } from '../node_modules/@author.io/arg/index.js'
 import Shell from './shell.js'
 import Base from './base.js'
-
-// const STRIP_EQUAL_SIGNS = /(\=+)(?=([^'"\\]*(\\.|['"]([^'"\\]*\\.)*[^'"\\]*['"]))*[^'"]*$)/g
-const SUBCOMMAND_PATTERN = /^([^"'][\S\b]+)[\s+]?([^-].*)$/i
-const FLAG_PATTERN = /((?:"[^"\\]*(?:\\[\S\s][^"\\]*)*"|'[^'\\]*(?:\\[\S\s][^'\\]*)*'|\/[^\/\\]*(?:\\[\S\s][^\/\\]*)*\/[gimy]*(?=\s|$)|(?:\\\s|\S))+)(?=\s|$)/g
-const METHOD_PATTERN = /^([\w]+\s?)\(.*\)\s?{/i
-const STRIP_QUOTE_PATTERN = /"([^"\\]*(\\.[^"\\]*)*)"|\'([^\'\\]*(\\.[^\'\\]*)*)\'/ig
+import { METHOD_PATTERN, FLAG_PATTERN, STRIP_QUOTE_PATTERN } from './utility.js'
 
 export default class Command extends Base {
   #pattern
@@ -124,7 +119,7 @@ export default class Command extends Base {
       __commonFlags: {
         enumerable: false,
         get () {
-          let flags = Object.assign({}, this.__commonflags, this.#flagConfig)
+          let flags = this.__commonflags //Object.assign({}, this.__commonflags, this.#flagConfig)
           
           if (this.parent !== null) {
             flags = Object.assign(flags, this.parent.__commonFlags)

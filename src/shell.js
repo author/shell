@@ -1,7 +1,7 @@
 import Command from './command.js'
 import Base from './base.js'
-
-const COMMAND_PATTERN = /^(\w+)\s+([\s\S]+)?/i
+import { Parser } from '../node_modules/@author.io/arg/index.js'
+import { COMMAND_PATTERN } from './utility.js'
 
 export default class Shell extends Base {
   #middlewareGroups = new Map()
@@ -60,6 +60,62 @@ export default class Shell extends Base {
       runtime: this.#runtime,
       maxHistoryItems: this.#maxHistoryItems
     }
+  }
+
+  hint (cmd) {
+    cmd = cmd.toLowerCase()
+    let args = cmd.match(COMMAND_PATTERN)
+    let commands = []
+    
+    if (args) {
+      args = args.slice(1)
+      
+      commands = Array.from(this.__commands.keys()).filter(name => name.toLowerCase().indexOf(args[0]) >= 0)
+    
+      switch (args.length) {
+        case 1:
+          break
+        
+        default:
+          if ((['version', 'help']).indexOf(args[0]) >= 0) {
+            return null
+          }
+
+          let command = this.__commands.get(args[0])
+          if (!command) {
+            return null
+          }
+
+          command = this.__processors.get(command)
+          command = command.getTerminalCommand(cmd.replace(new RegExp(`^${args[0]}\\s+`, 'i'), ''))
+          const subcmd = command.command
+          const flags = subcmd.__flagConfig
+
+          return {
+            commands: Array.from(subcmd.__commands.keys()).filter(name => {
+              return name.toLowerCase().indexOf(command.arguments.toLowerCase()) >= 0
+                || subcmd.__processors.get(subcmd.__commands.get(name)).aliases.filter(a => a.toLowerCAse().indexOf(command.arguments) >= 0).length > 0
+            }),
+            flags: Array.from(flags.entries()).filter(keypair => {
+              const name = keypair[0]
+              const flag = keypair.pop()
+
+              return name.toLowerCase().indexOf(command.arguments.toLowerCase()) >= 0
+                || (flag.aliases || []).filter(a => a.toLowerCase().indexOf(command.arguments) >= 0).length > 0
+                || (flag.alias || '').toLowerCase().indexOf(command.arguments) >= 0
+            })
+          }
+      }
+    }
+    
+    if (commands.length > 0) {
+      return {
+        commands,
+        flags: []
+      }
+    }
+
+    return null
   }
 
   get version () {
