@@ -65,13 +65,11 @@ export default class Shell extends Base {
   hint (cmd) {
     cmd = cmd.toLowerCase()
     let args = cmd.match(COMMAND_PATTERN)
-    let commands = []
-    
+    let commands = Array.from(this.__commands.keys()).filter(name => name.toLowerCase().indexOf((args === null ? cmd : args[1]).toLowerCase()) >= 0)
+
     if (args) {
       args = args.slice(1)
       
-      commands = Array.from(this.__commands.keys()).filter(name => name.toLowerCase().indexOf(args[0]) >= 0)
-    
       switch (args.length) {
         case 1:
           break
@@ -95,6 +93,10 @@ export default class Shell extends Base {
             commands: Array.from(subcmd.__commands.keys()).filter(name => {
               return name.toLowerCase().indexOf(command.arguments.toLowerCase()) >= 0
                 || subcmd.__processors.get(subcmd.__commands.get(name)).aliases.filter(a => a.toLowerCAse().indexOf(command.arguments) >= 0).length > 0
+            }).sort((a, b) => {
+              const ai = a.toLowerCase().indexOf(command.arguments.toLowerCase())
+              const bi = b.toLowerCase().indexOf(command.arguments.toLowerCase())
+              return ai < bi ? -1 : (ai > bi ? 1 : 0)
             }),
             flags: Array.from(flags.entries()).filter(keypair => {
               const name = keypair[0]
@@ -103,6 +105,10 @@ export default class Shell extends Base {
               return name.toLowerCase().indexOf(command.arguments.toLowerCase()) >= 0
                 || (flag.aliases || []).filter(a => a.toLowerCase().indexOf(command.arguments) >= 0).length > 0
                 || (flag.alias || '').toLowerCase().indexOf(command.arguments) >= 0
+            }).sort((a, b) => {
+              const ai = a.toLowerCase().indexOf(command.arguments.toLowerCase())
+              const bi = b.toLowerCase().indexOf(command.arguments.toLowerCase())
+              return ai < bi ? -1 : (ai > bi ? 1 : 0)
             })
           }
       }
@@ -110,7 +116,11 @@ export default class Shell extends Base {
     
     if (commands.length > 0) {
       return {
-        commands,
+        commands: commands.sort((a, b) => {
+          const ai = a.toLowerCase().indexOf(args[0])
+          const bi = b.toLowerCase().indexOf(args[0])
+          return ai < bi ? -1 : (ai > bi ? 1 : 0)
+        }),
         flags: []
       }
     }

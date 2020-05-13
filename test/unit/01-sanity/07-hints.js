@@ -56,6 +56,6 @@ test('Basic History', t => {
   t.ok(typeof sh.hint('cmd ext') === 'object', 'Received a hint object for a valid partial command.')
   t.ok(sh.hint('xcmd ext') === null, 'Received a null value for an invalid partial command.')
   t.ok(typeof sh.hint('cmd') === 'object', 'Received a hint object for a valid full command.')
-  t.ok(typeof sh.hint('c') === 'object', 'Received a hint object for a valid partial root command.')
+  t.ok(typeof sh.hint('c') === 'object' && sh.hint('c').commands.indexOf('cmd') >= 0, 'Received a hint object for a valid partial root command.')
   t.end()
 })
