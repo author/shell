@@ -696,6 +696,60 @@ console.log(shell.data)
 
 Simple CLI utilities can also be loaded entirely from a JSON file by passing the object into the shell constructor as the only argument. The limitation is no imports or hoisted variables/methods will be recognized in a shell which is loaded this way.
 
+### Autocompletion/Input Hints
+
+This library provides a _command hinting_ feature using the shell `hint()` method.
+
+Consider the following shell:
+
+```javascript
+const shell = new Shell({
+  name: 'mycli',
+  command: [{
+    name: 'dir',
+    handler () {
+      console.log('ls -l')
+    },
+    // Subcommands
+    commands: [{
+      name: 'perm',
+      description: 'Permissions',
+      handler () {
+        console.log('Display permissions for a directory.')
+      }
+    }, {
+      name: 'payload',
+      description: 'Payload',
+      handler () {
+        console.log('Display payload/footprint for a directory.')
+      }
+    }]
+  }]
+})
+
+// Help us figure out what we can do!
+console.log(shell.hint('dir p'))
+```
+
+_Output:_
+
+```sh
+{
+  commands: ['perm', 'payload'],
+  flags: []
+}
+```
+
+The hint matches "**dir p**ermission" and "**dir p**ayload", but does not match any flags.
+
+If no options/hints are available, `null` is returned.
+
+While this library provides input hints that could be used for suggestions/completions, it does **not** generate autocompletion files for shells like bash, zsh, fish, powershell, etc.
+
+> There are many variations of autocompletion for different shells, which are not available in browsers (see our Devtools extension for browser completion).
+
+If you wish to generate your own autocompletion capabilities, use the `shell.data` attribute to retrieve data for the shell (see prior section). For terminals, consider using the shell metadata with a module like [omlette](https://github.com/f/omelette) to produce autocompletion for your favorite terminal app. For browser-based CLI apps, consider using our devtools extension for an autocompletion experience.
+
 ## Installation
 
 ### Node.js
