@@ -2,7 +2,7 @@ import 'source-map-support/register.js'
 import test from 'tape'
 import { Shell } from '../../.node/index.js'
 
-test('Basic History', t => {
+test('Basic Hinting', t => {
   const sh = new Shell({
     name: 'test',
     maxhistory: 3,
@@ -56,6 +56,28 @@ test('Basic History', t => {
   t.ok(typeof sh.hint('cmd ext') === 'object', 'Received a hint object for a valid partial command.')
   t.ok(sh.hint('xcmd ext') === null, 'Received a null value for an invalid partial command.')
   t.ok(typeof sh.hint('cmd') === 'object', 'Received a hint object for a valid full command.')
-  t.ok(typeof sh.hint('c') === 'object' && sh.hint('c').commands.indexOf('cmd') >= 0, 'Received a hint object for a valid partial root command.')
+  t.ok(
+    typeof sh.hint('cm') === 'object' &&
+    sh.hint('cm').commands[0].name === 'cmd' &&
+    sh.hint('cm').commands[0].match[0] === 0 &&
+    sh.hint('cm').commands[0].match[1] === 1,
+    'Received a hint object for a valid partial root command.')
+  t.end()
+})
+
+test('Single Command Hints', t => {
+  const clib = new Shell({
+    name: 'admin',
+    version: '1.0.1',
+
+    commands: [{
+      name: 'info',
+      description: 'info',
+      handler () { }
+    }]
+  })
+
+  console.log(clib.hint('i'))
+  t.pass('ok')
   t.end()
 })
