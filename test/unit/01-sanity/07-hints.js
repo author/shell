@@ -55,7 +55,8 @@ test('Basic Hinting', t => {
 
   t.ok(typeof sh.hint('cmd ext') === 'object', 'Received a hint object for a valid partial command.')
   t.ok(sh.hint('xcmd ext') === null, 'Received a null value for an invalid partial command.')
-  t.ok(typeof sh.hint('cmd') === 'object', 'Received a hint object for a valid full command.')
+  t.ok(typeof sh.hint('cmd') === 'object' && sh.hint('cmd') !== null, 'Received a hint object for a valid full command.')
+  t.ok(sh.hint('cmd').commands.length === 2, 'Specify a complete valid command returns subcommands as hints.')
   t.ok(
     typeof sh.hint('cm') === 'object' &&
     sh.hint('cm').commands[0].name === 'cmd' &&

@@ -99,23 +99,33 @@ export default class Shell extends Base {
 
           match = command.arguments.toLowerCase()
 
-          response = {
-            commands: Array.from(subcmd.__commands.keys())
-              .filter(name => name.toLowerCase().indexOf(match) >= 0
-                || subcmd.__processors.get(subcmd.__commands.get(name)).aliases
-                  .filter(a => a.toLowerCase().indexOf(match) >= 0).length > 0).sort((a, b) => this.#hintsort(match, a, b)
-              ),
-            flags: Array.from(flags.entries()).filter(keypair => {
-              const flag = keypair.pop()
-              const name = keypair.pop()
-              
-              return name.toLowerCase().indexOf(match) >= 0
-                || (flag.aliases || []).filter(a => a.toLowerCase().indexOf(match) >= 0).length > 0
-                || (flag.alias || '').toLowerCase().indexOf(match) >= 0
-            }).sort((a, b) => this.#hintsort(match, a, b))
+          if (match.length !== 0) {
+            response = {
+              commands: Array.from(subcmd.__commands.keys())
+                .filter(name => name.toLowerCase().indexOf(match) >= 0
+                  || subcmd.__processors.get(subcmd.__commands.get(name)).aliases
+                    .filter(a => a.toLowerCase().indexOf(match) >= 0).length > 0).sort((a, b) => this.#hintsort(match, a, b)
+                ),
+              flags: Array.from(flags.entries()).filter(keypair => {
+                const flag = keypair.pop()
+                const name = keypair.pop()
+                
+                return name.toLowerCase().indexOf(match) >= 0
+                  || (flag.aliases || []).filter(a => a.toLowerCase().indexOf(match) >= 0).length > 0
+                  || (flag.alias || '').toLowerCase().indexOf(match) >= 0
+              }).sort((a, b) => this.#hintsort(match, a, b))
+            }
           }
 
           break
+      }
+    } else {
+      if (this.__commands.get(cmd)) {
+        let command = this.__processors.get(this.__commands.get(cmd))
+        response = {
+          commands: Array.from(command.__commands.keys()).sort(),
+          flags: Array.from(command.__flagConfig.keys()).sort()
+        }
       }
     }
     
@@ -127,30 +137,27 @@ export default class Shell extends Base {
     }
 
     if (response !== null) {
-      response.input = cmd
       response.commands = response.commands.filter(c => c.toLowerCase() !== match).map(c => {
+        let i = c.indexOf(match)
         return {
-          name: c, 
-          match: [
-            c.indexOf(match),
-            c.indexOf(match) + (match.length - 1)
-          ]
-        } 
+          name: c,
+          match: [i, i < 0 ? -1 : i + (match.length - 1)]
+        }
       })
 
       response.flags = response.flags.filter(f => f.toLowerCase() !== match).map(f => {
+        let i = f.indexOf(match)
         return {
           name: f,
-          match: [
-            f.indexOf(match),
-            f.indexOf(match) + (match.length - 1)
-          ]
+          match: [i, i < 0 ? -1 : i + (match.length - 1)]
         }
       })
 
       if (response.commands.length === 0 && response.flags.length === 0) {
         return null
       }
+
+      response.input = cmd
     }
 
     return response
