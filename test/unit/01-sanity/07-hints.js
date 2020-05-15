@@ -65,20 +65,3 @@ test('Basic Hinting', t => {
     'Received a hint object for a valid partial root command.')
   t.end()
 })
-
-test('Single Command Hints', t => {
-  const clib = new Shell({
-    name: 'admin',
-    version: '1.0.1',
-
-    commands: [{
-      name: 'info',
-      description: 'info',
-      handler () { }
-    }]
-  })
-
-  console.log(clib.hint('i'))
-  t.pass('ok')
-  t.end()
-})
