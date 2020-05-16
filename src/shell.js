@@ -19,12 +19,6 @@ export default class Shell extends Base {
           ? globalThis.process.release.name
           : 'unknown'
       )
-  // Sort hints by string match
-  #hintsort = (matchString, a, b) => {
-    const ai = a.toLowerCase().indexOf(matchString.toLowerCase())
-    const bi = b.toLowerCase().indexOf(matchString.toLowerCase())
-    return ai < bi ? -1 : (ai > bi ? 1 : 0)
-  }
   
   constructor (cfg = { maxhistory: 100 }) {
     super(cfg)
@@ -44,7 +38,7 @@ export default class Shell extends Base {
     this.#version = cfg.version || '1.0.0'
     this.#maxHistoryItems = cfg.maxhistory || cfg.maxHistoryItems || 100
     this.#tabWidth = cfg.hasOwnProperty('tabWidth') ? cfg.tabWidth : 4
-  
+
     // This sets a global symbol that dev tools can find.
     globalThis[Symbol('SHELL_INTEGRATIONS')] = this
   }
@@ -66,101 +60,6 @@ export default class Shell extends Base {
       runtime: this.#runtime,
       maxHistoryItems: this.#maxHistoryItems
     }
-  }
-
-  hint (cmd) {
-    cmd = cmd.toLowerCase()
-    let response = null
-    let args = cmd.match(COMMAND_PATTERN)
-    let match = args === null ? cmd : args[1].toLowerCase()
-    let commands = Array.from(this.__commands.keys()).filter(name => name.toLowerCase().indexOf(match) >= 0)
-
-    if (args) {
-      args = args.slice(1)
-      match = args[0]
-      
-      switch (args.length) {
-        case 1:
-          break
-        
-        default:
-          if ((['version', 'help']).indexOf(match) >= 0) {
-            break
-          }
-
-          let command = this.__commands.get(match)
-          if (!command) {
-            break
-          }
-
-          command = this.__processors.get(command).getTerminalCommand(cmd.replace(new RegExp(`^${match}\\s+`, 'i'), ''))
-          const subcmd = command.command
-          const flags = subcmd.__flagConfig
-
-          match = command.arguments.toLowerCase()
-
-          if (match.length !== 0) {
-            response = {
-              commands: Array.from(subcmd.__commands.keys())
-                .filter(name => name.toLowerCase().indexOf(match) >= 0
-                  || subcmd.__processors.get(subcmd.__commands.get(name)).aliases
-                    .filter(a => a.toLowerCase().indexOf(match) >= 0).length > 0).sort((a, b) => this.#hintsort(match, a, b)
-                ),
-              flags: Array.from(flags.entries()).filter(keypair => {
-                const flag = keypair.pop()
-                const name = keypair.pop()
-                
-                return name.toLowerCase().indexOf(match) >= 0
-                  || (flag.aliases || []).filter(a => a.toLowerCase().indexOf(match) >= 0).length > 0
-                  || (flag.alias || '').toLowerCase().indexOf(match) >= 0
-              }).sort((a, b) => this.#hintsort(match, a, b))
-            }
-          }
-
-          break
-      }
-    } else {
-      if (this.__commands.get(cmd)) {
-        let command = this.__processors.get(this.__commands.get(cmd))
-        response = {
-          commands: Array.from(command.__commands.keys()).sort(),
-          flags: Array.from(command.__flagConfig.keys()).sort()
-        }
-      }
-    }
-    
-    if (response === null && commands.length > 0) {
-      response = {
-        commands: commands.sort((a, b) => this.#hintsort(match, a, b)),
-        flags: []
-      }
-    }
-
-    if (response !== null) {
-      response.commands = response.commands.filter(c => c.toLowerCase() !== match).map(c => {
-        let i = c.indexOf(match)
-        return {
-          name: c,
-          match: [i, i < 0 ? -1 : i + (match.length - 1)]
-        }
-      })
-
-      response.flags = response.flags.filter(f => f.toLowerCase() !== match).map(f => {
-        let i = f.indexOf(match)
-        return {
-          name: f,
-          match: [i, i < 0 ? -1 : i + (match.length - 1)]
-        }
-      })
-
-      if (response.commands.length === 0 && response.flags.length === 0) {
-        return null
-      }
-
-      response.input = cmd
-    }
-
-    return response
   }
 
   get version () {

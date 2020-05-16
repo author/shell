@@ -96,7 +96,7 @@ class Formatter {
 
           dsc = dsc.join(' ').trim()
           
-          rows.push(['-' + flag, aliases || '', dsc || ''])
+          rows.push(['--' + flag, aliases || '', dsc || ''])
         })
       }
 
