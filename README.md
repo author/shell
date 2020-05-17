@@ -698,11 +698,13 @@ Simple CLI utilities can also be loaded entirely from a JSON file by passing the
 
 ### Autocompletion/Input Hints
 
-This library provides a _command hinting_ feature using the shell `hint()` method.
+This library can use a _command hinting_ feature, i.e. a shell `hint()` method to return suggestions/hints about a partial command. This feature was part of the library through the `v1.5.x` release lifecycle. In `v.1.6.0+`, this feature is no longer a part of the core library. It is now available as the [author/shell-hints plugin](https://github.com/author/shell-hints).
 
 Consider the following shell:
 
 ```javascript
+import HintPlugin from 'https://cdn.pika.dev/@author.io/browser-shell-hints'
+
 const shell = new Shell({
   name: 'mycli',
   command: [{
@@ -727,6 +729,8 @@ const shell = new Shell({
   }]
 })
 
+HintPlugin.apply(shell) // <-- Adds the hint method.
+
 // Help us figure out what we can do!
 console.log(shell.hint('dir p'))
 ```
@@ -744,7 +748,7 @@ The hint matches "**dir p**ermission" and "**dir p**ayload", but does not match 
 
 If no options/hints are available, `null` is returned.
 
-While this library provides input hints that could be used for suggestions/completions, it does **not** generate autocompletion files for shells like bash, zsh, fish, powershell, etc.
+While this add-on provides input hints that could be used for suggestions/completions, it does **not** generate autocompletion files for shells like bash, zsh, fish, powershell, etc.
 
 > There are many variations of autocompletion for different shells, which are not available in browsers (see our Devtools extension for browser completion).
 
