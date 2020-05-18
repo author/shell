@@ -125,7 +125,7 @@ export default class Command extends Base {
             flags = Object.assign(flags, this.parent.__commonFlags)
           }
 
-          return Object.assign({}, this.shell.__commonflags, flags)
+          return Object.assign({}, this.shell !== null ? this.shell.__commonflags : {}, flags)
         }
       },
       __flagConfig: {
@@ -315,6 +315,30 @@ export default class Command extends Base {
     delete this.#flagConfig[name]
   }
 
+  getFlagConfiguration (name) {
+    let flag = this.__flagConfig.get(name)
+    if (!flag) {
+      for (let [f, cfg] of this.__flagConfig) {
+        if ((cfg.aliases && cfg.aliases.indexOf(name) >= 0) || (cfg.alias && cfg.alias === flag)) {
+          flag = cfg
+          break
+        }
+      }
+      
+      if (!flag) {
+        return null
+      }
+    }
+
+    return {
+      description: flag.description,
+      required: flag.hasOwnProperty('required') ? flag.required : false,
+      aliases: flag.aliases || [flag.alias].filter(i => i !== null),
+      type: flag.type === undefined ? 'string' : (typeof flag.type === 'string' ? flag.type : flag.type.name.toLowerCase()),
+      options: flag.hasOwnProperty('options') ? flag.options : null
+    }
+  }
+
   supportsFlag (name) {
     return this.#flagConfig.hasOwnProperty(name)
   }
@@ -473,10 +497,12 @@ export default class Command extends Base {
 
     arguments[0] = this.deepParse(input)
 
-    const parentMiddleware = this.shell.getCommandMiddleware(this.commandroot.replace(new RegExp(`^${this.shell.name}`, 'i'), '').trim())
+    if (this.shell !== null) {
+      const parentMiddleware = this.shell.getCommandMiddleware(this.commandroot.replace(new RegExp(`^${this.shell.name}`, 'i'), '').trim())
     
-    if (parentMiddleware.length > 0) {
-      this.middleware.use(...parentMiddleware)
+      if (parentMiddleware.length > 0) {
+        this.middleware.use(...parentMiddleware)
+      }
     }
 
     let trailers = this.trailers

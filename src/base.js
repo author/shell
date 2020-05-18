@@ -28,7 +28,7 @@ export default class Base {
   #defaultHandler = function (meta) {
     if (this.parent !== null && this.parent.hasCustomDefaultHandler) {
       return this.parent.defaultHandler(...arguments)
-    } else if (this.shell.hasCustomDefaultHandler) {
+    } else if (this.shell && this.shell !== null && this.shell.hasCustomDefaultHandler) {
       return this.shell.defaultHandler(...arguments)
     }
 
@@ -239,7 +239,7 @@ export default class Base {
     }
 
     if (this instanceof Command) {
-      if (this.shell[attr] !== null) {
+      if (this.shell && this.shell !== null && this.shell[attr] !== null) {
         return this.shell[attr]
       }
       

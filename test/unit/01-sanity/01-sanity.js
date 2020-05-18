@@ -192,3 +192,45 @@ test('Basic Introspection', t => {
   t.ok(typeof shell.data === 'object', 'Generates a data object representing the shell.')
   t.end()
 })
+
+test('Flag Default Configuration', t => {
+  const cmd = new Command({
+    name: 'cmd',
+    alias: 'c',
+    flags: {
+      test: {
+        alias: 't',
+        description: 'test description'
+      },
+      more: {
+        aliases: ['m', 'mr'],
+        description: 'This is a longer description that should break onto more than one line, or perhaps even more than one extra line with especially poor grammar and spellling.'
+      },
+      none: {
+        description: 'Ignore me. I do not exist.'
+      }
+    }
+  })
+
+  let f = cmd.getFlagConfiguration('test')
+  t.ok(
+    f.aliases[0] === 't' &&
+    f.description === 'test description' &&
+    f.required === false &&
+    f.type === 'string' &&
+    f.options === null,
+    'Returned default configuration items for a named flag.'
+  )
+
+  f = cmd.getFlagConfiguration('t')
+  t.ok(
+    f.aliases[0] === 't' &&
+    f.description === 'test description' &&
+    f.required === false &&
+    f.type === 'string' &&
+    f.options === null,
+    'Returned default configuration items for an alias of a flag.'
+  )
+
+  t.end()
+})
