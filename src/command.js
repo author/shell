@@ -192,6 +192,9 @@ export default class Command extends Base {
       delete value.alias
     }
 
+    // Apply any missing default values to flags.
+    Object.keys(flags).forEach(name => flags[name] = Object.assign(this.getFlagConfiguration(name), flags[name]))
+
     const data = {
       name: this.name,
       description: this.description,
@@ -335,7 +338,8 @@ export default class Command extends Base {
       required: flag.hasOwnProperty('required') ? flag.required : false,
       aliases: flag.aliases || [flag.alias].filter(i => i !== null),
       type: flag.type === undefined ? 'string' : (typeof flag.type === 'string' ? flag.type : flag.type.name.toLowerCase()),
-      options: flag.hasOwnProperty('options') ? flag.options : null
+      options: flag.hasOwnProperty('options') ? flag.options : null,
+      allowMultipleValues: flag.hasOwnProperty('allowMultipleValues') ? flag.allowMultipleValues : false
     }
   }
 
@@ -383,10 +387,10 @@ export default class Command extends Base {
     const parser = new Parser(flags, flagConfig)
     const pdata = parser.data
     const recognized = {}
-
+ 
     parser.recognizedFlags.forEach(flag => recognized[flag] = pdata[flag])
     parser.unrecognizedFlags.forEach(arg => delete recognized[arg])
-
+ 
     data.flags = { recognized, unrecognized: parser.unrecognizedFlags }
     data.valid = parser.valid
     data.violations = parser.violations
