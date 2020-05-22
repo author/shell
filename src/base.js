@@ -4,6 +4,8 @@ import Shell from './shell.js'
 import Command from './command.js'
 
 export default class Base {
+  #url = null
+  #support = null
   #formattedDefaultHelp
   #description
   #customUsage
@@ -80,6 +82,14 @@ export default class Base {
 
     if (Array.isArray(cfg.arguments)) {
       this.#arguments = new Set(cfg.arguments)
+    }
+
+    if (typeof cfg.url === 'string') {
+      this.#url = cfg.url
+    }
+
+    if (typeof cfg.support === 'string') {
+      this.#support = cfg.support
     }
 
     this.#name = (cfg.name || 'unknown').trim().split(/\s+/)[0]
@@ -208,12 +218,49 @@ export default class Base {
     this.updateHelp()
   }
 
+  // @readonly
   get name () {
     return this.#name || 'Unknown'
   }
 
+  // @readonly
   get description () {
     return this.#description || this.usage || ''
+  }
+
+  // @readonly
+  get url () {
+    return this.URL
+  }
+
+  // @readonly
+  get URL () {
+    let uri = (this.#url || '').trim()
+
+    if (uri.length === 0) {
+      if (this.hasOwnProperty('parent')) {
+        return this.parent.URL
+      } else if (this instanceof Command) {
+        return this.shell.URL
+      }
+    }
+
+    return uri
+  }
+
+  // @readonly
+  get support () {
+    let support = (this.#support || '').trim()
+
+    if (support.length === 0) {
+      if (this.hasOwnProperty('parent')) {
+        return this.parent.support
+      } else if (this instanceof Command) {
+        return this.shell.support
+      }
+    }
+
+    return support
   }
 
   get autohelp() {

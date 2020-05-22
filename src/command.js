@@ -106,7 +106,9 @@ export default class Command extends Base {
       'arguments',
       'commonflag',
       'commonflags',
-      'trailer'
+      'trailer',
+      'url',
+      'support'
     ])
 
     const unrecognized = Object.keys(cfg).filter(attribute => !attributes.has(attribute))
