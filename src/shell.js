@@ -193,8 +193,13 @@ export default class Shell extends Base {
     return results.flat(Infinity)
   }
 
+  clearHistory () {
+    this.#history = []
+  }
+
   // Clear the terminal
   clear () {
+    this.#history = []
     console.clear()
     // .write('\x1b[0f') // regular clear
     // .write('\x1b[2J') // full clear

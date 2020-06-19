@@ -86,6 +86,7 @@ export default class Command extends Base {
     const attributes = new Set([
       'commands',
       'subcommands',
+      'plugins',
       'defaultHandler',
       'disableHelp',
       'describeDefault',
@@ -252,6 +253,10 @@ export default class Command extends Base {
     }
 
     return this.#shell
+  }
+
+  get plugins () {
+    return Object.assign({}, this.shell.plugins, this.parent ? this.parent.plugins : {}, super.plugins)
   }
 
   get commandroot () {
@@ -502,6 +507,7 @@ export default class Command extends Base {
     const data = typeof input === 'string' ? this.parse(input) : input
 
     arguments[0] = this.deepParse(input)
+    arguments[0].plugins = this.plugins
 
     if (this.shell !== null) {
       const parentMiddleware = this.shell.getCommandMiddleware(this.commandroot.replace(new RegExp(`^${this.shell.name}`, 'i'), '').trim())
@@ -534,6 +540,8 @@ export default class Command extends Base {
       return
     }
 
+    // Command.reply(fn(arguments[0], callback))
+    data.plugins = this.plugins
     Command.reply(fn(data, callback))
 
     if (trailers.size > 0) {

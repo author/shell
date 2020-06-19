@@ -4,6 +4,7 @@ import Shell from './shell.js'
 import Command from './command.js'
 
 export default class Base {
+  #plugins = {}
   #url = null
   #support = null
   #formattedDefaultHelp
@@ -129,6 +130,10 @@ export default class Base {
       }
     }
 
+    if (typeof cfg.plugins === 'object') {
+      this.#plugins = cfg.plugins
+    }
+
     Object.defineProperties(this, {
       __processors: {
         enumerable: false,
@@ -216,6 +221,10 @@ export default class Base {
     })
 
     this.updateHelp()
+  }
+
+  get plugins () {
+    return this.#plugins
   }
 
   // @readonly

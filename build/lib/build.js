@@ -160,6 +160,7 @@ export default class build {
     const refs = new Set([...arguments])
 
     return warning => {
+      console.log(chalk.red(warning.importer))
       if (
         warning.code === 'CIRCULAR_DEPENDENCY' &&
         refs.size > 0 &&

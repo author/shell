@@ -331,6 +331,93 @@ _Output:_
 > Notice the values from the known flags are _first_.
 </details>
 
+## Plugins
+
+Plugins expose functions, objects, and primitives to shell handlers.
+
+_Example:_
+
+Consider an example where information is retrieved from a remote API. To do this, an HTTP request library may be necessary to make the request and parse the results. In this example, the axios library is defined as a plugin. The plugin is accessible in the metadata passed to each handler, as shown below.
+
+<details>
+  <summary>Why would you do this?</summary>
+  <p>
+  Remember, the shell library can produce JSON (See the Introspection/Metadata Generation section). JSON is a <i>string</i> format for storing data. The output will contain a stringified version of all the handler functions. This can be used as the configuration for another instance of a shell. In other words, you can maintain a runtime-agnostic configuration. You could use _mostly_ the same configuration for the browser, Node, Deno, Vert.x, or another JavaScript runtime. However; the modules/packages like the HTTP request module may or may not work in each runtime.
+  </p>
+  <p>
+  Plugins allow developers to write handlers that are completely "self contained". It is then possible to modify the plugin configuration for each runtime without modifying every handler in the shell.
+  </p>
+</details>
+<br/>
+```javascript
+import axios from 'axios'
+
+const sh = new Shell({
+  name: 'info',
+  plugins: {
+    httprequest: axios // replace this with any compatible library
+  },
+  commands: [{
+    name: 'person',
+    flags: {
+      name: {
+        description: 'Name of the person you want info about.',
+        required: true
+      }
+    },
+    handler (meta) {
+      meta.plugins.httprequest({
+        method: 'get',
+        url: `http://api.com/person/${meta.flag('name')}`
+      }).then(console.log).catch(console.error)
+    }
+  }, {
+    name: 'group',
+    flags: {
+      name: {
+        description: 'Name of the group you want info about.',
+        required: true
+      }
+    },
+    handler (meta) {
+      meta.plugins.httprequest({
+        method: 'get',
+        url: `http://api.com/group/${meta.flag('name')}`
+      }).then(console.log).catch(console.error)
+    }
+  }]
+})
+```
+
+Commands will inherit plugins from the shell and any parent commands. It is possible to "override" a plugin in any specific command.
+
+<details>
+<summary>Override Example</summary>
+
+```javascript
+const sh = new Shell({
+  name: 'test',
+  plugins: {
+    test: value => {
+      return value + 1
+    }
+  },
+  commands: [{
+    name: 'cmd',
+    plugins: {
+      test: value => {
+        return value + 10
+      }
+    },
+    handler(meta) {
+      console.log(meta.test(1)) // Outputs 11
+    }
+  }]
+})
+```
+
+</details>
+
 ## Universal Flags
 _Common flags are automatically applied to multiple commands._
 
