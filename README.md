@@ -4,14 +4,14 @@
 
 This is a super-lightweight framework for building text-based programs, like [CLI](https://en.wikipedia.org/wiki/Command-line_interface) applications.
 
-**Sponsors (as of 2020)**
+---
+This library is now supported by this [Chrome CLI Devtools Extension](https://chrome.google.com/webstore/detail/cli/okpglddgmnblhbdpdcmodmacgcibgfkf):
 
-<table cellpadding="10" cellspacing="0" border="0">
-  <tr>
-    <td><a href="https://metadoc.io"><img src="https://github.com/coreybutler/staticassets/raw/master/sponsors/metadoclogobig.png" width="200px"/></a></td>
-    <td><a href="https://butlerlogic.com"><img src="https://github.com/coreybutler/staticassets/raw/master/sponsors/butlerlogic_logo.png" width="200px"/></a></td>
-  </tr>
-</table>
+![Devtools Extension](https://lh3.googleusercontent.com/WKZpJavmX4RRPyaVBFe6Vn88ZXJbjy9FCP_Mwyxo1JrWY78a9_Rh9c-sy4TawzIKy8xUmnXoxes=w640-h400-e365)
+
+You can see the library in use (in browsers and Node.js) in this [OpenJS World 2020 talk](https://youtu.be/dw7ABwvFtdM) (The Benefits of a "CLI First" Development Strategy).
+
+---
 
 ## Uses
 
@@ -894,3 +894,12 @@ Each distribution has a corresponding `-debug` version that should be installed 
 ### Related Modules
 
 1. [@author.io/table](https://github.com/author/table) - Used to generate the default usage/help messages for the shell and subcommands.
+
+**Sponsors (as of 2020)**
+
+<table cellpadding="10" cellspacing="0" border="0">
+  <tr>
+    <td><a href="https://metadoc.io"><img src="https://github.com/coreybutler/staticassets/raw/master/sponsors/metadoclogobig.png" width="200px"/></a></td>
+    <td><a href="https://butlerlogic.com"><img src="https://github.com/coreybutler/staticassets/raw/master/sponsors/butlerlogic_logo.png" width="200px"/></a></td>
+  </tr>
+</table>
