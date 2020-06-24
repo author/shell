@@ -48,13 +48,14 @@ Sometimes single purpose tools grow into multipurpose tools over time. Tools whi
 
 ## Differentiating Features
 
-1. Supports **middleware** (express-style)
-1. Supports **postware** (middleware that runs after a command)
-1. **Customizable** help/usage screens
-1. **Introspectable**: Produces/consumes JSON (load a compatible JSON file and have a working CLI)
+1. Supports **middleware** (express-style).
+1. Supports **postware** (middleware that runs after a command).
+1. **Customizable **help/usage** screens.
+1. Produces **introspectable** JSON. Load a JSON config, have a working CLI.
+1. Reusable **plugin** system.
 1. Dynamically add/remove commands.
-1. Command/execution **history** tracking
-1. **Universal flags**: define a flag once, reuse everywhere.
+1. Track command execution **history**.
+1. Define **universal flags** flag once, reuse in all commands.
 
 <details>
 <summary><b>Also has better source & distribution code</b></summary>
