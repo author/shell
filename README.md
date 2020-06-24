@@ -1,6 +1,5 @@
-# @author.io/shell ![Version](https://img.shields.io/github/v/tag/author/shell?label=Latest&style=for-the-badge)
-
-![Build](https://github.com/author/shell/workflows/Tag,%20Release,%20&%20Publish/badge.svg) using the [cross-runtime template](https://github.com/author/template-cross-runtime).
+# @author.io/shell 
+![Version](https://img.shields.io/github/v/tag/author/shell?label=Latest&style=for-the-badge)
 
 This is a super-lightweight framework for building text-based programs, like [CLI](https://en.wikipedia.org/wiki/Command-line_interface) applications.
 
