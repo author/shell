@@ -4,11 +4,14 @@
 
 This is a super-lightweight framework for building text-based programs, like [CLI](https://en.wikipedia.org/wiki/Command-line_interface) applications.
 
-This library is now supported by the [Chrome CLI Devtools Extension](https://chrome.google.com/webstore/detail/cli/okpglddgmnblhbdpdcmodmacgcibgfkf):
+---
+This library is now supported by this [Chrome CLI Devtools Extension](https://chrome.google.com/webstore/detail/cli/okpglddgmnblhbdpdcmodmacgcibgfkf):
 
 ![Devtools Extension](https://lh3.googleusercontent.com/WKZpJavmX4RRPyaVBFe6Vn88ZXJbjy9FCP_Mwyxo1JrWY78a9_Rh9c-sy4TawzIKy8xUmnXoxes=w640-h400-e365)
 
-You can see it in use in this [OpenJS World 2020 talk](https://youtu.be/dw7ABwvFtdM) (The Benefits of a "CLI First" Development Strategy)
+You can see the library in use (in browsers and Node.js) in this [OpenJS World 2020 talk](https://youtu.be/dw7ABwvFtdM) (The Benefits of a "CLI First" Development Strategy).
+
+---
 
 ## Uses
 
