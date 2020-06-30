@@ -186,7 +186,6 @@ export default class Shell extends Base {
     }
 
     const term = processor.getTerminalCommand(args)
-    console.log(term)
     return await Command.reply(await term.command.run(term.arguments, callback))
   }
 
