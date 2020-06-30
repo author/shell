@@ -139,6 +139,12 @@ export default class Shell extends Base {
   }
 
   async exec (input, callback) {
+    // The array check exists because people are passing process.argv.slice(2) into this
+    // method, often forgetting to join the values into a string.
+    if (Array.isArray(input)) {
+      input = input.join(' ')
+    }
+
     this.#history.unshift({ input, time: new Date().toLocaleString()})
 
     if (this.#history.length > this.#maxHistoryItems) {
@@ -180,6 +186,7 @@ export default class Shell extends Base {
     }
 
     const term = processor.getTerminalCommand(args)
+    console.log(term)
     return await Command.reply(await term.command.run(term.arguments, callback))
   }
 
