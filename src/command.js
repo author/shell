@@ -391,10 +391,11 @@ export default class Command extends Base {
     }
 
     const flags = Array.from(FLAG_PATTERN[Symbol.matchAll](input), x => x[0])
+// console.log(flags, flagConfig)    
     const parser = new Parser(flags, flagConfig)
     const pdata = parser.data
     const recognized = {}
- 
+
     parser.recognizedFlags.forEach(flag => recognized[flag] = pdata[flag])
     parser.unrecognizedFlags.forEach(arg => delete recognized[arg])
  
