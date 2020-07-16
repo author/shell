@@ -408,6 +408,16 @@ export default class Base {
     return this.#processors
   }
 
+  get commandlist () {
+    const list = new Set()
+    this.commands.forEach(cmd => {
+      list.add(cmd.name)
+      cmd.commandlist.forEach(subcmd => list.add(`${cmd.name} ${subcmd}`))
+    })
+
+    return Array.from(list).sort()
+  }
+
   getCommand(name = null) {
     if (!name) {
       return null

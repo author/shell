@@ -379,7 +379,21 @@ export default class Command extends Base {
     // Parse the command input for flags
     const data = { command: this.name, input: input.trim() }
 
-    let flagConfig = Object.assign(this.__commonFlags, this.#flagConfig || {})
+    let commonFlags = this.__commonFlags
+    if (commonFlags.ignore && (Array.isArray(commonFlags.ignore) || typeof commonFlags.ignore === 'string')) {
+      const ignore = new Set(Array.isArray(commonFlags.ignore) ? commonFlags.ignore : [commonFlags.ignore])
+      delete commonFlags.ignore
+      const root = this.commandroot.replace(new RegExp(`^${this.shell.name}\\s+`, 'i'), '')
+      
+      for (const cmd of ignore) {
+        if (root.startsWith(cmd)) {
+          commonFlags = {}
+          break
+        }
+      }
+    }
+
+    let flagConfig = Object.assign(commonFlags, this.#flagConfig || {})
 
     if (!flagConfig.hasOwnProperty('help')) {
       flagConfig.help = {

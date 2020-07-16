@@ -524,6 +524,47 @@ mycli read
 ```
 </details>
 
+#### Filtering Universal Flags
+
+Universal/common flags accept a special attribute named `ignore`, which will prevent the flags from being applied to specific commands. This should be used sparingly.
+
+<details>
+<summary><b>Cherry-picking example</b></summary>
+<br/>
+
+```javascript
+const shell = new Shell({
+  name: 'mycli',
+  commmonflags: {
+    ignore: 'info', // This can also be an array of string. Fully qualified subcommands will also be respected.
+    note: {
+      alias: 'n',
+      description: 'Save a note about the operation.'
+    }
+  },
+  commands: [{
+    name: 'create',
+    handler () {}
+  }, {
+    name: 'read',
+    handler () {}
+  }, {
+    name: 'update',
+    handler () {}
+  }, {
+    name: 'delete',
+    handler () {}
+  }, {
+    name: 'info',
+    handler () {}
+  }]
+})
+```
+
+Any command, except `info`, will accepts/parse the `note` flag.
+
+</details>
+
 ## Middleware
 
 When a command is called, it's handler function is executed. Sometimes it is desirable to pre-process one or more commands. The shell middleware feature supports "global" middleware and "assigned" middleware.
@@ -562,6 +603,8 @@ shell.useWith('demo', function (metadata, next) {
 
 The code above would only run when the user inputs the `demo` command (or any `demo` subcommand).
 
+#### Command-Specific Assignments
+
 It is possible to assign middleware to more than one command at a time, and it is possible to target subcommands. For example:
 
 ```javascript
@@ -595,6 +638,41 @@ cmd.use(function (metadata, next) {
   next()
 })
 ```
+
+#### Command-Exclusion Assignments
+
+Sometimes middleware needs to be applied to all but a few commands. The `useExcept` method supports these needs. It is basically the opposite of `useWith`. Middleware is applied to all commands/subcommands _except_ those specified.
+
+For example:
+
+```javascript
+const shell = new Shell({
+  ...,
+  commands: [{
+    name: 'add',
+    handler (meta) {
+      ...
+    }
+  }, {
+    name: 'subtract',
+    handler (meta) {
+      ...
+    }
+  }, {
+    name: 'info',
+    handler (meta) {
+      ...
+    }
+  }]
+})
+
+shell.useExcept(['info], function (meta, next) {
+  console.log(`this middleware is only applied to some math commands`)
+  next()
+})
+```
+
+In this example, the console statement would be displayed for all commands except the `info` command (and any info subcommands).
 
 ### Built-in "Middleware"
 

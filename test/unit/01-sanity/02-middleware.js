@@ -113,6 +113,51 @@ test('Command Specific Middleware', t => {
   })
 })
 
+test('Command Specific Middleware Exceptions', async t => {
+  let ok = false
+
+  const shell = new Shell({
+    name: 'test',
+    commands: [{
+      name: 'a',
+      handler () { },
+      commands: [{
+        name: 'f',
+        handler () { }
+      }]
+    }, {
+      name: 'b',
+      handler () { },
+      commands: [{
+        name: 'e',
+        handler () {}
+      }]
+    }, {
+      name: 'c',
+      handler () { }
+    }, {
+      name: 'd',
+      handler () { 
+        ok = true
+      }
+    }]
+  })
+
+  shell.useExcept(['b', 'c'], (meta, next) => { count++; next() })
+
+  let count = 0
+  await shell.exec('a').catch(t.fail)
+  await shell.exec('b').catch(t.fail)
+  await shell.exec('c').catch(t.fail)
+  await shell.exec('d').catch(t.fail)
+  await shell.exec('b e').catch(t.fail)
+  await shell.exec('a f').catch(t.fail)
+
+  t.ok(count === 3, `Expected 3 middleware operations to run. Recognized ${count}.`)
+  t.ok(ok, 'Handler executes at the end.')
+  t.end()
+})
+
 test('Basic Trailers', t => {
   let ok = false
   let after = 0

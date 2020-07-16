@@ -138,6 +138,32 @@ export default class Shell extends Base {
     commands.forEach(cmd => this.#middlewareGroups.set(cmd.trim(), (this.#middlewareGroups.get(cmd.trim()) || []).concat(fns)))
   }
 
+  useExcept (commands) {
+    if (arguments.length < 2) {
+      throw new Error('useExcept([\'command\', \'command\'], fn) requires two or more arguments.')
+    }
+
+    commands = typeof commands === 'string' ? commands.split(/\s+/) : commands
+
+    if (!Array.isArray(commands) || commands.filter(c => typeof c !== 'string').length > 0) {
+      throw new Error(`The first argument of useExcept must be a string or array of strings. Received ${typeof commands}`)
+    }
+
+    const fns = Array.from(arguments).slice(1)
+    const all = new Set(this.commandlist.map(i => i.toLowerCase()))
+    
+    commands.forEach(cmd => {
+      all.delete(cmd)
+      for (const c of all) {
+        if (c.indexOf(cmd) === 0) {
+          all.delete(c)
+        }
+      }
+    })
+
+    this.useWith(Array.from(all), ...fns)
+  }
+
   async exec (input, callback) {
     // The array check exists because people are passing process.argv.slice(2) into this
     // method, often forgetting to join the values into a string.

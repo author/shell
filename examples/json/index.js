@@ -1,4 +1,4 @@
-#!/usr/bin/env node --experimental-modules
+#!/usr/bin/env node
 import fs from 'fs'
 import path from 'path'
 import { Command, Shell } from '../../src/index.js'

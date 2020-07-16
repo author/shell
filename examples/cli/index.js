@@ -1,4 +1,4 @@
-#!/usr/bin/env node --experimental-modules -r source-map-support/register
+#!/usr/bin/env node -r source-map-support/register
 
 import fs from 'fs'
 import path from 'path'
