@@ -86,8 +86,8 @@ test('Output Formatting', t => {
 
 Flags:
 
-  --test      [-t]            test description                                   
-  --more      [-m, -mr]       This is a longer description that should break onto
+  --test          [-t]        test description                                   
+  --more          [-m, -mr]   This is a longer description that should break onto
                               more than one line, or perhaps even more than one  
                               extra line with especially poor grammar and        
                               spellling.                                         

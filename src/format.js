@@ -6,7 +6,7 @@ class Formatter {
   #data = null
   #tableWidth = 80
   #colAlign = [] // Defaults to ['l', 'l', 'l']
-  #colWidth = ['15%', '20%', '65%']
+  #colWidth = ['20%', '15%', '65%']
 
   constructor (data) {
     this.#data = data
