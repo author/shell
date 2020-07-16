@@ -405,7 +405,6 @@ export default class Command extends Base {
     }
 
     const flags = Array.from(FLAG_PATTERN[Symbol.matchAll](input), x => x[0])
-// console.log(flags, flagConfig)    
     const parser = new Parser(flags, flagConfig)
     const pdata = parser.data
     const recognized = {}
@@ -444,7 +443,11 @@ export default class Command extends Base {
             if (typeof name === 'number') {
               return Array.from(parser.unrecognizedFlags)[name]
             } else {
-              return pdata.flagSource[name].value
+              if (data.flags.recognized.hasOwnProperty(pdata.flagSource[name].name)) {
+                return data.flags.recognized[pdata.flagSource[name].name]
+              } else {
+                return pdata.flagSource[name].value
+              }
             }
           } catch (e) {
             if (this.arguments.has(name)) {
