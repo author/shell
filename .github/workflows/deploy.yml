@@ -70,7 +70,7 @@ jobs:
         if: success()
         run: |
           dev -v
-          npm run ci
+          npm run test
 
       - name: Tag
         id: autotagger
