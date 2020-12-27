@@ -123,7 +123,7 @@ jobs:
         with:
           scan: ./dist
         env:
-          REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
+          REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
 
       - name: Rollback Release
         if: failure() && steps.create_release.outputs.id != ''
