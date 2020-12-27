@@ -20,7 +20,8 @@
     "report:syntax": "dev report syntax --pretty",
     "report:size": "dev report size ./.dist/**/*.js ./.dist/**/*.js.map",
     "report:compat": "dev report compatibility ./src/**/*.js",
-    "report:preview": "npm pack --dry-run && echo \"==============================\" && echo \"This report shows what will be published to the module registry. Pay attention to the tarball contents and assure no sensitive files will be published.\""
+    "report:preview": "npm pack --dry-run && echo \"==============================\" && echo \"This report shows what will be published to the module registry. Pay attention to the tarball contents and assure no sensitive files will be published.\"",
+    "ci": "dev test --verbose --mode ci --peer -rt node tests/*.js && dev test --mode ci -rt deno tests/*.js && dev test --mode ci -rt browser tests/*.js"
   },
   "keywords": [
     "cli",
@@ -36,15 +37,23 @@
     "replace": {
       "<#REPLACE_VERSION#>": "package.version"
     },
+    "volume": [
+      "./node_modules/@author.io/arg:/node_modules/@author.io/arg",
+      "./node_modules/@author.io/table:/node_modules/@author.io/table"
+    ],
     "alias": {
       "@author.io/shell": "/app/.dist/shell/index.js",
       "@author.io/arg": "/node_modules/@author.io/arg/index.js",
       "@author.io/table": "/node_modules/@author.io/table/src/index.js"
     },
-    "volume": [
-      "./node_modules/@author.io/arg:/node_modules/@author.io/arg",
-      "./node_modules/@author.io/table:/node_modules/@author.io/table"
-    ]
+    "ci": {
+      "verbose": true,
+      "peer": true,
+      "embed": [
+        "@author.io/arg",
+        "@author.io/table"
+      ]
+    }
   },
   "author": {
     "name": "Corey Butler",
