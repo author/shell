@@ -1,6 +1,5 @@
-import 'source-map-support/register.js'
-import test from 'tape'
-import { Shell } from '../../.node/index.js'
+import test from 'tappedout'
+import { Shell } from '@author.io/shell'
 
 test('Map unnamed argument', t => {
   const shell = new Shell({

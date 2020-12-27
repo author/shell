@@ -1,4 +1,4 @@
-import Table from '../node_modules/@author.io/table/src/index.js'
+import Table from '@author.io/table'
 import Command from './command.js'
 import Shell from './shell.js'
 
@@ -26,11 +26,11 @@ class Formatter {
 
   get usage () {
     const desc = this.#data.description.trim()
-    
+
     if (this.#data instanceof Command) {
       const aliases = this.#data.aliases
       const out = [`${this.#data.commandroot}${aliases.length > 0 ? '|' + aliases.join('|') : ''}${this.#data.__flagConfig.size > 0 ? ' [FLAGS]' : ''}${this.#data.arguments.size > 0 ? ' ' + Array.from(this.#data.arguments).map(i => '<' + i + '>').join(' ') : ''}`]
-      
+
       if (this.#data.__processors.size > 0) {
         out[out.length - 1] += (this.#data.arguments.size > 0 || this.#data.__flagConfig.size > 0 ? ' |' : '') + ' [COMMAND]'
       }
@@ -49,15 +49,15 @@ class Formatter {
 
   get subcommands () {
     const rows = Array.from(this.#data.__processors.values()).map(cmd => {
-      let nm = [cmd.name].concat(cmd.aliases)
+      const nm = [cmd.name].concat(cmd.aliases)
       return [nm.join('|'), cmd.description]
     })
 
-    let result = []
+    const result = []
 
     if (rows.length > 0) {
       const table = new Table(rows, this.#colAlign, ['25%', '75%'], this.#tableWidth, [2])
-      result.push(`\nCommands:\n`)
+      result.push('\nCommands:\n')
       result.push(table.output)
     }
 
@@ -66,42 +66,42 @@ class Formatter {
 
   get help () {
     const usage = this.usage.trim()
-    
+
     if (this.#data instanceof Command) {
       const flags = this.#data.__flagConfig
       const rows = []
 
       if (flags.size > 0) {
         flags.forEach((cfg, flag) => {
-          let aliases = Array.from(cfg.aliases||cfg.alias||[])
+          let aliases = Array.from(cfg.aliases || cfg.alias || [])
           aliases = aliases.length === 0 ? '' : '[' + aliases.map(a => `-${a}`).join(', ') + ']'
-          
+
           let dsc = [cfg.description || '']
 
-          if (cfg.hasOwnProperty('options') && this.#data.describeOptions) {
+          if (cfg.hasOwnProperty('options') && this.#data.describeOptions) { // eslint-disable-line no-prototype-builtins
             dsc.push(`Options: ${cfg.options.join(', ')}.`)
           }
-          
-          if (cfg.hasOwnProperty('allowMultipleValues') && cfg.allowMultipleValues === true && this.#data.describeMultipleValues) {
+
+          if (cfg.hasOwnProperty('allowMultipleValues') && cfg.allowMultipleValues === true && this.#data.describeMultipleValues) { // eslint-disable-line no-prototype-builtins
             dsc.push('Can be used multiple times.')
           }
 
-          if (cfg.hasOwnProperty('default') && this.#data.describeDefault) {
+          if (cfg.hasOwnProperty('default') && this.#data.describeDefault) { // eslint-disable-line no-prototype-builtins
             dsc.push(`(Default: ${cfg.default.toString()})`)
           }
 
-          if (cfg.hasOwnProperty('required') && cfg.required === true && this.#data.describeRequired) {
+          if (cfg.hasOwnProperty('required') && cfg.required === true && this.#data.describeRequired) { // eslint-disable-line no-prototype-builtins
             dsc.unshift('Required.')
           }
 
           dsc = dsc.join(' ').trim()
-          
+
           rows.push(['--' + flag, aliases || '', dsc || ''])
         })
       }
 
       const table = new Table(rows, this.#colAlign, this.#colWidth, this.#tableWidth, [2, 0, usage.length > 0 ? 1 : 0, 0])
-      
+
       let subcommands = '\n' + this.subcommands
       if (subcommands.trim().length === 0) {
         subcommands = ''

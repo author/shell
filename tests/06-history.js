@@ -1,6 +1,5 @@
-import 'source-map-support/register.js'
-import test from 'tape'
-import { Shell } from '../../.node/index.js'
+import test from 'tappedout'
+import { Shell } from '@author.io/shell'
 
 test('Basic History', t => {
   const sh = new Shell({

@@ -1,8 +1,6 @@
-import 'source-map-support/register.js'
-import test from 'tape'
-import { Command, Shell, Formatter } from '../../.node/index.js'
+import test from 'tappedout'
+import { Command, Shell, Formatter } from '@author.io/shell'
 // import fs from 'fs'
-// import path from 'path'
 
 test('Sanity Check - Shell', t => {
   const shell = new Shell({
@@ -80,19 +78,35 @@ test('Output Formatting', t => {
   formatter.width = 80
 
   t.ok(formatter instanceof Formatter, 'Basic formatter instantiates correctly.')
-  // fs.writeFileSync('./test.txt', Buffer.from(formatter.help))
-  // console.log(formatter.help)
-  t.ok(formatter.help === `test cmd|c [FLAGS]
+//   fs.writeFileSync('./test.txt', Buffer.from(formatter.help))
+//   console.log(formatter.help)
+//   t.expect(`test cmd|c [FLAGS]
+
+// Flags:
+
+//   --test          [-t]        test description
+//   --more          [-m, -mr]   This is a longer description that should break onto
+//                               more than one line, or perhaps even more than one
+//                               extra line with especially poor grammar and
+//                               spellling.
+//   --none                      Ignore me. I do not exist.                         `,
+//   formatter.help,
+//   'Correctly generated default help message.')
+
+  t.expect(`test cmd|c [FLAGS]
 
 Flags:
 
-  --test          [-t]        test description                                   
+  --test          [-t]        test description
   --more          [-m, -mr]   This is a longer description that should break onto
-                              more than one line, or perhaps even more than one  
-                              extra line with especially poor grammar and        
-                              spellling.                                         
-  --none                      Ignore me. I do not exist.                         `, 'Correctly generated default help message.')
-  t.end()
+                              more than one line, or perhaps even more than one
+                              extra line with especially poor grammar and
+                              spellling.
+  --none                      Ignore me. I do not exist.                         `.replace(/\s+|\t+|\n+/gi, ''),
+    formatter.help.replace(/\s+|\t+|\n+/gi, ''),
+    'Correctly generated default help message.')
+
+    t.end()
 })
 
 test('Subcommand Config', t => {

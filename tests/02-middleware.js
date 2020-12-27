@@ -1,6 +1,5 @@
-import 'source-map-support/register.js'
-import test from 'tape'
-import { Shell, Middleware } from '../../.node/index.js'
+import test from 'tappedout'
+import { Shell, Middleware } from '@author.io/shell'
 
 test('Sync Middleware', t => {
   const mw = new Middleware()
@@ -137,7 +136,7 @@ test('Command Specific Middleware Exceptions', async t => {
       handler () { }
     }, {
       name: 'd',
-      handler () { 
+      handler () {
         ok = true
       }
     }]

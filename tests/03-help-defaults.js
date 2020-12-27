@@ -1,6 +1,6 @@
-import 'source-map-support/register.js'
-import test from 'tape'
-import { Shell, Middleware } from '../../.node/index.js'
+import test from 'tappedout'
+import { Shell, Middleware } from '@author.io/shell'
+
 // import fs from 'fs'
 
 let msg = ''

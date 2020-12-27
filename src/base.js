@@ -27,7 +27,9 @@ export default class Base {
     MultipleValues: null,
     Required: null
   }
+
   #hasCustomDefaultHandler = false
+
   #defaultHandler = function (meta) {
     if (this.parent !== null && this.parent.hasCustomDefaultHandler) {
       return this.parent.defaultHandler(...arguments)
@@ -40,28 +42,28 @@ export default class Base {
     }
   }
 
-  constructor(cfg = {}) {
+  constructor (cfg = {}) {
     if (typeof cfg !== 'object') {
       throw new Error('Invalid command configuration. Expected an object.')
     }
 
-    if (!cfg.hasOwnProperty('name')) {
+    if (!cfg.hasOwnProperty('name')) { // eslint-disable-line no-prototype-builtins
       throw new Error('Invalid command configuration. A "name" attribute is required.')
     }
 
-    if (cfg.hasOwnProperty('help')) {
+    if (cfg.hasOwnProperty('help')) { // eslint-disable-line no-prototype-builtins
       this.#customHelp = cfg.help
     }
 
-    if (cfg.hasOwnProperty('usage')) {
+    if (cfg.hasOwnProperty('usage')) { // eslint-disable-line no-prototype-builtins
       this.#customUsage = cfg.usage
     }
 
-    if (cfg.hasOwnProperty('disablehelp') && !cfg.hasOwnProperty('disableHelp')) {
+    if (cfg.hasOwnProperty('disablehelp') && !cfg.hasOwnProperty('disableHelp')) { // eslint-disable-line no-prototype-builtins
       cfg.disableHelp = cfg.disablehelp
     }
 
-    if (cfg.hasOwnProperty('disableHelp') && cfg.disableHelp === true) {
+    if (cfg.hasOwnProperty('disableHelp') && cfg.disableHelp === true) { // eslint-disable-line no-prototype-builtins
       this.#autohelp = false
     }
 
@@ -73,12 +75,12 @@ export default class Base {
       this.usage = cfg.usage
     }
 
-    if (cfg.hasOwnProperty('defaultHandler') && cfg.defaultHandler.toString() !== this.#defaultHandler.toString()) {
+    if (cfg.hasOwnProperty('defaultHandler') && cfg.defaultHandler.toString() !== this.#defaultHandler.toString()) { // eslint-disable-line no-prototype-builtins
       this.defaultHandler = cfg.defaultHandler
     }
 
     if (typeof cfg.arguments === 'string') {
-      cfg.arguments = cfg.arguments.split(/\s+|\t+|\,+|\;+/).map(arg => arg.trim())
+      cfg.arguments = cfg.arguments.split(/\s+|\t+|\,+|\;+/).map(arg => arg.trim()) // eslint-disable-line no-useless-escape
     }
 
     if (Array.isArray(cfg.arguments)) {
@@ -100,31 +102,31 @@ export default class Base {
       cfg.commands.forEach(cmd => this.add(cmd))
     } else if (typeof cfg.commands === 'object') {
       for (const key in cfg.commands) {
-        let data = cfg.commands[key]
+        const data = cfg.commands[key]
         data.name = key
         this.add(data)
       }
     }
 
-    if (cfg.hasOwnProperty('middleware')) {
+    if (cfg.hasOwnProperty('middleware')) { // eslint-disable-line no-prototype-builtins
       console.warn('The "middleware" attribute has been replaced with the "use" attribute.')
       cfg.use = cfg.middleware
       delete cfg.middleware
     }
 
-    if (!cfg.hasOwnProperty('commonflag')) {
-      if (cfg.hasOwnProperty('commonFlag')) {
+    if (!cfg.hasOwnProperty('commonflag')) { // eslint-disable-line no-prototype-builtins
+      if (cfg.hasOwnProperty('commonFlag')) { // eslint-disable-line no-prototype-builtins
         cfg.commonflag = cfg.commonFlag
-      } else if (cfg.hasOwnProperty('commonflags')) {
+      } else if (cfg.hasOwnProperty('commonflags')) { // eslint-disable-line no-prototype-builtins
         cfg.commonflag = cfg.commonflags
-      } else if (cfg.hasOwnProperty('commonFlag')) {
+      } else if (cfg.hasOwnProperty('commonFlag')) { // eslint-disable-line no-prototype-builtins
         cfg.commonflag = cfg.commonFlag
-      } else if (cfg.hasOwnProperty('commonFlags')) {
+      } else if (cfg.hasOwnProperty('commonFlags')) { // eslint-disable-line no-prototype-builtins
         cfg.commonflag = cfg.commonFlags
       }
     }
 
-    if (cfg.hasOwnProperty('commonflag')) {
+    if (cfg.hasOwnProperty('commonflag')) { // eslint-disable-line no-prototype-builtins
       if (typeof cfg.commonflag !== 'object') {
         throw new Error('The "commonflag" configuration attribute must be an object.')
       }
@@ -137,19 +139,19 @@ export default class Base {
     Object.defineProperties(this, {
       __processors: {
         enumerable: false,
-        get() {
+        get () {
           return this.#processors
         }
       },
       __commands: {
         enumerable: false,
-        get() {
+        get () {
           return this.#commands
         }
       },
       __width: {
         enumerable: false,
-        get() {
+        get () {
           return this.#width
         },
         set (v) {
@@ -177,7 +179,7 @@ export default class Base {
         writable: false,
         value: code => {
           if (typeof code === 'string') {
-            this.use(Function('return ' + code)())
+            this.use(Function('return ' + code)()) // eslint-disable-line no-new-func
           } else if (typeof code === 'function') {
             this.use(code)
           } else {
@@ -191,7 +193,7 @@ export default class Base {
         writable: false,
         value: code => {
           if (typeof code === 'string') {
-            this.trailer(Function('return ' + code)())
+            this.trailer(Function('return ' + code)()) // eslint-disable-line no-new-func
           } else if (typeof code === 'function') {
             this.trailer(code)
           } else {
@@ -204,16 +206,16 @@ export default class Base {
         configurable: false,
         writable: false,
         value: cfg => {
-          if (cfg.hasOwnProperty('describeDefault') && typeof cfg.describeDefault === 'boolean') {
+          if (cfg.hasOwnProperty('describeDefault') && typeof cfg.describeDefault === 'boolean') { // eslint-disable-line no-prototype-builtins
             this.#display.Default = cfg.describeDefault
           }
-          if (cfg.hasOwnProperty('describeOptions') && typeof cfg.describeOptions === 'boolean') {
+          if (cfg.hasOwnProperty('describeOptions') && typeof cfg.describeOptions === 'boolean') { // eslint-disable-line no-prototype-builtins
             this.#display.Options = cfg.describeOptions
           }
-          if (cfg.hasOwnProperty('describeMultipleValues') && typeof cfg.describeMultipleValues === 'boolean') {
+          if (cfg.hasOwnProperty('describeMultipleValues') && typeof cfg.describeMultipleValues === 'boolean') { // eslint-disable-line no-prototype-builtins
             this.#display.MultipleValues = cfg.describeMultipleValues
           }
-          if (cfg.hasOwnProperty('describeRequired') && typeof cfg.describeRequired === 'boolean') {
+          if (cfg.hasOwnProperty('describeRequired') && typeof cfg.describeRequired === 'boolean') { // eslint-disable-line no-prototype-builtins
             this.#display.Required = cfg.describeRequired
           }
         }
@@ -244,10 +246,10 @@ export default class Base {
 
   // @readonly
   get URL () {
-    let uri = (this.#url || '').trim()
+    const uri = (this.#url || '').trim()
 
     if (uri.length === 0) {
-      if (this.hasOwnProperty('parent')) {
+      if (this.hasOwnProperty('parent')) { // eslint-disable-line no-prototype-builtins
         return this.parent.URL
       } else if (this instanceof Command) {
         return this.shell.URL
@@ -259,10 +261,10 @@ export default class Base {
 
   // @readonly
   get support () {
-    let support = (this.#support || '').trim()
+    const support = (this.#support || '').trim()
 
     if (support.length === 0) {
-      if (this.hasOwnProperty('parent')) {
+      if (this.hasOwnProperty('parent')) { // eslint-disable-line no-prototype-builtins
         return this.parent.support
       } else if (this instanceof Command) {
         return this.shell.support
@@ -272,7 +274,7 @@ export default class Base {
     return support
   }
 
-  get autohelp() {
+  get autohelp () {
     return this.#autohelp
   }
 
@@ -281,7 +283,7 @@ export default class Base {
       return
     }
     this.#autohelp = value
-    this.#processors.forEach(cmd => cmd.autohelp = value)
+    this.#processors.forEach(cmd => { cmd.autohelp = value })
   }
 
   updateHelp () {
@@ -298,7 +300,7 @@ export default class Base {
       if (this.shell && this.shell !== null && this.shell[attr] !== null) {
         return this.shell[attr]
       }
-      
+
       if (this.parent !== null) {
         return this.parent[attr]
       }
@@ -323,7 +325,7 @@ export default class Base {
     return this.describeHelp('describeRequired', 'Required')
   }
 
-  get usage() {
+  get usage () {
     if (this.#customUsage !== null) {
       return typeof this.#customUsage === 'function' ? this.#customUsage() : this.#customUsage
     }
@@ -368,7 +370,7 @@ export default class Base {
     if (typeof value === 'function') {
       this.#defaultHandler = value
       this.#hasCustomDefaultHandler = true
-      this.#processors.forEach(cmd => cmd.defaultProcessor = value)
+      this.#processors.forEach(cmd => { cmd.defaultProcessor = value })
     } else {
       throw new Error(`Invalid default method (must be a function, not "${typeof value}").`)
     }
@@ -387,7 +389,7 @@ export default class Base {
     const commands = {}
 
     Array.from(this.#processors.values()).forEach(cmd => {
-      let data = cmd.data
+      const data = cmd.data
       const name = data.name
       delete data.name
       commands[name] = data
@@ -396,7 +398,7 @@ export default class Base {
     return commands
   }
 
-  get middleware() {
+  get middleware () {
     return this.#middleware
   }
 
@@ -404,7 +406,7 @@ export default class Base {
     return this.#trailer
   }
 
-  get commands() {
+  get commands () {
     return this.#processors
   }
 
@@ -418,12 +420,12 @@ export default class Base {
     return Array.from(list).sort()
   }
 
-  getCommand(name = null) {
+  getCommand (name = null) {
     if (!name) {
       return null
     }
 
-    let names = name.split(/\s+/i)
+    const names = name.split(/\s+/i)
     let cmd = this.#commands.get(names.shift())
     if (cmd) {
       cmd = this.#processors.get(cmd)
@@ -435,7 +437,7 @@ export default class Base {
     return cmd instanceof Command ? cmd : null
   }
 
-  remove() {
+  remove () {
     for (const cmd of arguments) {
       if (typeof cmd === 'symbol') {
         this.#processors.delete(cmd)

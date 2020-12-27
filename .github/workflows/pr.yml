@@ -1,0 +1,91 @@
+name: Test Suite
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: 'Run Tests'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        name: Checkout Code
+
+      - name: List Directory Contents (for Troubleshooting)
+        run: |
+          pwd
+          ls -l
+
+      - uses: actions/setup-node@v1
+        name: Setup Node.js
+        with:
+          node-version: '15'
+
+      - uses: actions/cache@v2
+        name: Establish npm Cache
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - uses: actions/cache@v2
+        name: Establish Docker Cache
+        id: cache
+        with:
+          path: docker-cache
+          key: ${{ runner.os }}-docker-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-docker-
+
+      - name: Load cached Docker layers
+        run: |
+          if [ -d "docker-cache" ]; then
+            cat docker-cache/x* > my-image.tar
+            docker load < my-image.tar
+            rm -rf docker-cache
+          fi
+
+      - name: Download Dev Tooling
+        id: setup
+        run: |
+          echo ${{ secrets.GH_DOCKER_TOKEN }} | docker login https://docker.pkg.github.com -u ${{ secrets.GH_DOCKER_USER }} --password-stdin
+          base=$(curl -L -s 'https://registry.hub.docker.com/v2/repositories/author/dev-base/tags?page_size=1'|jq '."results"[]["name"]')
+          base=$(sed -e 's/^"//' -e 's/"$//' <<<"$base")
+          echo Retrieving author/dev/dev-base:$base
+          docker pull author/dev-base:$base
+          # docker pull docker.pkg.github.com/author/dev/dev-base:$base
+
+          deno=$(curl -L -s 'https://registry.hub.docker.com/v2/repositories/author/dev-deno/tags?page_size=1'|jq '."results"[]["name"]')
+          deno=$(sed -e 's/^"//' -e 's/"$//' <<<"$deno")
+          echo Retrieving author/dev/dev-deno:$deno
+          # docker pull docker.pkg.github.com/author/dev/dev-deno:$deno
+          docker pull author/dev-deno:$deno
+
+          browser=$(curl -L -s 'https://registry.hub.docker.com/v2/repositories/author/dev-browser/tags?page_size=1'|jq '."results"[]["name"]')
+          browser=$(sed -e 's/^"//' -e 's/"$//' <<<"$browser")
+          echo Retrieving author/dev/dev-browser:$browser
+          # docker pull docker.pkg.github.com/author/dev/dev-browser:$browser
+          docker pull author/dev-browser:$browser
+
+          node=$(curl -L -s 'https://registry.hub.docker.com/v2/repositories/author/dev-node/tags?page_size=1'|jq '."results"[]["name"]')
+          node=$(sed -e 's/^"//' -e 's/"$//' <<<"$node")
+          echo Retrieving author/dev/dev-node:$node
+          # docker pull docker.pkg.github.com/author/dev/dev-node:$node
+          docker pull author/dev-node:$node
+
+          # node -e "const p=new Set(Object.keys(require('./package.json').peerDependencies));p.delete('@author.io/dev');console.log('npm i ' + Array.from(p).join(' '))"
+          version=$(npm show @author.io/dev version)
+          echo $version
+          npm i -g @author.io/dev@$version
+          dev -v
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Test
+        if: success()
+        run: |
+          dev -v
+          npm run ci

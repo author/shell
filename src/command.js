@@ -1,4 +1,5 @@
-import { Parser } from '../node_modules/@author.io/arg/index.js'
+// import { Parser } from '../../../@author.io/arg/index.js'
+import { Parser } from '@author.io/arg'
 import Shell from './shell.js'
 import Base from './base.js'
 import { METHOD_PATTERN, FLAG_PATTERN, STRIP_QUOTE_PATTERN } from './utility.js'
@@ -11,11 +12,11 @@ export default class Command extends Base {
   #flagConfig = {}
   #parent = null
   #shell = null
-  
+
   constructor (cfg = {}) {
-    if (cfg.hasOwnProperty('handler')) {
+    if (cfg.hasOwnProperty('handler')) { // eslint-disable-line no-prototype-builtins
       if (typeof cfg.handler === 'string') {
-        cfg.handler = Function('return (' + cfg.handler.replace('function anonymous', 'function') + ').call(this)').call(globalThis)
+        cfg.handler = Function('return (' + cfg.handler.replace('function anonymous', 'function') + ').call(this)').call(globalThis) // eslint-disable-line no-new-func
       }
 
       if (typeof cfg.handler !== 'function') {
@@ -25,11 +26,11 @@ export default class Command extends Base {
 
     super(cfg)
 
-    if (cfg.hasOwnProperty('use') && Array.isArray(cfg.use)) {
+    if (cfg.hasOwnProperty('use') && Array.isArray(cfg.use)) { // eslint-disable-line no-prototype-builtins
       cfg.use.forEach(code => this.initializeMiddleware(code))
     }
 
-    if (cfg.hasOwnProperty('trailer') && Array.isArray(cfg.trailer)) {
+    if (cfg.hasOwnProperty('trailer') && Array.isArray(cfg.trailer)) { // eslint-disable-line no-prototype-builtins
       cfg.trailer.forEach(code => this.initializeTrailer(code))
     }
 
@@ -38,7 +39,7 @@ export default class Command extends Base {
     this.#fn = cfg.handler
     this.#oid = Symbol(((cfg.name || cfg.usage) || cfg.pattern) || 'command')
     this.#pattern = cfg.pattern || /[\s\S]+/i
-    
+
     if (cfg.alias && !cfg.aliases) {
       cfg.aliases = typeof cfg.alias === 'string' ? [cfg.alias] : (Array.isArray(cfg.alias) ? cfg.alias : Array.from(cfg.alias))
       delete cfg.alias
@@ -48,7 +49,7 @@ export default class Command extends Base {
       if (!Array.isArray(cfg.aliases)) {
         throw new Error('The alias property only accepts an array.')
       }
- 
+
       this.#aliases = new Set(cfg.aliases)
     }
 
@@ -58,11 +59,11 @@ export default class Command extends Base {
       }
 
       for (const [key, value] of Object.entries(cfg.flags)) {
-        if (value.hasOwnProperty('alias')) {
+        if (value.hasOwnProperty('alias')) { // eslint-disable-line no-prototype-builtins
           value.aliases = value.aliases || []
-          
+
           if (Array.isArray(value.alias)) {
-            value.aliases = Array.from(new Set(...value.aliases, ... value.alias))
+            value.aliases = Array.from(new Set(...value.aliases, ...value.alias))
             if (value.aliases.filter(a => typeof a !== 'string') > 0) {
               throw new Error(`${key} flag aliases must be strings. Type failure on: ${value.aliases.filter(a => typeof a !== 'string').join(', ')}.`)
             }
@@ -123,7 +124,7 @@ export default class Command extends Base {
         const ignore = new Set(Array.isArray(commonFlags.ignore) ? commonFlags.ignore : [commonFlags.ignore])
         // delete commonFlags.ignore
         const root = this.commandroot.replace(new RegExp(`^${this.shell.name}\\s+`, 'i'), '')
-        
+
         for (const cmd of ignore) {
           if (root.startsWith(cmd)) {
             commonFlags = {}
@@ -131,7 +132,7 @@ export default class Command extends Base {
           }
         }
       }
-        
+
       return commonFlags
     }
 
@@ -139,8 +140,8 @@ export default class Command extends Base {
       __commonFlags: {
         enumerable: false,
         get () {
-          let flags = ignoreFlags(this.__commonflags) //Object.assign({}, this.__commonflags, this.#flagConfig)
-          
+          let flags = ignoreFlags(this.__commonflags) // Object.assign({}, this.__commonflags, this.#flagConfig)
+
           if (this.parent !== null) {
             flags = Object.assign(flags, this.parent.__commonFlags)
           }
@@ -157,7 +158,7 @@ export default class Command extends Base {
       __flagConfig: {
         enumerable: false,
         get () {
-          let flags = new Map(Object.entries(Object.assign(this.__commonFlags, this.#flagConfig || {})))
+          const flags = new Map(Object.entries(Object.assign(this.__commonFlags, this.#flagConfig || {})))
           flags.delete('help')
           return flags
         }
@@ -167,7 +168,7 @@ export default class Command extends Base {
         configurable: false,
         writable: false,
         value: input => {
-          let args = input.trim().split(/\t+|\s+/)
+          const args = input.trim().split(/\t+|\s+/)
           let cmd = this
 
           while (args.length > 0) {
@@ -204,12 +205,12 @@ export default class Command extends Base {
       handler = handler.replace(METHOD_PATTERN.exec(handler)[1], 'function ')
     }
 
-    let flags = Object.assign(this.__commonFlags, this.#flagConfig || {})
-    
-    for (let [key, value] of Object.entries(flags)) {
+    const flags = Object.assign(this.__commonFlags, this.#flagConfig || {})
+
+    for (const [key, value] of Object.entries(flags)) { // eslint-disable-line no-unused-vars
       value.aliases = value.aliases || []
 
-      if (value.hasOwnProperty('alias')) {
+      if (value.hasOwnProperty('alias')) { // eslint-disable-line no-prototype-builtins
         if (value.aliases.indexOf(value.alias) < 0) {
           value.aliases.push(value.alias)
         }
@@ -219,7 +220,7 @@ export default class Command extends Base {
     }
 
     // Apply any missing default values to flags.
-    Object.keys(flags).forEach(name => flags[name] = Object.assign(this.getFlagConfiguration(name), flags[name]))
+    Object.keys(flags).forEach(name => { flags[name] = Object.assign(this.getFlagConfiguration(name), flags[name]) })
 
     const data = {
       name: this.name,
@@ -235,7 +236,7 @@ export default class Command extends Base {
       trailer: this.trailers.data
     }
 
-    for (let [key, value] of Object.entries(data.flags)) {
+    for (const [key, value] of Object.entries(data.flags)) { // eslint-disable-line no-unused-vars
       delete value.alias
     }
 
@@ -334,7 +335,7 @@ export default class Command extends Base {
 
   addFlag (name, cfg) {
     if (typeof name !== 'string') {
-      if (!cfg.hasOwnProperty('name')) {
+      if (!cfg.hasOwnProperty('name')) { // eslint-disable-line no-prototype-builtins
         throw new Error('Invalid flag name (should be a string).')
       } else {
         name = cfg.name
@@ -351,13 +352,13 @@ export default class Command extends Base {
   getFlagConfiguration (name) {
     let flag = this.__flagConfig.get(name)
     if (!flag) {
-      for (let [f, cfg] of this.__flagConfig) {
+      for (const [f, cfg] of this.__flagConfig) { // eslint-disable-line no-unused-vars
         if ((cfg.aliases && cfg.aliases.indexOf(name) >= 0) || (cfg.alias && cfg.alias === flag)) {
           flag = cfg
           break
         }
       }
-      
+
       if (!flag) {
         return null
       }
@@ -365,20 +366,20 @@ export default class Command extends Base {
 
     return {
       description: flag.description,
-      required: flag.hasOwnProperty('required') ? flag.required : false,
+      required: flag.hasOwnProperty('required') ? flag.required : false, // eslint-disable-line no-prototype-builtins
       aliases: flag.aliases || [flag.alias].filter(i => i !== null),
       type: flag.type === undefined ? 'string' : (typeof flag.type === 'string' ? flag.type : flag.type.name.toLowerCase()),
-      options: flag.hasOwnProperty('options') ? flag.options : null,
-      allowMultipleValues: flag.hasOwnProperty('allowMultipleValues') ? flag.allowMultipleValues : false
+      options: flag.hasOwnProperty('options') ? flag.options : null, // eslint-disable-line no-prototype-builtins
+      allowMultipleValues: flag.hasOwnProperty('allowMultipleValues') ? flag.allowMultipleValues : false // eslint-disable-line no-prototype-builtins
     }
   }
 
   supportsFlag (name) {
-    return this.#flagConfig.hasOwnProperty(name)
+    return this.#flagConfig.hasOwnProperty(name) // eslint-disable-line no-prototype-builtins
   }
 
   deepParse (input) {
-    let meta = this.parse(input)
+    const meta = this.parse(input)
 
     if (this.__commands.size === 0) {
       return meta
@@ -388,8 +389,8 @@ export default class Command extends Base {
       return meta
     }
 
-    let args = meta.input.split(/\s+/)
-    let subcmd = this.__commands.get(args.shift())
+    const args = meta.input.split(/\s+/)
+    const subcmd = this.__commands.get(args.shift())
 
     if (!subcmd) {
       return meta
@@ -401,12 +402,11 @@ export default class Command extends Base {
   parse (input) {
     // Parse the command input for flags
     const data = { command: this.name, input: input.trim() }
+    const flagConfig = Object.assign(this.__commonFlags, this.#flagConfig || {})
 
-    let flagConfig = Object.assign(this.__commonFlags, this.#flagConfig || {})
-
-    if (!flagConfig.hasOwnProperty('help')) {
+    if (!flagConfig.hasOwnProperty('help')) { // eslint-disable-line no-prototype-builtins
       flagConfig.help = {
-        description: `Display ${ this.name } help.`,
+        description: `Display ${this.name} help.`,
         // aliases: ['h'],
         default: false,
         type: 'boolean'
@@ -418,16 +418,16 @@ export default class Command extends Base {
     const pdata = parser.data
     const recognized = {}
 
-    parser.recognizedFlags.forEach(flag => recognized[flag] = pdata[flag])
+    parser.recognizedFlags.forEach(flag => { recognized[flag] = pdata[flag] })
     parser.unrecognizedFlags.forEach(arg => delete recognized[arg])
- 
+
     data.flags = { recognized, unrecognized: parser.unrecognizedFlags }
     data.valid = parser.valid
     data.violations = parser.violations
-    
+
     data.parsed = {}
     if (Object.keys(pdata.flagSource).length > 0) {
-      for (const [key, src] of Object.entries(pdata.flagSource)) {
+      for (const [key, src] of Object.entries(pdata.flagSource)) { // eslint-disable-line no-unused-vars
         data.parsed[src.name] = src.inputName
       }
     }
@@ -441,7 +441,7 @@ export default class Command extends Base {
     }
 
     const args = Array.from(this.arguments)
-    
+
     Object.defineProperties(data, {
       flag: {
         enumerable: true,
@@ -452,7 +452,7 @@ export default class Command extends Base {
             if (typeof name === 'number') {
               return Array.from(parser.unrecognizedFlags)[name]
             } else {
-              if (data.flags.recognized.hasOwnProperty(pdata.flagSource[name].name)) {
+              if (data.flags.recognized.hasOwnProperty(pdata.flagSource[name].name)) { // eslint-disable-line no-prototype-builtins
                 return data.flags.recognized[pdata.flagSource[name].name]
               } else {
                 return pdata.flagSource[name].value
@@ -478,12 +478,12 @@ export default class Command extends Base {
       data: {
         enumerable: true,
         get () {
-          let uf = parser.unrecognizedFlags
-          let result = Object.assign({}, recognized)
+          const uf = parser.unrecognizedFlags
+          const result = Object.assign({}, recognized)
           delete result.help
-          
+
           args.forEach((name, i) => {
-            let value = uf[i]
+            const value = uf[i]
             let normalizedValue = Object.keys(pdata).filter(key => key.toLowerCase() === value)
             normalizedValue = (normalizedValue.length > 0 ? normalizedValue.pop() : value)
 
@@ -495,8 +495,8 @@ export default class Command extends Base {
               }
             }
 
-            if (result.hasOwnProperty(name)) {
-              result[name] = Array.isArray(result[name]) ? result[name]: [result[name]]
+            if (result.hasOwnProperty(name)) { // eslint-disable-line no-prototype-builtins
+              result[name] = Array.isArray(result[name]) ? result[name] : [result[name]]
               result[name].push(normalizedValue)
             } else {
               result[name] = normalizedValue
@@ -507,8 +507,8 @@ export default class Command extends Base {
             uf.slice(args.length)
               .forEach((flag, i) => {
                 let name = `unknown${i + 1}`
-                while (result.hasOwnProperty(name)) {
-                  let number = name.substring(7)
+                while (result.hasOwnProperty(name)) { // eslint-disable-line no-prototype-builtins
+                  const number = name.substring(7)
                   name = 'unknown' + (parseInt(number) + 1)
                 }
 
@@ -530,7 +530,7 @@ export default class Command extends Base {
   }
 
   async run (input, callback) {
-    let fn = (this.#fn || this.defaultHandler).bind(this)
+    const fn = (this.#fn || this.defaultHandler).bind(this)
     const data = typeof input === 'string' ? this.parse(input) : input
 
     arguments[0] = this.deepParse(input)
@@ -538,17 +538,17 @@ export default class Command extends Base {
 
     if (this.shell !== null) {
       const parentMiddleware = this.shell.getCommandMiddleware(this.commandroot.replace(new RegExp(`^${this.shell.name}`, 'i'), '').trim())
-    
+
       if (parentMiddleware.length > 0) {
         this.middleware.use(...parentMiddleware)
       }
     }
 
-    let trailers = this.trailers
+    const trailers = this.trailers
 
     if (arguments[0].help && arguments[0].help.requested) {
       console.log(this.help)
-      
+
       if (trailers.size > 0) {
         trailers.run(arguments[0])
       }
@@ -559,7 +559,7 @@ export default class Command extends Base {
     // No subcommand was recognized
     if (this.middleware.size > 0) {
       this.middleware.run(arguments[0], async meta => await Command.reply(fn(meta, callback)))
-      
+
       if (trailers.size > 0) {
         trailers.run(arguments[0])
       }
@@ -590,7 +590,7 @@ export default class Command extends Base {
         if (typeof callback === 'function') {
           callback()
         }
-        
+
         resolve()
       } catch (e) {
         reject(e)

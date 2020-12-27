@@ -1,6 +1,5 @@
 import Command from './command.js'
 import Base from './base.js'
-import { Parser } from '../node_modules/@author.io/arg/index.js'
 import { COMMAND_PATTERN } from './utility.js'
 
 export default class Shell extends Base {
@@ -10,16 +9,16 @@ export default class Shell extends Base {
   #version
   #cursor = 0
   #tabWidth
-  #runtime = globalThis.hasOwnProperty('window')
+  #runtime = globalThis.hasOwnProperty('window') // eslint-disable-line no-prototype-builtins
     ? 'browser'
     : (
-        globalThis.hasOwnProperty('process')
-        && globalThis.process.release
-        && globalThis.process.release.name
-          ? globalThis.process.release.name
-          : 'unknown'
-      )
-  
+      globalThis.hasOwnProperty('process') && // eslint-disable-line no-prototype-builtins
+      globalThis.process.release &&
+      globalThis.process.release.name
+        ? globalThis.process.release.name
+        : 'unknown'
+    )
+
   constructor (cfg = { maxhistory: 100 }) {
     super(cfg)
 
@@ -27,17 +26,17 @@ export default class Shell extends Base {
 
     this.__commonflags = cfg.commonflags || {}
 
-    if (cfg.hasOwnProperty('use') && Array.isArray(cfg.use)) {
+    if (cfg.hasOwnProperty('use') && Array.isArray(cfg.use)) { // eslint-disable-line no-prototype-builtins
       cfg.use.forEach(code => this.initializeMiddleware(code))
     }
 
-    if (cfg.hasOwnProperty('trailer') && Array.isArray(cfg.trailer)) {
+    if (cfg.hasOwnProperty('trailer') && Array.isArray(cfg.trailer)) { // eslint-disable-line no-prototype-builtins
       cfg.trailer.forEach(code => this.initializeTrailer(code))
     }
 
     this.#version = cfg.version || '1.0.0'
     this.#maxHistoryItems = cfg.maxhistory || cfg.maxHistoryItems || 100
-    this.#tabWidth = cfg.hasOwnProperty('tabWidth') ? cfg.tabWidth : 4
+    this.#tabWidth = cfg.hasOwnProperty('tabWidth') ? cfg.tabWidth : 4 // eslint-disable-line no-prototype-builtins
 
     // This sets a global symbol that dev tools can find.
     globalThis[Symbol('SHELL_INTEGRATIONS')] = this
@@ -66,7 +65,7 @@ export default class Shell extends Base {
     return this.#version || 'Unknown'
   }
 
-  set tableWidth(value) {
+  set tableWidth (value) {
     this.__width = value
   }
 
@@ -86,9 +85,9 @@ export default class Shell extends Base {
     if (this.#history.length === 0) {
       return null
     }
-    
+
     if (count < 0) {
-      return this.nextCommand(abs(count))
+      return this.nextCommand(Math.abs(count))
     }
 
     count = count % this.#history.length
@@ -106,9 +105,9 @@ export default class Shell extends Base {
     if (this.#history.length === 0) {
       return null
     }
-    
+
     if (count < 0) {
-      return this.priorCommand(abs(count))
+      return this.priorCommand(Math.abs(count))
     }
 
     count = count % this.#history.length
@@ -151,7 +150,7 @@ export default class Shell extends Base {
 
     const fns = Array.from(arguments).slice(1)
     const all = new Set(this.commandlist.map(i => i.toLowerCase()))
-    
+
     commands.forEach(cmd => {
       all.delete(cmd)
       for (const c of all) {
@@ -171,7 +170,7 @@ export default class Shell extends Base {
       input = input.join(' ')
     }
 
-    this.#history.unshift({ input, time: new Date().toLocaleString()})
+    this.#history.unshift({ input, time: new Date().toLocaleString() })
 
     if (this.#history.length > this.#maxHistoryItems) {
       this.#history.pop()
@@ -185,15 +184,15 @@ export default class Shell extends Base {
       } else if (input.indexOf('help') !== -1) {
         return console.log(this.help)
       }
-      
+
       return Command.stderr(this.help)
     }
 
     parsed = parsed.filter(item => item !== undefined)
 
-    let cmd = parsed[1]
-    let args = parsed.length > 2 ? parsed[2] : ''
-    let command = null
+    const cmd = parsed[1]
+    const args = parsed.length > 2 ? parsed[2] : ''
+    // const command = null
 
     const action = this.__commands.get(cmd)
 
@@ -205,7 +204,7 @@ export default class Shell extends Base {
       return Command.stderr(this.help)
     }
 
-    let processor = this.__processors.get(action)
+    const processor = this.__processors.get(action)
 
     if (!processor) {
       return Command.stderr('Command not found.')
@@ -216,9 +215,9 @@ export default class Shell extends Base {
   }
 
   getCommandMiddleware (cmd) {
-    let results = []
+    const results = []
     cmd.split(/\s+/).forEach((c, i, a) => {
-      let r = this.#middlewareGroups.get(a.slice(0, i + 1).join(' '))
+      const r = this.#middlewareGroups.get(a.slice(0, i + 1).join(' '))
       r && results.push(r.flat(Infinity))
     })
 

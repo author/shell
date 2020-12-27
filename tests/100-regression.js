@@ -1,6 +1,5 @@
-import 'source-map-support/register.js'
-import test from 'tape'
-import { Shell } from '../../.node/index.js'
+import test from 'tappedout'
+import { Shell } from '@author.io/shell'
 
 // The range error was caused by the underlying table library.
 // When a default help message was generated, a negative column

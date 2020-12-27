@@ -1,5 +1,6 @@
 *.log
 .*
+_*
 !.github
 !.gitignore
 !.npmignore

@@ -7,22 +7,77 @@ on:
 
 jobs:
   build:
-    name: 'Build & Release'
+    name: 'Release'
     runs-on: ubuntu-latest
     steps:
         # Checkout updated source code
       - uses: actions/checkout@v2
-    
-        # If the version has changed, create a new git tag for it.
-      - name: Tag
-        id: autotagger
-        uses: butlerlogic/action-autotag@master
+        name: Checkout Code
+
+      - uses: actions/setup-node@v1
+        name: Setup Node.js
+        with:
+          node-version: '15'
+
+      - uses: actions/cache@v2
+        name: Establish Docker Cache
+        id: cache
+        with:
+          path: docker-cache
+          key: ${{ runner.os }}-docker-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-docker-
+
+      - name: Load cached Docker layers
+        run: |
+          if [ -d "docker-cache" ]; then
+            cat docker-cache/x* > my-image.tar
+            docker load < my-image.tar
+            rm -rf docker-cache
+          fi
+
+      - name: Setup Build Tooling
+        id: setup
+        run: |
+          base=$(curl -L -s 'https://registry.hub.docker.com/v2/repositories/author/dev-base/tags?page_size=1'|jq '."results"[]["name"]')
+          base=$(sed -e 's/^"//' -e 's/"$//' <<<"$base")
+          echo Retrieving author/dev/dev-base:$base
+          docker pull author/dev-base:$base
+
+          deno=$(curl -L -s 'https://registry.hub.docker.com/v2/repositories/author/dev-deno/tags?page_size=1'|jq '."results"[]["name"]')
+          deno=$(sed -e 's/^"//' -e 's/"$//' <<<"$deno")
+          echo Retrieving author/dev/dev-deno:$deno
+          docker pull author/dev-deno:$deno
+
+          browser=$(curl -L -s 'https://registry.hub.docker.com/v2/repositories/author/dev-browser/tags?page_size=1'|jq '."results"[]["name"]')
+          browser=$(sed -e 's/^"//' -e 's/"$//' <<<"$browser")
+          echo Retrieving author/dev/dev-browser:$browser
+          docker pull author/dev-browser:$browser
+
+          node=$(curl -L -s 'https://registry.hub.docker.com/v2/repositories/author/dev-node/tags?page_size=1'|jq '."results"[]["name"]')
+          node=$(sed -e 's/^"//' -e 's/"$//' <<<"$node")
+          echo Retrieving author/dev/dev-node:$node
+          docker pull author/dev-node:$node
+
+          # node -e "const p=new Set(Object.keys(require('./package.json').peerDependencies));p.delete('@author.io/dev');console.log('npm i ' + Array.from(p).join(' '))"
+          version=$(npm show @author.io/dev version)
+          echo $version
+          npm i -g @author.io/dev@$version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    
-        # The remaining steps all depend on whether or not
-        # a new tag was created. There is no need to release/publish 
-        # updates until the code base is in a releaseable state.
+
+      - name: Test
+        if: success()
+        run: |
+          dev -v
+          npm run ci
+
+      - name: Tag
+        id: autotagger
+        if: success()
+        uses: butlerlogic/action-autotag@stable
+        with:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
         # If the new version/tag is a pre-release (i.e. 1.0.0-beta.1), create
         # an environment variable indicating it is a prerelease.
@@ -30,10 +85,7 @@ jobs:
         if: steps.autotagger.outputs.tagname != ''
         run: |
           if [[ "${{ steps.autotagger.output.version }}" == *"-"* ]]; then echo "::set-env IS_PRERELEASE=true";else echo "::set-env IS_PRERELEASE=''";fi
-    
-        # Create a github release
-        # This will create a snapshot of the module,
-        # available in the "Releases" section on Github.
+
       - name: Release
         id: create_release
         if: steps.autotagger.outputs.tagname != ''
@@ -47,47 +99,31 @@ jobs:
           draft: false
           prerelease: env.IS_PRERELEASE != ''
 
-      - uses: actions/setup-node@v1
-        if: steps.create_release.outputs.id != ''
-        with:
-          node-version: '13'
-
         # Build tarballs of the module code.
       - name: Build Release Artifacts
         id: build_release
         if: steps.create_release.outputs.id != ''
         run: |
-          npm install
-          cd ./build && npm install && cd ../
-          npm run build --if-present
-          for d in .dist/*/*/ ; do tar -cvzf ${d%%/}-${{ steps.autotagger.outputs.version }}.tar.gz ${d%%}*; done;
-          if [[ ${{ github.ref }} == *"-"* ]]; then echo ::set-output isprerelease=true;else echo ::set-output isprerelease=false;fi
+          dev build --pack --mode ci --peer
+          cp -rf .dist ./dist
+
         # Upload tarballs to the release.
       - name: Upload Release Artifacts
         uses: AButler/upload-release-assets@v2.0
         if: steps.create_release.outputs.id != ''
         with:
-          files: './.dist/**/*.tar.gz'
+          files: '.dist/*.tar.gz'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           release-tag: ${{ steps.autotagger.outputs.tagname }}
 
-        # Build npm packages
-      - name: Build Module Artifacts
-        id: build_npm
-        if: steps.create_release.outputs.id != ''
-        run: |
-          npm install
-          cd ./build && npm install && cd ../
-          npm run build --if-present
-        # Use this action to publish a single module to npm.
-      - name: Publish
+      - name: Publish to npm
         id: publish_npm
         if: steps.autotagger.outputs.tagname != ''
-        uses: author/action-publish@master
+        uses: author/action-publish@stable
         with:
-          scan: .dist
-        env: 
-          REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
+          scan: ./dist
+        env:
+          REGISTRY_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
 
       - name: Rollback Release
         if: failure() && steps.create_release.outputs.id != ''
@@ -118,7 +154,7 @@ jobs:
         uses: Ilshidur/action-slack@master
         with:
           args: '@author.io/shell ${{ steps.autotagger.outputs.tagname }} published to npm.' # Optional
-      
+
       - name: Inaction Notification
         if: steps.autotagger.outputs.tagname == ''
         env:
@@ -129,3 +165,124 @@ jobs:
         uses: Ilshidur/action-slack@master
         with:
           args: "New code was added to author/shell master branch." # Optional
+
+
+
+
+
+      #   # If the version has changed, create a new git tag for it.
+      # - name: Tag
+      #   id: autotagger
+      #   uses: butlerlogic/action-autotag@master
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      #   # The remaining steps all depend on whether or not
+      #   # a new tag was created. There is no need to release/publish
+      #   # updates until the code base is in a releaseable state.
+
+      #   # If the new version/tag is a pre-release (i.e. 1.0.0-beta.1), create
+      #   # an environment variable indicating it is a prerelease.
+      # - name: Pre-release
+      #   if: steps.autotagger.outputs.tagname != ''
+      #   run: |
+      #     if [[ "${{ steps.autotagger.output.version }}" == *"-"* ]]; then echo "::set-env IS_PRERELEASE=true";else echo "::set-env IS_PRERELEASE=''";fi
+
+      #   # Create a github release
+      #   # This will create a snapshot of the module,
+      #   # available in the "Releases" section on Github.
+      # - name: Release
+      #   id: create_release
+      #   if: steps.autotagger.outputs.tagname != ''
+      #   uses: actions/create-release@v1.0.0
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     tag_name: ${{ steps.autotagger.outputs.tagname }}
+      #     release_name: ${{ steps.autotagger.outputs.tagname }}
+      #     body: ${{ steps.autotagger.outputs.tagmessage }}
+      #     draft: false
+      #     prerelease: env.IS_PRERELEASE != ''
+
+      # - uses: actions/setup-node@v1
+      #   if: steps.create_release.outputs.id != ''
+      #   with:
+      #     node-version: '13'
+
+      #   # Build tarballs of the module code.
+      # - name: Build Release Artifacts
+      #   id: build_release
+      #   if: steps.create_release.outputs.id != ''
+      #   run: |
+      #     npm install
+      #     cd ./build && npm install && cd ../
+      #     npm run build --if-present
+      #     for d in .dist/*/*/ ; do tar -cvzf ${d%%/}-${{ steps.autotagger.outputs.version }}.tar.gz ${d%%}*; done;
+      #     if [[ ${{ github.ref }} == *"-"* ]]; then echo ::set-output isprerelease=true;else echo ::set-output isprerelease=false;fi
+      #   # Upload tarballs to the release.
+      # - name: Upload Release Artifacts
+      #   uses: AButler/upload-release-assets@v2.0
+      #   if: steps.create_release.outputs.id != ''
+      #   with:
+      #     files: './.dist/**/*.tar.gz'
+      #     repo-token: ${{ secrets.GITHUB_TOKEN }}
+      #     release-tag: ${{ steps.autotagger.outputs.tagname }}
+
+      #   # Build npm packages
+      # - name: Build Module Artifacts
+      #   id: build_npm
+      #   if: steps.create_release.outputs.id != ''
+      #   run: |
+      #     npm install
+      #     cd ./build && npm install && cd ../
+      #     npm run build --if-present
+      #   # Use this action to publish a single module to npm.
+      # - name: Publish
+      #   id: publish_npm
+      #   if: steps.autotagger.outputs.tagname != ''
+      #   uses: author/action-publish@master
+      #   with:
+      #     scan: .dist
+      #   env:
+      #     REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
+
+      # - name: Rollback Release
+      #   if: failure() && steps.create_release.outputs.id != ''
+      #   uses: author/action-rollback@stable
+      #   with:
+      #     tag: ${{ steps.autotagger.outputs.tagname }}
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # - name: Failure Notification
+      #   if: failure() && steps.create_release.outputs.id != ''
+      #   env:
+      #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      #     SLACK_USERNAME: Github # Optional. (defaults to webhook app)
+      #     SLACK_CHANNEL: author # Optional. (defaults to webhook)
+      #     SLACK_AVATAR: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Npm-logo.svg/320px-Npm-logo.svg.png"
+      #   uses: Ilshidur/action-slack@master
+      #   with:
+      #     args: '@author.io/shell ${{ steps.autotagger.outputs.tagname }} failed to publish and was rolled back.' # Optional
+
+      # - name: Success Notification
+      #   if: success() && steps.autotagger.outputs.tagname != ''
+      #   env:
+      #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      #     SLACK_USERNAME: Github # Optional. (defaults to webhook app)
+      #     SLACK_CHANNEL: author # Optional. (defaults to webhook)
+      #     SLACK_AVATAR: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Npm-logo.svg/320px-Npm-logo.svg.png"
+      #   uses: Ilshidur/action-slack@master
+      #   with:
+      #     args: '@author.io/shell ${{ steps.autotagger.outputs.tagname }} published to npm.' # Optional
+
+      # - name: Inaction Notification
+      #   if: steps.autotagger.outputs.tagname == ''
+      #   env:
+      #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      #     SLACK_USERNAME: Github # Optional. (defaults to webhook app)
+      #     SLACK_CHANNEL: author # Optional. (defaults to webhook)
+      #     SLACK_AVATAR: "https://cdn.freebiesupply.com/logos/large/2x/nodejs-icon-logo-png-transparent.png" # Optional. can be (repository, sender, an URL) (defaults to webhook app avatar)
+      #   uses: Ilshidur/action-slack@master
+      #   with:
+      #     args: "New code was added to author/shell master branch." # Optional

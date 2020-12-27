@@ -17,7 +17,7 @@ export default class Middleware {
     }
 
     this.go = (stack => (...args) => {
-      let next = args.pop()
+      const next = args.pop()
       stack(...args, () => {
         method.apply(this, [...args, next.bind(null, ...args)])
       })

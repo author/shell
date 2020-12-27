@@ -1,6 +1,5 @@
-import 'source-map-support/register.js'
-import test from 'tape'
-import { Shell } from '../../.node/index.js'
+import test from 'tappedout'
+import { Shell } from '@author.io/shell'
 
 test('Common flags (entire shell)', t => {
   const shell = new Shell({
@@ -117,7 +116,7 @@ test('Common flags (exclusions)', async t => {
       },
       commands: [{
         name: 'sub',
-        handler (meta) { 
+        handler (meta) {
           t.ok(!meta.flags.recognized.hasOwnProperty('typical'), 'The common flag "typical" was successfully excluded from a sub command.')
         },
         commands: [{
