@@ -349,6 +349,7 @@ Consider an example where information is retrieved from a remote API. To do this
   </p>
 </details>
 <br/>
+
 ```javascript
 import axios from 'axios'
 
