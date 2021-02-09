@@ -54,12 +54,12 @@ Sometimes single purpose tools grow into multipurpose tools over time. Tools whi
 1. Reusable **plugin** system.
 1. Dynamically add/remove commands.
 1. Track command execution **history**.
-1. Define **universal flags** flag once, reuse in all commands.
+1. Define **universal flags** once, reuse in all commands.
 
 <details>
 <summary><b>Also has better source & distribution code</b></summary>
 
-1. Cross-runtime (browser & node)
+1. Cross-runtime (browser, node, deno)
 1. Separation of Concerns: Arg parsing and text formatting are separate microlibs.
 1. Modern ES Module syntax
 1. 40+ unit tests
