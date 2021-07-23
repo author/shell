@@ -1,4 +1,4 @@
-# @author.io/shell 
+# @author.io/shell
 ![Version](https://img.shields.io/github/v/tag/author/shell?label=Latest&style=for-the-badge)
 
 This is a super-lightweight framework for building text-based programs, like [CLI](https://en.wikipedia.org/wiki/Command-line_interface) applications.
@@ -35,7 +35,7 @@ There are two types of text-based apps:
 
 This framework was designed to support multipurpose CLI tools. At the core, it provides a clean, easily-understood, repeatable pattern for building maintainable multipurpose CLI applications.
 
-Multipurpose tools require a layer of organizational overhead to help isolate different commands and features. This overhead is unnecessary in single purpose tools. Single purpose tools just need argument parsing, which the [@author.io/arg](https://github.com/author/arg) does very well. 
+Multipurpose tools require a layer of organizational overhead to help isolate different commands and features. This overhead is unnecessary in single purpose tools. Single purpose tools just need argument parsing, which the [@author.io/arg](https://github.com/author/arg) does very well.
 
 `@author.io/arg` is embedded in this framework, making `@author.io/shell` _capable_ of creating single purpose tools, but it's merely unnecessary overhead for single purpose commands.
 </details>
@@ -75,7 +75,7 @@ There is a complete working example of a CLI app (with a mini tutorial) in the e
 _This example imports the library for Node. Simply swap the Node import for the appropriate browser import if you're building a web utility. Everything else is the same for both Node and browser environments._
 
 ```javascript
-import { Shell, Command } from '@author.io/node-shell'
+import { Shell, Command } from '@author.io/shell'
 
 // Define a command
 const ListCommand = new Command({
@@ -103,13 +103,13 @@ const ListCommand = new Command({
   },
   handler (metadata, callback) {
     // ... this is where your command actually does something ...
-    
+
     // Data comes from @author.io/arg lib. It looks like:
     // {
     //   command: <Command>,
     //   input: 'whatever user typed after "command"',
     //   flags: {
-    //     recognized: {}, 
+    //     recognized: {},
     //     unrecognized: [
     //       'whatever',
     //       'user',
@@ -129,9 +129,9 @@ const ListCommand = new Command({
     // Any unrecognized flags can be retrieved by index number (0-based)
     console.log(metadata.flag(0)) // The first unrecognized flag... returns null if it doesn't exist
 
-    // Execution callbacks are optional. If a callback is passed from the 
-    // execution context to this handler, it will run after the command 
-    // has finished processing 
+    // Execution callbacks are optional. If a callback is passed from the
+    // execution context to this handler, it will run after the command
+    // has finished processing
     // (kind of like "next" in Express).
     // Promises are also supported.
     callback && callback()
@@ -205,7 +205,7 @@ Each command has a handler function, which is responsible for doing something. T
   command: <Command>,
   input: 'Raw string of flags/arguments passed to the command',
   flags: {
-    recognized: {}, 
+    recognized: {},
     unrecognized: [
       'whatever',
       'user',
@@ -519,7 +519,7 @@ Flags:
 _`read` output:_
 ```sh
 mycli read
-  
+
   Read a directory.
 
 ```
@@ -803,8 +803,8 @@ The help message for this flag would look like:
 
 ```sh
 Flags:
-  -name       ['nm']          Required. Specify a name. Options: Mr 
-                              Awesome, Mrs Awesome, Rad Dev. Can be 
+  -name       ['nm']          Required. Specify a name. Options: Mr
+                              Awesome, Mrs Awesome, Rad Dev. Can be
                               used multiple times. (Default Rad Dev)
 ```
 </details>
@@ -815,7 +815,7 @@ Flags:
 This library uses a vanilla dependency (i.e. no-subdependencies) called [@author.io/table](https://github.com/author/table) to format the usage and help messages of the shell. The `Table` library can be used to create your own custom screens, though most users will likely want to stick with the defaults. If you want to customize messages, the following example can be used as a starting point. The configuration options for the table can be found in the README of its repository.
 
 ```javascript
-import { Shell, Command, Table } from '@author.io/node-shell'
+import { Shell, Command, Table } from '@author.io/shell'
 
 const shell = new Shell(...)
 shell.usage = '...'
@@ -834,7 +834,7 @@ shell.help = () => {
 **The `usage` and/or `help` attributes of an individual `Command` can also be set:**
 
 ```javascript
-import { Shell, Command, Table } from '@author.io/node-shell'
+import { Shell, Command, Table } from '@author.io/shell'
 
 const cmd = new Command(...)
 cmd.usage = '...'
@@ -929,17 +929,19 @@ If you wish to generate your own autocompletion capabilities, use the `shell.dat
 <br/>
 
 ```sh
-npm install @author.io/node-shell
+npm install @author.io/shell --save
 ```
 
-Please note, you'll need a verison of Node that supports ES Modules. In Node 12, this feature is behind the `--experimental-modules` flag. It is available in Node 13+ without a flag, but your `package.json` file must have the `"type": "module"` attribute. This feature is generally available as of [Node 14.0.0](https://nodejs.org).
+Please note, you'll need a verison of Node that supports ES Modules. In Node 12, this feature is behind the `--experimental-modules` flag. It is available in Node 13+ without a flag, but the `package.json` file must have the `"type": "module"` attribute. This feature is generally available in [Node 14.0.0](https://nodejs.org) and above.
 </details>
 
 <details>
-<summary>Legacy (CommonJS/require)</summary>
+<summary><del>Legacy (CommonJS/require)</del></summary>
 <br/>
 
-If you need to use the older CommonJS format (i.e. `require`), run `npm install @author.io/node-shell-legacy` instead.
+<b>DEPRECATED</b>
+
+<del>If you need to use the older CommonJS format (i.e. `require`), run `npm install @author.io/shell-legacy` instead.</del>
 </details>
 
 ### Browsers
@@ -947,27 +949,14 @@ If you need to use the older CommonJS format (i.e. `require`), run `npm install 
 **CDN**
 
 ```javascript
-import { Shell, Command } from 'https://cdn.pika.dev/@author.io/browser-shell'
+import { Shell, Command } from 'https://cdn.pika.dev/@author.io/shell'
 ```
 
-Also available from [jsdelivr](https://www.jsdelivr.com/package/npm/@author.io/browser-shell) and [unpkg](https://unpkg.com/@author.io/browser-shell).
-
-<details>
-<summary><b>npm options</b></summary>
-<br/>
-
-If you wish to bundle this library in your build process, use the version most appropriate for your target runtimes:
-
-- `npm install @author.io/browser-shell` (Minified ES Module)
-- `npm install @author.io/browser-shell-es6` (IIFE Minified Module - globally accessible)
-- `npm install @author.io/shell` (source)
-
-**TAKE NOTICE: The source may not be what you think it is.** The source code may contain Node or browser code that is stripped out during the build process. We have a goal of making the _API_ runtime-agnostic, not the implementation. We do everything we can to avoid runtime-specific source code though, and it is rare to have node or browser-specific source code... we just can't guarantee the source will be easily embeddable. We recommend consuming the prebuilt editions.
-</details>
+Also available from [jsdelivr](https://www.jsdelivr.com/package/npm/@author.io/shell/index.js) and [unpkg](https://unpkg.com/@author.io/shell/index.js).
 
 ### Debugging
 
-Each distribution has a corresponding `-debug` version that should be installed _alongside_ the main module (the debugging is an add-on module). For example, `npm install @author.io/node-shell-debug --save-dev` would install the debugging code for Node.
+Each distribution has a corresponding `-debug` version that should be installed _alongside_ the main module (the debugging is an add-on module). For example, `npm install @author.io/shell-debug --save-dev` would install the debugging code for Node. In the browser, appending the debug library adds sourcemaps.
 
 ### Related Modules
 
