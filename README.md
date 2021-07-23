@@ -1,7 +1,7 @@
 # @author.io/shell
 ![Version](https://img.shields.io/github/v/tag/author/shell?label=Latest&style=for-the-badge)
 
-This is a super-lightweight framework for building text-based programs, like [CLI](https://en.wikipedia.org/wiki/Command-line_interface) applications.
+This is a super-lightweight framework for building text-based programs, like [CLI](https://en.wikipedia.org/wiki/Command-line_interface) applications. See the [installation guide](#installation) to jumpstart your CLI.
 
 ---
 This library is now supported by this [Chrome CLI Devtools Extension](https://chrome.google.com/webstore/detail/cli/okpglddgmnblhbdpdcmodmacgcibgfkf):
