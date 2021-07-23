@@ -1,6 +1,6 @@
 {
   "name": "@author.io/shell",
-  "version": "1.8.4",
+  "version": "1.8.5",
   "description": "A micro-framework for creating CLI-like experiences. This supports Node.js and browsers.",
   "main": "src/index.js",
   "scripts": {
@@ -29,6 +29,14 @@
     "arg",
     "shell"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/author/shell"
+  },
+  "exports": {
+    "import": "./index.js",
+    "default": "./index.js"
+  },
   "dev": {
     "ignorecircular": [
       "src/command.js",
