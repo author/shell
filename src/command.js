@@ -578,10 +578,10 @@ export default class Command extends Base {
 
   static stderr (err) {
     if (err instanceof Error) {
-      return new Promise((resolve, reject) => reject(err))
+      return new Promise((resolve, reject) => reject(err)).catch(console.error)
     }
 
-    return new Promise((resolve, reject) => reject(err))
+    return new Promise((resolve, reject) => reject(err)).catch(console.error)
   }
 
   static reply (callback) {
