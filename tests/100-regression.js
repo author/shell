@@ -42,13 +42,33 @@ test('Metadata duplication of flag values when multiple values are allowed', t =
         }
       },
       handler (meta) {
-        t.ok(meta.data.file[0] === 'a.js', 'First value is correct')
-        t.ok(meta.data.file[1] === 'b.js', 'Second value is correct')
-        t.ok(meta.data.file.length === 2, 'Only two unique flag values provided.')
+        t.expect('a.js', meta.data.file[0], 'First value is correct')
+        t.expect('b.js', meta.data.file[1], 'Second value is correct')
+        t.expect(2, meta.data.file.length, 'Only two unique flag values provided.')
         t.end()
       }
     }]
   })
 
   sh.exec('run -f a.js -f b.js').catch(t.fail)
+})
+
+test('Properly parsing input values with spaces', t => {
+  const sh = new Shell({
+    name: 'test',
+    commands: [{
+      name: 'run',
+      flags: {
+        connection: {
+          alias: 'c'
+        }
+      },
+      handler(meta) {
+        t.expect('a connection', meta.data.connection, 'Support flag values with spaces')
+        t.end()
+      }
+    }]
+  })
+
+  sh.exec('run -c "a connection"').catch(t.fail)
 })
