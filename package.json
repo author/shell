@@ -47,7 +47,7 @@
       "<#REPLACE_VERSION#>": "package.version"
     },
     "volume": [
-      "./node_modules/@author.io/arg:/node_modules/@author.io/arg",
+      "./node_modules/@author.io/arg:/node_modules/@author.io/arg/src",
       "./node_modules/@author.io/table:/node_modules/@author.io/table"
     ],
     "alias": {

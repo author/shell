@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-node@v1
         name: Setup Node.js
         with:
-          node-version: '15'
+          node-version: '16'
 
       - uses: actions/cache@v2
         name: Establish Docker Cache
