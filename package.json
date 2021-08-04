@@ -52,8 +52,8 @@
     ],
     "alias": {
       "@author.io/shell": "/app/.dist/shell/index.js",
-      "@author.io/arg": "/node_modules/@author.io/arg/src/index.js",
-      "@author.io/table": "/node_modules/@author.io/table/src/index.js"
+      "@author.io/arg": "/node_modules/@author.io/arg/index.js",
+      "@author.io/table": "/node_modules/@author.io/table/index.js"
     },
     "ci": {
       "verbose": true,
