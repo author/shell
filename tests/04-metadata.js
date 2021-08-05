@@ -27,9 +27,10 @@ test('Map unnamed arguments', t => {
       arguments: 'email displayName',
       handler (meta) {
         t.ok(meta.data.hasOwnProperty('email'), 'Automapped email data exists.')
-        t.ok(meta.data.email === 'me@domain.com', `Attribute named email expected a value of "me@domain.com". Received "${meta.data.email}".`)
+        t.expect('me@domain.com', meta.data.email, 'Recognized email')
         t.ok(meta.data.hasOwnProperty('displayName'), 'Automapped displayName data exists.')
-        t.ok(meta.data.displayName === 'John Doe', `Attribute named displayName expected a value of "John Doe". Received "${meta.data.displayName}".`)
+        console.log(meta.data)
+        t.expect('John Doe', meta.data.displayName, 'Recognized displayName')
       }
     }]
   })
