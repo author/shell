@@ -167,7 +167,13 @@ export default class Shell extends Base {
     // The array check exists because people are passing process.argv.slice(2) into this
     // method, often forgetting to join the values into a string.
     if (Array.isArray(input)) {
-      input = input.join(' ')
+      input = input.map(i => {
+        if (i.indexOf(' ') >= 0 && !/^[\"\'].+ [\"\']$/.test(i)) {
+          return `"${i}"`
+        } else {
+          return i
+        }
+      }).join(' ')
     }
 
     this.#history.unshift({ input, time: new Date().toLocaleString() })

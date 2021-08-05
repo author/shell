@@ -72,3 +72,50 @@ test('Properly parsing input values with spaces', t => {
 
   sh.exec('run -c "a connection"').catch(t.fail)
 })
+
+test('Recognize flags with quotes', t => {
+  const input = 'run --connection "a connection" --save'
+  const sh = new Shell({
+    name: 'test',
+    commands: [{
+      name: 'run',
+      flags: {
+        connection: {
+          alias: 'c',
+          description: 'connection string',
+          type: 'string'
+        }
+      },
+      handler(meta) {
+        t.expect('a connection', meta.data.connection, 'Support flag values with spaces')
+        t.end()
+      }
+    }]
+  })
+
+  sh.exec('run -c "a connection"').catch(t.fail)
+})
+
+test('Accept arrays with values containing spaces', t => {
+  const input = 'run --connection "a connection" --save'
+  const sh = new Shell({
+    name: 'test',
+    commands: [{
+      name: 'run',
+      flags: {
+        connection: {
+          alias: 'c',
+          description: 'connection string',
+          type: 'string'
+        }
+      },
+      handler(meta) {
+        t.expect('a connection', meta.data.connection, 'Support flag values with spaces')
+        t.end()
+      }
+    }]
+  })
+
+  const argv = ["run", "-c", "a connection", "--save"]
+  sh.exec(argv).catch(t.fail)
+})
