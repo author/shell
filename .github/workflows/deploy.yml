@@ -104,6 +104,7 @@ jobs:
         id: build_release
         if: steps.create_release.outputs.id != ''
         run: |
+          ls -l
           dev build --pack --mode ci --peer
           cp -rf .dist ./dist
 
