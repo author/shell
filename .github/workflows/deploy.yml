@@ -69,6 +69,7 @@ jobs:
       - name: Test
         if: success()
         run: |
+          npm i
           dev -v
           npm run ci
 
