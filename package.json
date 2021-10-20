@@ -1,6 +1,6 @@
 {
   "name": "@author.io/shell",
-  "version": "1.8.13",
+  "version": "1.8.14",
   "description": "A micro-framework for creating CLI-like experiences. This supports Node.js and browsers.",
   "main": "./src/index.js",
   "module": "./index.js",
@@ -55,7 +55,7 @@
     "alias": {
       "@author.io/shell": "/app/.dist/@author.io/shell/index.js",
       "@author.io/arg": "/node_modules/@author.io/arg/index.js",
-      "@author.io/table": "/node_modules/@author.io/table/src/index.js"
+      "@author.io/table": "/node_modules/@author.io/table/index.js"
     },
     "ci": {
       "verbose": true,
