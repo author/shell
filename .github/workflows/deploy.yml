@@ -106,6 +106,8 @@ jobs:
         if: steps.create_release.outputs.id != ''
         run: |
           ln -s /node_modules ./node_modules
+          ls -l /node_modules
+          ls -l /node_modules/@author.io
           dev build --pack --mode ci --peer
           cp -rf .dist ./dist
 
