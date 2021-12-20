@@ -105,10 +105,9 @@ jobs:
         id: build_release
         if: steps.create_release.outputs.id != ''
         run: |
-          ln -s ./node_modules /node_modules
-          ls -l ./node_modules
-          ls -l ./node_modules/@author.io
-          dev build --pack --mode ci --peer -v "./node_modules:/node_modules"
+          ln -s ./node_modules /build_release/node_modules
+          ls -l ./build_release/@author.io
+          dev build --pack --mode ci --peer -v "/build_release/:/node_modules"
           cp -rf .dist ./dist
 
         # Upload tarballs to the release.
