@@ -105,7 +105,6 @@ jobs:
         id: build_release
         if: steps.create_release.outputs.id != ''
         run: |
-          ls /node_modules
           ln -s /node_modules ./node_modules
           ls -l ./node_modules
           ls -l ./node_modules/@author.io
