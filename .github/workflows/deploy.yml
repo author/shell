@@ -109,7 +109,7 @@ jobs:
           ln -s /node_modules ./node_modules
           ls -l ./node_modules
           ls -l ./node_modules/@author.io
-          dev build --pack --mode ci --peer
+          dev build --pack --mode ci --peer -v "./node_modules:/node_modules"
           cp -rf .dist ./dist
 
         # Upload tarballs to the release.
