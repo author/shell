@@ -347,20 +347,22 @@ const sh = new Shell({
 })
 
 const ref = { test: true }
-const result = await sh.exec('run', ref)
+const result = await sh.exec('run', { reference: ref })
 ```
 
-In the command above, the data object (line 1) is passed to the `exec()` method using a special object as the second argument. This object is made available in the handler using the `meta.reference` attribute.
+In the command above, the reference data (second to last line) is passed to the `exec()` method using a special object as the second argument. This object is made available in the handler using the `meta.reference` attribute.
 
 If a callback needs to be defined, the second argument of the `exec` method must have an attribute called `callback`, i.e.:
 
 ```javascript
 const ref = {
-  test: true,
-  callback: function() {...}
+  test: true
 }
 
-const result = await sh.exec('run', ref)
+const result = await sh.exec('run', {
+  reference: ref,
+  callback: function () {...}
+})
 ```
 
 The callback method is _not_ available in the `meta.reference`, but the callback will be executed when `exec()` is executed.
