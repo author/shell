@@ -529,9 +529,9 @@ export default class Command extends Base {
     return data
   }
 
-  async run (input, callback) {
+  async run (input, callback, reference = undefined) {
     const fn = (this.#fn || this.defaultHandler).bind(this)
-    const data = typeof input === 'string' ? this.parse(input) : input
+    const metadata = typeof input === 'string' ? this.parse(input) : input
 
     arguments[0] = this.deepParse(input)
     arguments[0].plugins = this.plugins
@@ -558,7 +558,7 @@ export default class Command extends Base {
 
     // No subcommand was recognized
     if (this.middleware.size > 0) {
-      this.middleware.run(arguments[0], async meta => await Command.reply(fn(meta, callback)))
+      this.middleware.run(arguments[0], async meta => await Command.reply(fn(Object.assign(meta, { reference }), callback)))
 
       if (trailers.size > 0) {
         trailers.run(arguments[0])
@@ -568,8 +568,8 @@ export default class Command extends Base {
     }
 
     // Command.reply(fn(arguments[0], callback))
-    data.plugins = this.plugins
-    const result = await Command.reply(fn(data, callback))
+    metadata.plugins = this.plugins
+    const result = await Command.reply(fn(Object.assign(metadata, { reference }), callback))
 
     if (trailers.size > 0) {
       trailers.run(arguments[0])

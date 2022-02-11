@@ -164,6 +164,17 @@ export default class Shell extends Base {
   }
 
   async exec (input, callback) {
+    // Optionally apply reference data. Only for advanced use
+    // in applications (not strict CLIs).
+    let reference
+    if (typeof callback === 'object') {
+      if (!callback.hasOwnProperty('reference') && !callback.hasOwnProperty('callback')) { // eslint-disable-line no-prototype-builtins
+        throw new Error('exec method data references require a reference and/or callback attribute - recognized: ' + Object.keys(callback).join(', '))
+      }
+      reference = callback.reference
+      callback = callback.callback
+    }
+
     // The array check exists because people are passing process.argv.slice(2) into this
     // method, often forgetting to join the values into a string.
     if (Array.isArray(input)) {
@@ -219,10 +230,10 @@ export default class Shell extends Base {
     const term = processor.getTerminalCommand(args)
 
     if (typeof callback === 'function') {
-      return callback(await Command.reply(await term.command.run(term.arguments, callback))) // eslint-disable-line standard/no-callback-literal
+      return callback(await Command.reply(await term.command.run(term.arguments, callback, reference))) // eslint-disable-line standard/no-callback-literal
     }
 
-    return await Command.reply(await term.command.run(term.arguments, callback))
+    return await Command.reply(await term.command.run(term.arguments, callback, reference))
   }
 
   getCommandMiddleware (cmd) {
