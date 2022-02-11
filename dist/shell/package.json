@@ -9,28 +9,6 @@
     "default": "./index.js"
   },
   "browser": "./index.js",
-  "scripts": {
-    "start": "dev workspace",
-    "test": "npm run test:node && npm run test:deno && npm run test:browser && npm run report:syntax && npm run report:size",
-    "test:node": "dev test -rt node tests/*.js",
-    "test:node:sanity": "dev test -rt node tests/01-sanity.js",
-    "test:node:base": "dev test -rt node tests/02-base.js",
-    "test:node:relationships": "dev test -rt node tests/06-relationships.js",
-    "test:node:regression": "dev test -rt node tests/100-regression.js",
-    "test:browser": "dev test -rt browser tests/*.js",
-    "test:browser:sanity": "dev test -rt browser tests/01-sanity.js",
-    "test:browser:base": "dev test -rt browser tests/02-base.js",
-    "test:deno": "dev test -rt deno tests/*.js",
-    "test:deno:sanity": "dev test -rt deno tests/01-sanity.js",
-    "manually": "dev test -rt manual tests/*.js",
-    "build": "dev build",
-    "report:syntax": "dev report syntax --pretty",
-    "report:size": "dev report size ./.dist/**/*.js ./.dist/**/*.js.map",
-    "report:compat": "dev report compatibility ./src/**/*.js",
-    "report:preview": "npm pack --dry-run && echo \"==============================\" && echo \"This report shows what will be published to the module registry. Pay attention to the tarball contents and assure no sensitive files will be published.\"",
-    "ci": "dev test --verbose --mode ci --peer -rt node tests/*.js && dev test --mode ci -rt deno tests/*.js && dev test --mode ci -rt browser tests/*.js",
-    "x": "dev build --verbose --mode ci --peer"
-  },
   "keywords": [
     "cli",
     "args",
@@ -54,7 +32,7 @@
       "./node_modules/@author.io/table:/node_modules/@author.io/table"
     ],
     "alias": {
-      "@author.io/shell": "/app/.dist/shell/index.js",
+      "@author.io/shell": "/app/.dist/@author.io/shell/index.js",
       "@author.io/arg": "/node_modules/@author.io/arg/index.js",
       "@author.io/table": "/node_modules/@author.io/table/index.js"
     },
@@ -99,6 +77,8 @@
   "devDependencies": {
     "@author.io/arg": "^1.3.23",
     "@author.io/dev": "^1.1.5",
-    "@author.io/table": "^1.0.3"
-  }
+    "@author.io/table": "^1.0.3",
+    "@author.io/shell-debug": "1.8.18"
+  },
+  "dependencies": {}
 }

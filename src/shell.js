@@ -168,7 +168,7 @@ export default class Shell extends Base {
     // method, often forgetting to join the values into a string.
     if (Array.isArray(input)) {
       input = input.map(i => {
-        if (i.indexOf(' ') >= 0 && !/^[\"\'].+ [\"\']$/.test(i)) {
+        if (i.indexOf(' ') >= 0 && !/^[\"\'].+ [\"\']$/.test(i)) { // eslint-disable-line no-useless-escape
           return `"${i}"`
         } else {
           return i
@@ -217,6 +217,11 @@ export default class Shell extends Base {
     }
 
     const term = processor.getTerminalCommand(args)
+
+    if (typeof callback === 'function') {
+      return callback(await Command.reply(await term.command.run(term.arguments, callback))) // eslint-disable-line standard/no-callback-literal
+    }
+
     return await Command.reply(await term.command.run(term.arguments, callback))
   }
 

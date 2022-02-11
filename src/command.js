@@ -569,11 +569,13 @@ export default class Command extends Base {
 
     // Command.reply(fn(arguments[0], callback))
     data.plugins = this.plugins
-    Command.reply(fn(data, callback))
+    const result = await Command.reply(fn(data, callback))
 
     if (trailers.size > 0) {
       trailers.run(arguments[0])
     }
+
+    return result
   }
 
   static stderr (err) {
@@ -585,13 +587,15 @@ export default class Command extends Base {
   }
 
   static reply (callback) {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => { // eslint-disable-line no-async-promise-executor
       try {
         if (typeof callback === 'function') {
-          callback()
+          resolve(callback())
+        } else if (callback instanceof Promise) {
+          callback.then(resolve).catch(reject)
+        } else {
+          resolve(...arguments)
         }
-
-        resolve()
       } catch (e) {
         reject(e)
       }

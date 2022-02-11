@@ -119,3 +119,39 @@ test('Accept arrays with values containing spaces', t => {
   const argv = ["run", "-c", "a connection", "--save"]
   sh.exec(argv).catch(t.fail)
 })
+
+test('Exec method should return promise value', async t => {
+  const sh = new Shell({
+    name: 'test',
+    commands: [{
+      name: 'run',
+      async handler(meta) {
+        return meta.input
+      }
+    }]
+  })
+
+  const argv = ['run', 'example']
+  const result = await sh.exec(argv).catch(t.fail)
+
+  t.expect(result, 'example', 'returns command promise results')
+  t.end()
+})
+
+test('Exec method should return callback value', async t => {
+  const sh = new Shell({
+    name: 'test',
+    commands: [{
+      name: 'run',
+      async handler(meta) {
+        return meta.input
+      }
+    }]
+  })
+
+  const argv = ['run', 'other']
+  sh.exec(argv, data => {
+    t.expect(data, 'other', 'returns command callback results')
+    t.end()
+  })
+})
