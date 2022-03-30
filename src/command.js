@@ -537,12 +537,19 @@ export default class Command extends Base {
     arguments[0].plugins = this.plugins
 
     if (this.shell !== null) {
-      const parentMiddleware = this.shell.getCommandMiddleware(this.commandroot.replace(new RegExp(`^${this.shell.name}`, 'i'), '').trim())
+      const { shellware } = this.shell
+      if (shellware.length > 0) {
+        this.middleware.use(...shellware)
+      }
 
+      const parentMiddleware = this.shell.getCommandMiddleware(this.commandroot.replace(new RegExp(`^${this.shell.name}`, 'i'), '').trim())
       if (parentMiddleware.length > 0) {
         this.middleware.use(...parentMiddleware)
       }
     }
+
+    this.applyMiddleware()
+    this.applyTrailerware()
 
     const trailers = this.trailers
 

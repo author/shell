@@ -18,7 +18,9 @@ export default class Base {
   #width = 80
   #name = 'Unknown'
   #middleware = new Middleware()
+  #middlewareChain = []
   #trailer = new Middleware()
+  #trailerwareChain = []
   #commonflags = {}
   #display = {
     // These are all null, representing they're NOT configured.
@@ -173,17 +175,38 @@ export default class Base {
           return this.#arguments
         }
       },
+      applyMiddleware: {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: () => this.#middlewareChain.forEach(mw => this.#middleware.use(mw))
+      },
+      applyTrailerware: {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: () => {
+          this.#trailer = this.#trailer || new Middleware()
+          this.#trailerwareChain.forEach(mw => this.#trailer.use(mw))
+        }
+      },
       initializeMiddleware: {
         enumerable: false,
         configurable: false,
         writable: false,
-        value: code => {
+        value: code => this.use(this.normalizeMiddleware(code))
+      },
+      normalizeMiddleware: {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: (code, type = 'middleware') => {
           if (typeof code === 'string') {
-            this.use(Function('return ' + code)()) // eslint-disable-line no-new-func
+            return Function('return ' + code)() // eslint-disable-line no-new-func
           } else if (typeof code === 'function') {
-            this.use(code)
+            return code
           } else {
-            throw new Error('Invalid middleware: ' + code.toString())
+            throw new Error(`Invalid ${type}: ` + code.toString())
           }
         }
       },
@@ -191,15 +214,7 @@ export default class Base {
         enumerable: false,
         configurable: false,
         writable: false,
-        value: code => {
-          if (typeof code === 'string') {
-            this.trailer(Function('return ' + code)()) // eslint-disable-line no-new-func
-          } else if (typeof code === 'function') {
-            this.trailer(code)
-          } else {
-            throw new Error('Invalid trailer: ' + code.toString())
-          }
-        }
+        value: code => this.trailer(this.normalizeMiddleware(code, 'trailer'))
       },
       initializeHelpAnnotations: {
         enumerable: false,
@@ -453,31 +468,55 @@ export default class Base {
     }
   }
 
+  // use () {
+  //   for (const arg of arguments) {
+  //     if (typeof arg !== 'function') {
+  //       throw new Error(`All "use()" arguments must be valid functions.\n${arg.toString().substring(0, 50)} ${arg.toString().length > 50 ? '...' : ''}`)
+  //     }
+
+  //     this.#middleware.use(arg)
+  //   }
+
+  //   this.#processors.forEach(subCmd => subCmd.use(...arguments))
+  // }
+
   use () {
     for (const arg of arguments) {
       if (typeof arg !== 'function') {
         throw new Error(`All "use()" arguments must be valid functions.\n${arg.toString().substring(0, 50)} ${arg.toString().length > 50 ? '...' : ''}`)
       }
 
-      this.#middleware.use(arg)
+      this.#middlewareChain.push(arg)
     }
 
     this.#processors.forEach(subCmd => subCmd.use(...arguments))
   }
 
   trailer () {
-    this.#trailer = this.#trailer || new Middleware()
-
     for (const arg of arguments) {
       if (typeof arg !== 'function') {
         throw new Error(`All "trailer()" arguments must be valid functions.\n${arg.toString().substring(0, 50)} ${arg.toString().length > 50 ? '...' : ''}`)
       }
 
-      this.#trailer.use(arg)
+      this.#trailerwareChain.push(arg)
     }
 
     this.#processors.forEach(subCmd => subCmd.trailer(...arguments))
   }
+
+  // trailer () {
+  //   this.#trailer = this.#trailer || new Middleware()
+
+  //   for (const arg of arguments) {
+  //     if (typeof arg !== 'function') {
+  //       throw new Error(`All "trailer()" arguments must be valid functions.\n${arg.toString().substring(0, 50)} ${arg.toString().length > 50 ? '...' : ''}`)
+  //     }
+
+  //     this.#trailer.use(arg)
+  //   }
+
+  //   this.#processors.forEach(subCmd => subCmd.trailer(...arguments))
+  // }
 
   add () {
     for (let command of arguments) {

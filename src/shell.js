@@ -9,6 +9,7 @@ export default class Shell extends Base {
   #version
   #cursor = 0
   #tabWidth
+  #middleware = []
   #runtime = globalThis.hasOwnProperty('window') // eslint-disable-line no-prototype-builtins
     ? 'browser'
     : (
@@ -27,7 +28,7 @@ export default class Shell extends Base {
     this.__commonflags = cfg.commonflags || {}
 
     if (cfg.hasOwnProperty('use') && Array.isArray(cfg.use)) { // eslint-disable-line no-prototype-builtins
-      cfg.use.forEach(code => this.initializeMiddleware(code))
+      cfg.use.forEach(code => this.#middleware.push(this.normalizeMiddleware(code)))
     }
 
     if (cfg.hasOwnProperty('trailer') && Array.isArray(cfg.trailer)) { // eslint-disable-line no-prototype-builtins
@@ -193,6 +194,7 @@ export default class Shell extends Base {
       this.#history.pop()
     }
 
+    // The extra space is added to guarantee the pattern is recognized
     let parsed = COMMAND_PATTERN.exec(input + ' ')
 
     if (parsed === null) {
@@ -227,6 +229,8 @@ export default class Shell extends Base {
       return Command.stderr('Command not found.')
     }
 
+    // "terminal command" refers to the last command in the input
+    // string (i.e. last subcommand)
     const term = processor.getTerminalCommand(args)
 
     if (typeof callback === 'function') {
@@ -234,6 +238,10 @@ export default class Shell extends Base {
     }
 
     return await Command.reply(await term.command.run(term.arguments, callback, reference))
+  }
+
+  get shellware () {
+    return this.#middleware
   }
 
   getCommandMiddleware (cmd) {

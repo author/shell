@@ -1,6 +1,6 @@
 {
   "name": "@author.io/shell",
-  "version": "1.9.1",
+  "version": "1.9.2",
   "description": "A micro-framework for creating CLI-like experiences. This supports Node.js and browsers.",
   "main": "./src/index.js",
   "module": "./index.js",
@@ -14,7 +14,7 @@
     "test": "npm run test:node && npm run test:deno && npm run test:browser && npm run report:syntax && npm run report:size",
     "test:node": "dev test -rt node tests/*.js",
     "test:node:sanity": "dev test -rt node tests/01-sanity.js",
-    "test:node:base": "dev test -rt node tests/02-base.js",
+    "test:node:middleware": "dev test -rt node tests/02-middleware.js",
     "test:node:relationships": "dev test -rt node tests/06-relationships.js",
     "test:node:metadata": "dev test -rt node tests/04-metadata.js",
     "test:node:regression": "dev test -rt node tests/100-regression.js",
