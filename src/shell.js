@@ -9,7 +9,6 @@ export default class Shell extends Base {
   #version
   #cursor = 0
   #tabWidth
-  #middleware = []
   #runtime = globalThis.hasOwnProperty('window') // eslint-disable-line no-prototype-builtins
     ? 'browser'
     : (
@@ -28,7 +27,7 @@ export default class Shell extends Base {
     this.__commonflags = cfg.commonflags || {}
 
     if (cfg.hasOwnProperty('use') && Array.isArray(cfg.use)) { // eslint-disable-line no-prototype-builtins
-      cfg.use.forEach(code => this.#middleware.push(this.normalizeMiddleware(code)))
+      cfg.use.forEach(code => this.initializeMiddleware(code))
     }
 
     if (cfg.hasOwnProperty('trailer') && Array.isArray(cfg.trailer)) { // eslint-disable-line no-prototype-builtins
@@ -165,22 +164,11 @@ export default class Shell extends Base {
   }
 
   async exec (input, callback) {
-    // Optionally apply reference data. Only for advanced use
-    // in applications (not strict CLIs).
-    let reference
-    if (typeof callback === 'object') {
-      if (!callback.hasOwnProperty('reference') && !callback.hasOwnProperty('callback')) { // eslint-disable-line no-prototype-builtins
-        throw new Error('exec method data references require a reference and/or callback attribute - recognized: ' + Object.keys(callback).join(', '))
-      }
-      reference = callback.reference
-      callback = callback.callback
-    }
-
     // The array check exists because people are passing process.argv.slice(2) into this
     // method, often forgetting to join the values into a string.
     if (Array.isArray(input)) {
       input = input.map(i => {
-        if (i.indexOf(' ') >= 0 && !/^[\"\'].+ [\"\']$/.test(i)) { // eslint-disable-line no-useless-escape
+        if (i.indexOf(' ') >= 0 && !/^[\"\'].+ [\"\']$/.test(i)) {
           return `"${i}"`
         } else {
           return i
@@ -194,7 +182,6 @@ export default class Shell extends Base {
       this.#history.pop()
     }
 
-    // The extra space is added to guarantee the pattern is recognized
     let parsed = COMMAND_PATTERN.exec(input + ' ')
 
     if (parsed === null) {
@@ -229,19 +216,8 @@ export default class Shell extends Base {
       return Command.stderr('Command not found.')
     }
 
-    // "terminal command" refers to the last command in the input
-    // string (i.e. last subcommand)
     const term = processor.getTerminalCommand(args)
-
-    if (typeof callback === 'function') {
-      return callback(await Command.reply(await term.command.run(term.arguments, callback, reference))) // eslint-disable-line standard/no-callback-literal
-    }
-
-    return await Command.reply(await term.command.run(term.arguments, callback, reference))
-  }
-
-  get shellware () {
-    return this.#middleware
+    return await Command.reply(await term.command.run(term.arguments, callback))
   }
 
   getCommandMiddleware (cmd) {

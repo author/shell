@@ -331,42 +331,6 @@ _Output:_
 > Notice the values from the known flags are _first_.
 </details>
 
-### Custom Handler Data References
-
-When building JavaScript applications, it may be desirable to pass data references to the `exec` method, making them available to handlers. For example:
-
-```javascript
-const sh = new Shell({
-  name: 'test',
-  commands: [{
-    name: 'run',
-    async handler (meta) {
-      return meta.reference.test // reference data
-    }
-  }]
-})
-
-const ref = { test: true }
-const result = await sh.exec('run', { reference: ref })
-```
-
-In the command above, the reference data (second to last line) is passed to the `exec()` method using a special object as the second argument. This object is made available in the handler using the `meta.reference` attribute.
-
-If a callback needs to be defined, the second argument of the `exec` method must have an attribute called `callback`, i.e.:
-
-```javascript
-const ref = {
-  test: true
-}
-
-const result = await sh.exec('run', {
-  reference: ref,
-  callback: function () {...}
-})
-```
-
-The callback method is _not_ available in the `meta.reference`, but the callback will be executed when `exec()` is executed.
-
 ## Plugins
 
 Plugins expose functions, objects, and primitives to shell handlers.

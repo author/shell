@@ -1,5 +1,5 @@
-// import { Parser } from '../../../@author.io/arg/index.js'
-import { Parser } from '@author.io/arg'
+import { Parser } from '../node_modules/@author.io/arg/index.js'
+// import { Parser } from '@author.io/arg'
 import Shell from './shell.js'
 import Base from './base.js'
 import { METHOD_PATTERN, FLAG_PATTERN, STRIP_QUOTE_PATTERN } from './utility.js'
@@ -529,27 +529,20 @@ export default class Command extends Base {
     return data
   }
 
-  async run (input, callback, reference = undefined) {
+  async run (input, callback) {
     const fn = (this.#fn || this.defaultHandler).bind(this)
-    const metadata = typeof input === 'string' ? this.parse(input) : input
+    const data = typeof input === 'string' ? this.parse(input) : input
 
     arguments[0] = this.deepParse(input)
     arguments[0].plugins = this.plugins
 
     if (this.shell !== null) {
-      const { shellware } = this.shell
-      if (shellware.length > 0) {
-        this.middleware.use(...shellware)
-      }
-
       const parentMiddleware = this.shell.getCommandMiddleware(this.commandroot.replace(new RegExp(`^${this.shell.name}`, 'i'), '').trim())
+
       if (parentMiddleware.length > 0) {
         this.middleware.use(...parentMiddleware)
       }
     }
-
-    this.applyMiddleware()
-    this.applyTrailerware()
 
     const trailers = this.trailers
 
@@ -565,7 +558,7 @@ export default class Command extends Base {
 
     // No subcommand was recognized
     if (this.middleware.size > 0) {
-      this.middleware.run(arguments[0], async meta => await Command.reply(fn(Object.assign(meta, { reference }), callback)))
+      this.middleware.run(arguments[0], async meta => await Command.reply(fn(meta, callback)))
 
       if (trailers.size > 0) {
         trailers.run(arguments[0])
@@ -575,14 +568,12 @@ export default class Command extends Base {
     }
 
     // Command.reply(fn(arguments[0], callback))
-    metadata.plugins = this.plugins
-    const result = await Command.reply(fn(Object.assign(metadata, { reference }), callback))
+    data.plugins = this.plugins
+    Command.reply(fn(data, callback))
 
     if (trailers.size > 0) {
       trailers.run(arguments[0])
     }
-
-    return result
   }
 
   static stderr (err) {
@@ -594,15 +585,13 @@ export default class Command extends Base {
   }
 
   static reply (callback) {
-    return new Promise(async (resolve, reject) => { // eslint-disable-line no-async-promise-executor
+    return new Promise((resolve, reject) => {
       try {
         if (typeof callback === 'function') {
-          resolve(callback())
-        } else if (callback instanceof Promise) {
-          callback.then(resolve).catch(reject)
-        } else {
-          resolve(...arguments)
+          callback()
         }
+
+        resolve()
       } catch (e) {
         reject(e)
       }

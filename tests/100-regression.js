@@ -1,5 +1,5 @@
 import test from 'tappedout'
-import { Shell, Command } from '@author.io/shell'
+import { Shell } from '@author.io/shell'
 
 // The range error was caused by the underlying table library.
 // When a default help message was generated, a negative column
@@ -118,72 +118,4 @@ test('Accept arrays with values containing spaces', t => {
 
   const argv = ["run", "-c", "a connection", "--save"]
   sh.exec(argv).catch(t.fail)
-})
-
-test('Exec method should return promise value', async t => {
-  const sh = new Shell({
-    name: 'test',
-    commands: [{
-      name: 'run',
-      async handler(meta) {
-        return meta.input
-      }
-    }]
-  })
-
-  const argv = ['run', 'example']
-  const result = await sh.exec(argv).catch(t.fail)
-
-  t.expect(result, 'example', 'returns command promise results')
-  t.end()
-})
-
-test('Exec method should return callback value', async t => {
-  const sh = new Shell({
-    name: 'test',
-    commands: [{
-      name: 'run',
-      async handler(meta) {
-        return meta.input
-      }
-    }]
-  })
-
-  const argv = ['run', 'other']
-  sh.exec(argv, data => {
-    t.expect(data, 'other', 'returns command callback results')
-    t.end()
-  })
-})
-
-test('Shell level middleware should execeute before command level middleware', t => {
-  let status = []
-  const cmd = new Command({
-    name: 'run',
-    async handler(meta) {
-      return meta.input
-    }
-  })
-
-  cmd.use(async function(meta, next) {
-    status.push('2')
-    next()
-  })
-
-  const sh = new Shell({
-    name: 'test',
-    use: [
-      (meta, next) => {
-        status.push('1')
-        next()
-      }
-    ],
-    commands: [cmd]
-  })
-
-  sh.exec(['run', 'other'], data => {
-    t.expect(2, status.length, 'corrent number of middleware functions executed')
-    t.expect('1,2', status.join(','), 'middleware runs in correct order')
-    t.end()
-  })
 })

@@ -159,30 +159,3 @@ test('Ordered Named Arguments', t => {
 
   shell.exec('account create test@domain.com pwd')
 })
-
-
-test('Application reference data', async t => {
-  const data = { test: true }
-  const sh = new Shell({
-    name: 'test',
-    commands: [{
-      name: 'run',
-      async handler (meta) {
-        return meta.reference.test
-      }
-    }]
-  })
-
-  const result = await sh.exec('run', { reference: data })
-
-  t.expect(result, true, 'reference data detected in handler')
-
-  try {
-    await sh.exec('run', { demo: data })
-    t.fail('failure to provide reference and callback throws error')
-  } catch (e) {
-    t.pass('failure to provide reference and callback throws error')
-  }
-
-  t.end()
-})
